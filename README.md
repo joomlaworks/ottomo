@@ -12,6 +12,8 @@ Design a campaign visually, pick who gets it by topic, send it through your own 
 
 ---
 
+<p align="center"><img src="docs/screenshots/v1.0/02 - Ottomo Dashboard.png" alt="Ottomo Dashboard" width="100%" height="auto" /></p>
+
 ## Highlights
 
 - **Visual designer**: edit text in place, add Joomla articles, K2 items, images and HTML blocks, drag them between positions, check desktop and mobile previews.
@@ -27,6 +29,8 @@ Design a campaign visually, pick who gets it by topic, send it through your own 
 - **51 languages**, light and dark schemes, tablet and phone layouts.
 
 ---
+
+<p align="center"><img src="docs/screenshots/v1.0/03 - Ottomo Email Campaigns.png" alt="Ottomo Dashboard" width="100%" height="auto" /></p>
 
 ## Features
 
