@@ -486,9 +486,15 @@ body:has(#otm:not(.otm-app--atum)) header.header {display:none;} /* Joomla 3 tem
 /* App shell: fixed sidebar on the left, the page on the right */
 #otm.otm-app--page {padding-left:var(--otm-sidebar);}
 #otm .otm-header {position:fixed;top:var(--otm-navbar);bottom:0;left:0;z-index:20;width:var(--otm-sidebar);background:var(--otm-surface);border-right:1px solid var(--otm-border);overflow-y:auto;}
-/* Joomla 4+ (Atum): the sidebar in the page, next to Atum's menu (sticky while the page scrolls) */
-#otm.otm-app--atum.otm-app--page {display:grid;grid-template-columns:var(--otm-sidebar) minmax(0, 1fr);padding-left:0;}
-#otm.otm-app--atum .otm-header {position:sticky;top:0;bottom:auto;left:auto;align-self:start;height:100vh;}
+/* Joomla 4+ (Atum): Atum's menu is the side menu, so Ottomo's is folded, as on narrow screens: a bar with a menu button */
+#otm.otm-app--atum.otm-app--page {padding-left:0;}
+#otm.otm-app--atum .otm-header {position:static;width:auto;border-right:0;border-bottom:1px solid var(--otm-border);}
+#otm.otm-app--atum .otm-main-navigation {padding:0.75rem 1rem;}
+#otm.otm-app--atum .otm-logo img {width:auto;height:2.25rem;}
+#otm.otm-app--atum .otm-navtoggle {display:inline-grid;place-items:center;width:2.5rem;height:2.5rem;padding:0;background:var(--otm-surface);border:1px solid var(--otm-border);border-radius:var(--otm-radius-sm);color:var(--otm-text);cursor:pointer;}
+#otm.otm-app--atum .otm-navtoggle .otm-icon {width:1.25rem;height:1.25rem;}
+#otm.otm-app--atum .otm-main-menu {display:none;}
+#otm.otm-app--atum .otm-main-menu.is-open {display:flex;}
 body:has(#otm.otm-app--atum) #subhead-container {display:none;} /* Atum's toolbar row: Ottomo's buttons are in its page header */
 body:has(#otm.otm-app--atum) #content {padding:0;}
 body:has(#otm.otm-app--atum) #content > .row {margin:0;}
@@ -1071,8 +1077,6 @@ html:has(#otm.view-settings) {scroll-behavior:smooth;}
     /* The sidebar becomes a bar with a menu button */
     #otm.otm-app--page {padding-left:0;}
     #otm .otm-header {position:static;width:auto;border-right:0;border-bottom:1px solid var(--otm-border);}
-    #otm.otm-app--atum.otm-app--page {display:block;}
-    #otm.otm-app--atum .otm-header {height:auto;}
     #otm .otm-main-navigation {padding:0.75rem 1rem;}
     #otm .otm-logo img {width:auto;height:2.25rem;}
     #otm .otm-navtoggle {display:inline-grid;place-items:center;width:2.5rem;height:2.5rem;padding:0;background:var(--otm-surface);border:1px solid var(--otm-border);border-radius:var(--otm-radius-sm);color:var(--otm-text);cursor:pointer;}
