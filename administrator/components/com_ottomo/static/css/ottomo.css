@@ -490,6 +490,7 @@ body:has(#otm:not(.otm-app--atum)) header.header {display:none;} /* Joomla 3 tem
    and the logo; the button slides the sidebar over the page from the left */
 #otm .otm-menubar {display:none;}
 #otm .otm-navclose {display:none;}
+#otm.otm-app--atum.otm-app--page {padding-left:0;} /* the content takes the whole room next to Atum's menu */
 #otm.otm-app--atum .otm-menubar {display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1.25rem;background:var(--otm-surface);border-bottom:1px solid var(--otm-border);}
 #otm.otm-app--atum .otm-menubar__logo img {width:auto;height:2.25rem;}
 #otm.otm-app--atum :is(.otm-navtoggle, .otm-navclose) {display:inline-grid;place-items:center;width:2.5rem;height:2.5rem;padding:0;background:var(--otm-surface);border:1px solid var(--otm-border);border-radius:var(--otm-radius-sm);color:var(--otm-text);cursor:pointer;}
