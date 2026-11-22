@@ -80,4 +80,7 @@
 		<plugin plugin="images" group="ottomo-content" />
 		<plugin plugin="ottomo" group="console" />
 	</plugins>
+	<updateservers>
+		<server type="collection" priority="1" name="Ottomo">https://joomlaworks.github.io/ottomo/collection.xml</server>
+	</updateservers>
 </extension>
