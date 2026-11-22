@@ -144,13 +144,14 @@ class plgOttomocontentArticles extends CMSPlugin
             $article->fulltext = null;
         }
         if (is_object($article->images)) {
-            if ($this->params->get('contentIntroImage') && $article->images->image_intro) {
-                $article->introImage = Uri::root().$article->images->image_intro;
-                $article->introImageCaption = $article->images->image_intro_caption;
+            // Joomla 4+ adds #joomlaImage://...?width=...&height=... to the path
+            if ($this->params->get('contentIntroImage') && !empty($article->images->image_intro)) {
+                $article->introImage = Uri::root().strtok((string)$article->images->image_intro, '#');
+                $article->introImageCaption = isset($article->images->image_intro_caption) ? $article->images->image_intro_caption : '';
             }
-            if ($this->params->get('contentFullImage') && $article->images->image_fulltext) {
-                $article->fullImage = Uri::root().$article->images->image_fulltext;
-                $article->fullImageCaption = $article->images->image_fulltext_caption;
+            if ($this->params->get('contentFullImage') && !empty($article->images->image_fulltext)) {
+                $article->fullImage = Uri::root().strtok((string)$article->images->image_fulltext, '#');
+                $article->fullImageCaption = isset($article->images->image_fulltext_caption) ? $article->images->image_fulltext_caption : '';
             }
         }
         return $article;
