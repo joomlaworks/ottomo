@@ -1040,8 +1040,9 @@
       }
 
       // Publish/unpublish buttons: Joomla's icon font glyphs -> inline Bootstrap Icons SVGs
-      $$('.otm-listed-items .btn.btn-micro').forEach(function(button) {
-        button.classList.remove('btn', 'btn-micro');
+      // (Joomla 3: .btn.btn-micro buttons; Joomla 4+: .tbody-icon links)
+      $$('.otm-listed-items .btn.btn-micro, .otm-listed-items .tbody-icon').forEach(function(button) {
+        button.classList.remove('btn', 'btn-micro', 'tbody-icon', 'active');
         button.classList.add('otm-state-toggler');
         $$('.icon-unpublish', button).forEach(function(icon) {
           icon.outerHTML = Ottomo.icons.xCircleFill.replace('otm-icon', 'otm-icon otm-unpublished');
