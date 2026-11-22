@@ -1168,11 +1168,44 @@
 
     function setupNavigation() {
       // Tablet / mobile: the menu button shows and hides the main menu
-      on(document, 'click', '#otm-navtoggle', function(event, toggle) {
+      // The folded sidebar (Atum, narrow screens): the menu button slides it in; the close button, a click outside it,
+      // Escape and a chosen page close it
+      var sidebarToggle = function(open) {
+        var toggle = document.getElementById('otm-navtoggle');
+        var sidebar = document.getElementById('otm-sidebar');
+        if (!toggle || !sidebar) {
+          return;
+        }
+        open = open === undefined ? !sidebar.classList.contains('is-open') : open;
+        sidebar.classList.toggle('is-open', open);
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) {
+          var first = sidebar.querySelector('a, button');
+          if (first) {
+            first.focus();
+          }
+        }
+      };
+      on(document, 'click', '#otm-navtoggle', function(event) {
         event.preventDefault();
-        var menu = document.getElementById(toggle.getAttribute('aria-controls'));
-        if (menu) {
-          toggle.setAttribute('aria-expanded', menu.classList.toggle('is-open') ? 'true' : 'false');
+        sidebarToggle();
+      });
+      on(document, 'click', '[data-otm-navclose]', function(event) {
+        event.preventDefault();
+        sidebarToggle(false);
+        document.getElementById('otm-navtoggle').focus();
+      });
+      document.addEventListener('click', function(event) {
+        var sidebar = document.getElementById('otm-sidebar');
+        if (sidebar && sidebar.classList.contains('is-open') && !sidebar.contains(event.target) && !event.target.closest('#otm-navtoggle')) {
+          sidebarToggle(false);
+        }
+      });
+      document.addEventListener('keydown', function(event) {
+        var sidebar = document.getElementById('otm-sidebar');
+        if (event.key === 'Escape' && sidebar && sidebar.classList.contains('is-open')) {
+          sidebarToggle(false);
+          document.getElementById('otm-navtoggle').focus();
         }
       });
     }

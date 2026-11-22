@@ -241,7 +241,7 @@ use Joomla\String\StringHelper;
                         </button>
                     </div>
 
-                    <input type="hidden" name="template" value="<?php echo htmlspecialchars($this->row->template, ENT_QUOTES, 'UTF-8'); ?>" />
+                    <input type="hidden" name="template" value="<?php echo htmlspecialchars((string)$this->row->template, ENT_QUOTES, 'UTF-8'); ?>" />
                 </div>
             </div>
 
@@ -540,7 +540,7 @@ use Joomla\String\StringHelper;
                 <input type="hidden" value="<?php echo $field->content; ?>" class="otm-position" id="<?php echo $field->position; ?>" name="ottomoPosition_<?php echo $field->position; ?>">
             <?php endforeach; ?>
 
-			<input type="hidden" name="snapshot" value="<?php echo htmlspecialchars($this->row->snapshot, ENT_QUOTES, 'UTF-8'); ?>" />
+			<input type="hidden" name="snapshot" value="<?php echo htmlspecialchars((string)$this->row->snapshot, ENT_QUOTES, 'UTF-8'); ?>" />
             <input type="hidden" name="id" value="<?php echo $this->row->id; ?>" />
             <input type="hidden" name="option" value="<?php echo $this->option; ?>" />
             <input type="hidden" name="view" value="<?php echo $this->view; ?>" />

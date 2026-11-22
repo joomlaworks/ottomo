@@ -12,18 +12,25 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Uri\Uri;
 ?>
-<div class="otm-header">
+<?php $logo = function ($class = '') { ?>
+						<img class="otm-logo--light<?php echo $class; ?>" src="<?php echo Uri::base(true); ?>/components/com_ottomo/static/images/logo/ottomo-logo-light.svg" width="97" height="36" alt="Ottomo" />
+						<img class="otm-logo--dark<?php echo $class; ?>" src="<?php echo Uri::base(true); ?>/components/com_ottomo/static/images/logo/ottomo-logo-dark.svg" width="97" height="36" alt="" />
+<?php }; ?>
+<div class="otm-menubar">
+	<button type="button" id="otm-navtoggle" class="otm-navtoggle" aria-controls="otm-sidebar" aria-expanded="false" aria-label="<?php echo htmlspecialchars(Text::_('COM_OTTOMO_TOGGLE_MENU'), ENT_QUOTES, 'UTF-8'); ?>"><?php echo OttomoHelperHTML::icon('list'); ?></button>
+	<a class="otm-menubar__logo" href="index.php?option=com_ottomo&amp;view=dashboard" aria-label="Ottomo"><?php $logo(); ?></a>
+</div>
+<div class="otm-header" id="otm-sidebar">
 	<nav class="otm-main-navigation" aria-label="<?php echo Text::_('COM_OTTOMO'); ?>">
 		<div class="otm-navinner">
 			<div class="otm-brandbar">
 				<h1 class="otm-logo">
 					<a href="index.php?option=com_ottomo&amp;view=dashboard" aria-label="Ottomo">
-						<img class="otm-logo--light" src="<?php echo Uri::base(true); ?>/components/com_ottomo/static/images/logo/ottomo-logo-light.svg" width="97" height="36" alt="Ottomo" />
-						<img class="otm-logo--dark" src="<?php echo Uri::base(true); ?>/components/com_ottomo/static/images/logo/ottomo-logo-dark.svg" width="97" height="36" alt="" />
+<?php $logo(); ?>
 					</a>
 				</h1>
 
-				<button type="button" id="otm-navtoggle" class="otm-navtoggle" aria-controls="otm-main-menu" aria-expanded="false" aria-label="<?php echo htmlspecialchars(Text::_('COM_OTTOMO_TOGGLE_MENU'), ENT_QUOTES, 'UTF-8'); ?>"><?php echo OttomoHelperHTML::icon('list'); ?></button>
+				<button type="button" class="otm-navclose" data-otm-navclose aria-label="<?php echo htmlspecialchars(Text::_('COM_OTTOMO_CLOSE'), ENT_QUOTES, 'UTF-8'); ?>"><?php echo OttomoHelperHTML::icon('x-lg'); ?></button>
 			</div>
 
 			<ul class="otm-main-menu" id="otm-main-menu">

@@ -143,7 +143,7 @@
 			<option value="1">COM_OTTOMO_SHOW</option>
 			<option value="0">COM_OTTOMO_HIDE</option>
 		</field>
-		<field name="" type="header" default="COM_OTTOMOEXT_K2_SETTINGS" label="" />
+		<field name="k2Settings" type="header" default="COM_OTTOMOEXT_K2_SETTINGS" label="" />
 		<field name="k2Title" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_K2_TITLE">
 			<option value="1">COM_OTTOMO_SHOW</option>
 			<option value="0">COM_OTTOMO_HIDE</option>

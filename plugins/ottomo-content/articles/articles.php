@@ -21,6 +21,9 @@ require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
 
 class plgOttomocontentArticles extends CMSPlugin
 {
+    /** Whether the content source (com_content, K2...) is on the site. */
+    protected $isInstalled = false;
+
     public function __construct(&$subject, $config)
     {
         parent::__construct($subject, $config);

@@ -308,7 +308,7 @@ class OttomoHelperTemplate
 
         // Perform all the replacements
         foreach ($patterns as $key => $pattern) {
-            $buffer = StringHelper::str_ireplace($pattern, $replacements[$key], $buffer);
+            $buffer = StringHelper::str_ireplace($pattern, (string)$replacements[$key], $buffer);
         }
 
         // Click tracking for external links (template and content alike), now that every placeholder is filled

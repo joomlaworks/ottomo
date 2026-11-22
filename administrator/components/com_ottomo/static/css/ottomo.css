@@ -486,15 +486,18 @@ body:has(#otm:not(.otm-app--atum)) header.header {display:none;} /* Joomla 3 tem
 /* App shell: fixed sidebar on the left, the page on the right */
 #otm.otm-app--page {padding-left:var(--otm-sidebar);}
 #otm .otm-header {position:fixed;top:var(--otm-navbar);bottom:0;left:0;z-index:20;width:var(--otm-sidebar);background:var(--otm-surface);border-right:1px solid var(--otm-border);overflow-y:auto;}
-/* Joomla 4+ (Atum): Atum's menu is the side menu, so Ottomo's is folded, as on narrow screens: a bar with a menu button */
-#otm.otm-app--atum.otm-app--page {padding-left:0;}
-#otm.otm-app--atum .otm-header {position:static;width:auto;border-right:0;border-bottom:1px solid var(--otm-border);}
-#otm.otm-app--atum .otm-main-navigation {padding:0.75rem 1rem;}
-#otm.otm-app--atum .otm-logo img {width:auto;height:2.25rem;}
-#otm.otm-app--atum .otm-navtoggle {display:inline-grid;place-items:center;width:2.5rem;height:2.5rem;padding:0;background:var(--otm-surface);border:1px solid var(--otm-border);border-radius:var(--otm-radius-sm);color:var(--otm-text);cursor:pointer;}
-#otm.otm-app--atum .otm-navtoggle .otm-icon {width:1.25rem;height:1.25rem;}
-#otm.otm-app--atum .otm-main-menu {display:none;}
-#otm.otm-app--atum .otm-main-menu.is-open {display:flex;}
+/* The folded sidebar (Atum, where Atum's menu is the side menu, and narrow screens: see Tablet): a bar with a menu button
+   and the logo; the button slides the sidebar over the page from the left */
+#otm .otm-menubar {display:none;}
+#otm .otm-navclose {display:none;}
+#otm.otm-app--atum .otm-menubar {display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1.25rem;background:var(--otm-surface);border-bottom:1px solid var(--otm-border);}
+#otm.otm-app--atum .otm-menubar__logo img {width:auto;height:2.25rem;}
+#otm.otm-app--atum :is(.otm-navtoggle, .otm-navclose) {display:inline-grid;place-items:center;width:2.5rem;height:2.5rem;padding:0;background:var(--otm-surface);border:1px solid var(--otm-border);border-radius:var(--otm-radius-sm);color:var(--otm-text);cursor:pointer;}
+#otm.otm-app--atum :is(.otm-navtoggle, .otm-navclose) .otm-icon {width:1.25rem;height:1.25rem;}
+#otm.otm-app--atum .otm-navclose {width:2.25rem;height:2.25rem;border-color:transparent;}
+#otm.otm-app--atum .otm-header {top:0;z-index:1060;visibility:hidden;transform:translateX(-100%);transition:transform 0.2s ease, visibility 0s linear 0.2s;}
+#otm.otm-app--atum .otm-header.is-open {visibility:visible;transform:none;box-shadow:0 0 40px rgba(9, 9, 11, 0.25);transition:transform 0.2s ease;}
+body:has(#otm.otm-app--atum .otm-header.is-open)::after {content:"";position:fixed;inset:0;z-index:1059;background:rgba(9, 9, 11, 0.4);} /* the dimmed page: a click closes the menu */
 body:has(#otm.otm-app--atum) #subhead-container {display:none;} /* Atum's toolbar row: Ottomo's buttons are in its page header */
 body:has(#otm.otm-app--atum) #content {padding:0;}
 body:has(#otm.otm-app--atum) #content > .row {margin:0;}
@@ -1076,13 +1079,14 @@ html:has(#otm.view-settings) {scroll-behavior:smooth;}
 @media only screen and (max-width:1100px) {
     /* The sidebar becomes a bar with a menu button */
     #otm.otm-app--page {padding-left:0;}
-    #otm .otm-header {position:static;width:auto;border-right:0;border-bottom:1px solid var(--otm-border);}
-    #otm .otm-main-navigation {padding:0.75rem 1rem;}
-    #otm .otm-logo img {width:auto;height:2.25rem;}
-    #otm .otm-navtoggle {display:inline-grid;place-items:center;width:2.5rem;height:2.5rem;padding:0;background:var(--otm-surface);border:1px solid var(--otm-border);border-radius:var(--otm-radius-sm);color:var(--otm-text);cursor:pointer;}
-    #otm .otm-navtoggle .otm-icon {width:1.25rem;height:1.25rem;}
-    #otm .otm-main-menu {display:none;}
-    #otm .otm-main-menu.is-open {display:flex;}
+    #otm .otm-menubar {display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1.25rem;background:var(--otm-surface);border-bottom:1px solid var(--otm-border);}
+    #otm .otm-menubar__logo img {width:auto;height:2.25rem;}
+    #otm :is(.otm-navtoggle, .otm-navclose) {display:inline-grid;place-items:center;width:2.5rem;height:2.5rem;padding:0;background:var(--otm-surface);border:1px solid var(--otm-border);border-radius:var(--otm-radius-sm);color:var(--otm-text);cursor:pointer;}
+    #otm :is(.otm-navtoggle, .otm-navclose) .otm-icon {width:1.25rem;height:1.25rem;}
+    #otm .otm-navclose {width:2.25rem;height:2.25rem;border-color:transparent;}
+    #otm .otm-header {top:0;z-index:1060;visibility:hidden;transform:translateX(-100%);transition:transform 0.2s ease, visibility 0s linear 0.2s;}
+    #otm .otm-header.is-open {visibility:visible;transform:none;box-shadow:0 0 40px rgba(9, 9, 11, 0.25);transition:transform 0.2s ease;}
+    body:has(#otm .otm-header.is-open)::after {content:"";position:fixed;inset:0;z-index:1059;background:rgba(9, 9, 11, 0.4);}
     #otm .otm-component {padding:1.25rem;}
 
     /* Page header */

@@ -11,6 +11,7 @@ defined('_JEXEC') or die ;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\PluginHelper;
 
 require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
 
@@ -37,6 +38,14 @@ class OttomoViewSettings extends OttomoView
         $model = $this->getModel();
         $model->setState('option', 'com_ottomo');
         $form = $model->getForm();
+        // K2 (Joomla 3 only): its content settings only while Ottomo's K2 plugin is enabled
+        if (!PluginHelper::isEnabled('ottomo-content', 'k2')) {
+            foreach ($form->getFieldset('layout') as $field) {
+                if (strpos((string)$field->fieldname, 'k2') === 0) {
+                    $form->removeField($field->fieldname);
+                }
+            }
+        }
         $this->form = $form;
         $id = $model->getExtensionID();
         $this->id = $id;
