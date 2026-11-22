@@ -9,7 +9,13 @@
 
 defined('_JEXEC') or die ;
 
-class OttomoTableTopics extends JTable
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Table\Table;
+use Joomla\Utilities\ArrayHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
+class OttomoTableTopics extends Table
 {
     public function __construct($db)
     {
@@ -22,7 +28,7 @@ class OttomoTableTopics extends JTable
     public function check()
     {
         if (trim($this->name) == '') {
-            $this->setError(JText::_('COM_OTTOMO_TOPIC_MUST_HAVE_A_NAME'));
+            $this->setError(Text::_('COM_OTTOMO_TOPIC_MUST_HAVE_A_NAME'));
             return false;
         }
         return true;
@@ -30,9 +36,9 @@ class OttomoTableTopics extends JTable
 
     public function delete($id = null)
     {
-        JArrayHelper::toInteger($id);
+        ArrayHelper::toInteger($id);
 
-        $db = JFactory::getDbo();
+        $db = OttomoCompat::db();
 
         $query = $db->getQuery(true);
         $query->delete($db->quoteName('#__ottomo_topics'));

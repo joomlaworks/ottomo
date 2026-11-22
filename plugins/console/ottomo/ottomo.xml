@@ -8,7 +8,7 @@
     <authorUrl>https://www.joomlaworks.net</authorUrl>
     <version>1.0</version>
     <license>GNU/GPL license: https://www.gnu.org/copyleft/gpl.html</license>
-    <description>Ottomo's commands for Joomla 3.x UTD's command line (php cli/joomla.php list ottomo).</description>
+    <description>Ottomo's commands for Joomla's command line (php cli/joomla.php list ottomo).</description>
     <files>
         <filename plugin="ottomo">ottomo.php</filename>
     </files>

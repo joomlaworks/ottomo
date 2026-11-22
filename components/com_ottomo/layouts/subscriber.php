@@ -8,6 +8,10 @@
  */
 
 defined('_JEXEC') or die ;
+
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
 ?>
 <div id="otm-container" class="otm-view-<?php echo $this->view; ?>">
     <script>
@@ -23,11 +27,11 @@ defined('_JEXEC') or die ;
                 return;
             }
             if (emailInput.value.trim() === '') {
-                alert('<?php echo JText::_('COM_OTTOMO_PLEASE_TYPE_YOUR_EMAIL', true); ?>');
+                alert('<?php echo Text::_('COM_OTTOMO_PLEASE_TYPE_YOUR_EMAIL', true); ?>');
                 emailInput.focus();
                 return;
             }
-            if (requireConfirm && !confirm('<?php echo JText::_('COM_OTTOMO_ARE_YOU_SURE', true); ?>')) {
+            if (requireConfirm && !confirm('<?php echo Text::_('COM_OTTOMO_ARE_YOU_SURE', true); ?>')) {
                 return;
             }
             taskInput.value = actionTask;
@@ -48,22 +52,22 @@ defined('_JEXEC') or die ;
         }
     });
     </script>
-    <form action="<?php echo JRoute::_('index.php'); ?>" method="post" id="otm-form">
+    <form action="<?php echo Route::_('index.php'); ?>" method="post" id="otm-form">
 
         <div class="page-header">
             <h1>
-                <?php echo JText::_('COM_OTTOMO_MANAGE_YOUR_SUBSCRIPTION'); ?>
+                <?php echo Text::_('COM_OTTOMO_MANAGE_YOUR_SUBSCRIPTION'); ?>
             </h1>
         </div>
     
         <div class="controls">
             <div class="input-prepend">
-                <label class="lbltitle" for="otm-email"><?php echo JText::_('COM_OTTOMO_EMAIL'); ?></label>
+                <label class="lbltitle" for="otm-email"><?php echo Text::_('COM_OTTOMO_EMAIL'); ?></label>
                 <input type="text" name="email" id="otm-email" value="" />
             </div>
         </div>
 
-        <h4><?php echo JText::_('COM_OTTOMO_TOPICS')?></h4>
+        <h4><?php echo Text::_('COM_OTTOMO_TOPICS')?></h4>
         
         <?php foreach ($this->topics as $topic):?>
        <div class="controls checkbox">
@@ -76,14 +80,14 @@ defined('_JEXEC') or die ;
         </div>
         <?php endforeach; ?>
 
-        <input type="button" class="btn btn-mid btn-primary" name="save" value="<?php echo JText::_('COM_OTTOMO_SAVE')?>" id="otm-save-button" />
-        <input type="button" class="btn btn-mid btn-danger" name="delete" value="<?php echo JText::_('COM_OTTOMO_DELETE_ACCOUNT')?>" id="otm-delete-button" />
+        <input type="button" class="btn btn-mid btn-primary" name="save" value="<?php echo Text::_('COM_OTTOMO_SAVE')?>" id="otm-save-button" />
+        <input type="button" class="btn btn-mid btn-danger" name="delete" value="<?php echo Text::_('COM_OTTOMO_DELETE_ACCOUNT')?>" id="otm-delete-button" />
         
         <input type="hidden" name="id" value="<?php echo (int)$this->row->id; ?>" />
         <input type="hidden" name="option" value="<?php echo $this->option; ?>" />
         <input type="hidden" name="task" value="" />
         <input type="hidden" name="newsletter" value="<?php echo (int)$this->newsletterId; ?>" />
         <input type="hidden" name="hash" value="<?php echo htmlspecialchars((string)$this->hash, ENT_QUOTES, 'UTF-8'); ?>" />
-        <?php echo JHTML::_('form.token'); ?>
+        <?php echo HTMLHelper::_('form.token'); ?>
     </form>
 </div>

@@ -9,6 +9,12 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Session\Session;
+use Joomla\Filesystem\File;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 JLoader::register('OttomoHelperImport', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/import.php');
 
 /**
@@ -27,7 +33,7 @@ class OttomoControllerImport extends OttomoController
     {
         parent::__construct($config);
 
-        $request = json_decode((string)$this->input->getVar('request'));
+        $request = json_decode((string)$this->input->get('request', '', 'raw'));
         if (!is_object($request)) {
             $request = new stdClass();
             $request->task = 'importFromText';
@@ -51,8 +57,8 @@ class OttomoControllerImport extends OttomoController
 
     public function run()
     {
-        if (!JSession::checkToken()) {
-            $this->response->errors[] = JText::_('JINVALID_TOKEN');
+        if (!Session::checkToken()) {
+            $this->response->errors[] = Text::_('JINVALID_TOKEN');
             $this->response->status = 'COMPLETED';
             return $this->render();
         }
@@ -68,7 +74,7 @@ class OttomoControllerImport extends OttomoController
     /** Pasted addresses, one per line */
     private function importFromText()
     {
-        $emails = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', (string)$this->input->getVar('subscribers'))), 'strlen'));
+        $emails = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', (string)$this->input->getString('subscribers'))), 'strlen'));
         $limitstart = (int)$this->request->limitstart;
         $size = count($emails);
         if ($limitstart >= $size) {
@@ -81,7 +87,7 @@ class OttomoControllerImport extends OttomoController
         $this->importRecords($records);
         $this->response->limitstart = $limitstart + $this->step;
         $this->response->progress = min($this->response->limitstart / $size, 1);
-        $this->response->label = JText::_('COM_OTTOMO_IMPORTING_FROM_TEXT');
+        $this->response->label = Text::_('COM_OTTOMO_IMPORTING_FROM_TEXT');
     }
 
     /** The selected sources, one after the other, in batches */
@@ -100,7 +106,7 @@ class OttomoControllerImport extends OttomoController
         list($records, $cursor) = $adapter->batch($this->request->cursor === '' ? null : $this->request->cursor, $this->step);
         $this->importRecords($records);
         $this->response->done = (int)$this->response->done + count($records);
-        $this->response->label = JText::sprintf('COM_OTTOMO_IMPORTING_FROM_SOURCE', $adapter->label());
+        $this->response->label = Text::sprintf('COM_OTTOMO_IMPORTING_FROM_SOURCE', $adapter->label());
         $total = max((int)$this->response->total, 1);
         if ($cursor === null) {
             // This source is done: the next one starts with the next request
@@ -117,8 +123,8 @@ class OttomoControllerImport extends OttomoController
     /** The uploaded CSV file: email in the first column, the "name" column when there's a header row */
     private function importFromCsv()
     {
-        $session = JFactory::getSession();
-        $file = (string)$session->get('import.file', '', 'com_ottomo');
+        $session = OttomoCompat::session();
+        $file = (string)$session->get('com_ottomo.import.file', '');
         $file = preg_match('/^ottomo-import-[a-f0-9]{32}\.csv$/', $file) ? $file : '';
         $path = $file ? JPATH_SITE.'/tmp/'.$file : '';
 
@@ -126,16 +132,16 @@ class OttomoControllerImport extends OttomoController
             return $this->complete();
         }
         if (!is_file($path) || !($handle = fopen($path, 'r'))) {
-            $this->response->errors[] = JText::_('COM_OTTOMO_COULD_NOT_READ_CSV_FILE');
-            $session->clear('import.file', 'com_ottomo');
-            $session->clear('import.nameColumn', 'com_ottomo');
+            $this->response->errors[] = Text::_('COM_OTTOMO_COULD_NOT_READ_CSV_FILE');
+            $session->clear('com_ottomo.import.file');
+            $session->clear('com_ottomo.import.nameColumn');
             return $this->complete();
         }
 
         $offset = (int)$this->request->offset;
         $first = $offset === 0;
         // The "name" column, found in the header row by the first step (-1: none)
-        $nameColumn = $first ? -1 : (int)$session->get('import.nameColumn', -1, 'com_ottomo');
+        $nameColumn = $first ? -1 : (int)$session->get('com_ottomo.import.nameColumn', -1);
         if (!$first) {
             fseek($handle, $offset);
         }
@@ -148,7 +154,7 @@ class OttomoControllerImport extends OttomoController
                 if (strtolower(trim($row[0])) === 'email') {
                     $found = array_search('name', array_map('strtolower', array_map('trim', $row)), true);
                     $nameColumn = $found === false ? -1 : (int)$found;
-                    $session->set('import.nameColumn', $nameColumn, 'com_ottomo');
+                    $session->set('com_ottomo.import.nameColumn', $nameColumn);
                     continue;
                 }
             }
@@ -166,11 +172,11 @@ class OttomoControllerImport extends OttomoController
         fclose($handle);
 
         $this->importRecords($records);
-        $this->response->label = JText::_('COM_OTTOMO_IMPORTING_FROM_CSV');
+        $this->response->label = Text::_('COM_OTTOMO_IMPORTING_FROM_CSV');
         if ($eof || $position === false) {
-            JFile::delete($path);
-            $session->clear('import.file', 'com_ottomo');
-            $session->clear('import.nameColumn', 'com_ottomo');
+            File::delete($path);
+            $session->clear('com_ottomo.import.file');
+            $session->clear('com_ottomo.import.nameColumn');
             return $this->complete();
         }
         $this->response->offset = $position;
@@ -211,7 +217,7 @@ class OttomoControllerImport extends OttomoController
     {
         $this->response->status = 'COMPLETED';
         $this->response->progress = 1;
-        $this->response->label = JText::_('COM_OTTOMO_IMPORT_COMPLETED').' · '.OttomoHelperImport::summary(array(
+        $this->response->label = Text::_('COM_OTTOMO_IMPORT_COMPLETED').' · '.OttomoHelperImport::summary(array(
             'added' => $this->response->added,
             'existing' => $this->response->existing,
             'unsubscribed' => $this->response->unsubscribed,

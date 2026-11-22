@@ -9,8 +9,12 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Helper\ModuleHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 // Ottomo's frontend language file (site language folder first, then the component's own)
-$language = JFactory::getLanguage();
+$language = OttomoCompat::language();
 $language->load('com_ottomo', JPATH_SITE) || $language->load('com_ottomo', JPATH_SITE.'/components/com_ottomo');
 
 require_once dirname(__FILE__).'/helper.php';
@@ -25,4 +29,4 @@ $captcha = modOttomoHelper::captcha($module);
 $moduleclass_sfx = htmlspecialchars((string)$params->get('moduleclass_sfx'), ENT_QUOTES, 'UTF-8');
 
 modOttomoHelper::loadAssets($layout);
-require JModuleHelper::getLayoutPath('mod_ottomo', $layout.'/default');
+require ModuleHelper::getLayoutPath('mod_ottomo', $layout.'/default');

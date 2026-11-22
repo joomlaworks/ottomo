@@ -9,6 +9,11 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoHelperHTML
 {
     /** The extension's version (from the installed manifest), e.g. "1.0" */
@@ -30,7 +35,7 @@ class OttomoHelperHTML
      * (Settings > Permissions; by default Super Users only). Everyone else picks templates in the campaign wizard. */
     public static function canManageTemplates()
     {
-        return (bool)JFactory::getUser()->authorise('ottomo.templates', 'com_ottomo');
+        return (bool)OttomoCompat::user()->authorise('ottomo.templates', 'com_ottomo');
     }
 
     /** URL of one of Ottomo's CSS/JS files with the version as query string (?v=1.0): browsers fetch it again after an update */
@@ -43,15 +48,15 @@ class OttomoHelperHTML
     {
         $options = array();
         if ($showNull) {
-            $options[] = JHTML::_('select.option', -1, JText::_('COM_OTTOMO_ANY'));
+            $options[] = HTMLHelper::_('select.option', -1, Text::_('COM_OTTOMO_ANY'));
         }
-        $options[] = JHTML::_('select.option', 1, JText::_($trueLabel));
-        $options[] = JHTML::_('select.option', 0, JText::_($falseLabel));
+        $options[] = HTMLHelper::_('select.option', 1, Text::_($trueLabel));
+        $options[] = HTMLHelper::_('select.option', 0, Text::_($falseLabel));
         foreach ($extra as $value => $label) {
-            $options[] = JHTML::_('select.option', $value, JText::_($label));
+            $options[] = HTMLHelper::_('select.option', $value, Text::_($label));
         }
         // Prefixed id: "status" is also the id of Joomla's status bar
-        return JHTML::_('select.genericlist', $options, $name, '', 'value', 'text', $active, 'otm-filter-'.$name);
+        return HTMLHelper::_('select.genericlist', $options, $name, '', 'value', 'text', $active, 'otm-filter-'.$name);
     }
 
     public static function topics($type = 'list', $active = null, $name = 'topic', $attributes = '', $showNull = true, $countSubscribers = false)
@@ -68,14 +73,14 @@ class OttomoHelperHTML
         if ($type == 'list') {
             $options = array();
             if ($showNull) {
-                $options[] = JHtml::_('select.option', 0, JText::_('COM_OTTOMO_ANY'), 'id', 'name');
+                $options[] = HTMLHelper::_('select.option', 0, Text::_('COM_OTTOMO_ANY'), 'id', 'name');
             }
 
             foreach ($topics as $topic) {
-                $label = $countSubscribers ? JText::sprintf('COM_OTTOMO_RECIPIENTS_WITH_COUNTER', $topic->name, $topic->subscribers) : $topic->name;
-                $options[] = JHtml::_('select.option', $topic->id, $label, 'id', 'name');
+                $label = $countSubscribers ? Text::sprintf('COM_OTTOMO_RECIPIENTS_WITH_COUNTER', $topic->name, $topic->subscribers) : $topic->name;
+                $options[] = HTMLHelper::_('select.option', $topic->id, $label, 'id', 'name');
             }
-            return JHtml::_('select.genericlist', $options, $name, $attributes, 'id', 'name', $active);
+            return HTMLHelper::_('select.genericlist', $options, $name, $attributes, 'id', 'name', $active);
 
         } elseif ($type == 'checkboxes') {
             $html = array();
@@ -85,7 +90,7 @@ class OttomoHelperHTML
                 $checked = in_array($topic->id, $active) ? ' checked' : '';
                 $counter = $countSubscribers ? ' data-subscribers="'.$topic->subscribers.'"' : '';
                 $topicName = htmlspecialchars((string)$topic->name, ENT_QUOTES, 'UTF-8');
-                $label = $countSubscribers ? JText::sprintf('COM_OTTOMO_RECIPIENTS_WITH_COUNTER', $topicName, (int)$topic->subscribers) : $topicName;
+                $label = $countSubscribers ? Text::sprintf('COM_OTTOMO_RECIPIENTS_WITH_COUNTER', $topicName, (int)$topic->subscribers) : $topicName;
                 $html[] = '<li>';
                 $html[] = '<input type="checkbox" id="'.$id.(int)$topic->id.'" name="'.$name.'" value="'.(int)($topic->id).'" data-name="'.$topicName.'" '.$checked.$counter.'/>';
                 $html[] = '<label for="'.$id.(int)$topic->id.'">'.$label.'</label>';
@@ -104,18 +109,18 @@ class OttomoHelperHTML
         $model->setState('orderingDir', 'asc');
         $options = array();
         if ($showNull) {
-            $options[] = JHtml::_('select.option', 0, JText::_('COM_OTTOMO_ANY'), 'id', 'name');
+            $options[] = HTMLHelper::_('select.option', 0, Text::_('COM_OTTOMO_ANY'), 'id', 'name');
         }
         foreach ((array)$model->getList() as $template) {
-            $options[] = JHtml::_('select.option', (int)$template->id, $template->name, 'id', 'name');
+            $options[] = HTMLHelper::_('select.option', (int)$template->id, $template->name, 'id', 'name');
         }
-        return JHtml::_('select.genericlist', $options, $name, $attributes, 'id', 'name', (int)$active);
+        return HTMLHelper::_('select.genericlist', $options, $name, $attributes, 'id', 'name', (int)$active);
     }
 
     public static function search($active = null)
     {
         // The search term comes from the request: always escape it (it was a reflected XSS)
-        return '<div class="otm-search"><input type="text" name="search" id="search" value="'.htmlspecialchars((string)$active, ENT_QUOTES, 'UTF-8').'"/><button class="otm-search-button" id="otm-search-button">'.JText::_('COM_OTTOMO_SEARCH').'</button></div>';
+        return '<div class="otm-search"><input type="text" name="search" id="search" value="'.htmlspecialchars((string)$active, ENT_QUOTES, 'UTF-8').'"/><button class="otm-search-button" id="otm-search-button">'.Text::_('COM_OTTOMO_SEARCH').'</button></div>';
     }
 
     public static function toggler($numOfRows)
@@ -131,12 +136,12 @@ class OttomoHelperHTML
     {
         $value = trim((string)$value);
         if ($value === '' || strpos($value, '0000-00-00') === 0) {
-            return '<span class="otm-muted" aria-label="'.htmlspecialchars(JText::_('COM_OTTOMO_NONE'), ENT_QUOTES, 'UTF-8').'">—</span>';
+            return '<span class="otm-muted" aria-label="'.htmlspecialchars(Text::_('COM_OTTOMO_NONE'), ENT_QUOTES, 'UTF-8').'">—</span>';
         }
         $hasTime = strlen($value) > 10;
-        $format = JText::_('COM_OTTOMO_DATE_FORMAT').($withTime && $hasTime ? ' '.JText::_('COM_OTTOMO_TIME_FORMAT') : '');
+        $format = Text::_('COM_OTTOMO_DATE_FORMAT').($withTime && $hasTime ? ' '.Text::_('COM_OTTOMO_TIME_FORMAT') : '');
         // date-only values are calendar days: no timezone shift
-        $html = JHtml::_('date', $value, $format, $hasTime ? true : 'UTC');
+        $html = HTMLHelper::_('date', $value, $format, $hasTime ? true : 'UTC');
         return '<time datetime="'.htmlspecialchars($value, ENT_QUOTES, 'UTF-8').'">'.$html.'</time>';
     }
 
@@ -151,7 +156,7 @@ class OttomoHelperHTML
     {
         $value = max(0, min(100, (float)$value));
         $text = rtrim(rtrim(number_format($value, 1, '.', ''), '0'), '.').'%';
-        $title = $total !== null ? ' title="'.htmlspecialchars(JText::plural('COM_OTTOMO_N_SUBSCRIBERS', (int)$total), ENT_QUOTES, 'UTF-8').'"' : '';
+        $title = $total !== null ? ' title="'.htmlspecialchars(Text::plural('COM_OTTOMO_N_SUBSCRIBERS', (int)$total), ENT_QUOTES, 'UTF-8').'"' : '';
         return '<span class="otm-rate"'.$title.'><span class="otm-rate__value">'.$text.'</span><span class="otm-rate__bar" aria-hidden="true"><span style="width:'.$value.'%"></span></span></span>';
     }
 

@@ -9,6 +9,14 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\Utilities\ArrayHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoModelNewsletters extends OttomoModel
 {
     public function getList()
@@ -138,14 +146,14 @@ class OttomoModelNewsletters extends OttomoModel
         $id = (int)$this->getState('id');
         $source = $this->getRow();
         if (!$id || !$source || (int)$source->id !== $id) {
-            $this->setError(JText::_('COM_OTTOMO_INVALID_CAMPAIGN'));
+            $this->setError(Text::_('COM_OTTOMO_INVALID_CAMPAIGN'));
             return false;
         }
         $copy = array();
         foreach (array('subject', 'preheader', 'senderName', 'senderEmail', 'plain', 'template', 'snapshot') as $field) {
             $copy[$field] = isset($source->$field) ? $source->$field : '';
         }
-        $copy['subject'] = JText::sprintf('COM_OTTOMO_COPY_OF', $copy['subject']);
+        $copy['subject'] = Text::sprintf('COM_OTTOMO_COPY_OF', $copy['subject']);
         $copy['published'] = 0;
         // Stored like a new campaign saved from the wizard (same defaults for the sent date)
         $table = $this->getTable('Newsletters', 'OttomoTable');
@@ -237,7 +245,7 @@ class OttomoModelNewsletters extends OttomoModel
 
         $topics = isset($variables['topics']) ? (array)$variables['topics'] : array();
         $data = array();
-        JArrayHelper::toInteger($topics);
+        ArrayHelper::toInteger($topics);
         foreach ($topics as $topic) {
             if ($topic > 0) {
                 $data[] = array($topic, (int)$table->id);
@@ -265,7 +273,7 @@ class OttomoModelNewsletters extends OttomoModel
             $table->load($id);
             $this->setState('id', $id);
             $table->topics = $this->getNewsletterTopics();
-            $data = JArrayHelper::fromObject($table);
+            $data = ArrayHelper::fromObject($table);
             $data['id'] = null;
             $data['published'] = 0;
             $data['sent'] = null;
@@ -285,8 +293,8 @@ class OttomoModelNewsletters extends OttomoModel
         JLoader::register('OttomoHelperData', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/data.php');
 
         // Get some variables
-        $mainframe = JFactory::getApplication();
-        $params = JComponentHelper::getParams('com_ottomo');
+        $mainframe = Factory::getApplication();
+        $params = ComponentHelper::getParams('com_ottomo');
 
         // Get newsletter
         $newsletter = $this->getRow();
@@ -304,7 +312,7 @@ class OttomoModelNewsletters extends OttomoModel
                 $recipients[] = $recipient;
             }
             if (!count($recipients)) {
-                $this->setError(JText::_('COM_OTTOMO_THERE_ARE_NO_SUBSCRIBERS_FOR_THE_SPECIFIC_NEWSLETTER'));
+                $this->setError(Text::_('COM_OTTOMO_THERE_ARE_NO_SUBSCRIBERS_FOR_THE_SPECIFIC_NEWSLETTER'));
                 return false;
             }
         } else {
@@ -324,7 +332,7 @@ class OttomoModelNewsletters extends OttomoModel
         }
 
         // Get the mailer
-        $mailer = JFactory::getMailer();
+        $mailer = OttomoCompat::mailer();
         $mailerType = ($this->getState('emails') && $this->getState('forcePhpMail'))
             ? 'mail'
             : $params->get('mailer', 'mail');
@@ -413,10 +421,9 @@ class OttomoModelNewsletters extends OttomoModel
         // Send email for services: a plugin returns the recipients it could not send to (id => email) and throws
         // when the whole batch failed (nothing is recorded then, so a resumed send tries the batch again)
         if (!in_array($mailerType, array('mail', 'sendmail', 'smtp'))) {
-            $dispatcher = JDispatcher::getInstance();
-            JPluginHelper::importPlugin('ottomo-providers', $mailerType);
+            PluginHelper::importPlugin('ottomo-providers', $mailerType);
             try {
-                $results = $dispatcher->trigger('send', array(&$mailer, $recipients, $params, $newsletter->topics, (int)$newsletter->id));
+                $results = OttomoCompat::trigger('onOttomoSend', array($mailer, $recipients, $params, $newsletter->topics, (int)$newsletter->id));
             } catch (Exception $e) {
                 $this->setError($e->getMessage());
                 return false;
@@ -441,13 +448,13 @@ class OttomoModelNewsletters extends OttomoModel
         // A campaign batch where nothing could be delivered stops the send (mail server or service down,
         // wrong credentials...) instead of going through every subscriber
         if ($campaign && count($recipients) && count($failed) === count($recipients)) {
-            $this->setError(JText::sprintf('COM_OTTOMO_SEND_BATCH_FAILED', $lastError !== '' ? $lastError : implode(', ', array_slice($failed, 0, 3))));
+            $this->setError(Text::sprintf('COM_OTTOMO_SEND_BATCH_FAILED', $lastError !== '' ? $lastError : implode(', ', array_slice($failed, 0, 3))));
             return false;
         }
 
         // A test send where nothing could be delivered is an error
         if ($this->getState('emails') && count($failed) === count($recipients)) {
-            $this->setError(JText::sprintf('COM_OTTOMO_SEND_TEST_FAILED_FOR', implode(', ', $failed)));
+            $this->setError(Text::sprintf('COM_OTTOMO_SEND_TEST_FAILED_FOR', implode(', ', $failed)));
             return false;
         }
 
@@ -487,10 +494,10 @@ class OttomoModelNewsletters extends OttomoModel
     public function batchSize()
     {
         $limit = max(1, (int)$this->getState('limit'));
-        $mailer = JComponentHelper::getParams('com_ottomo')->get('mailer', 'mail');
+        $mailer = ComponentHelper::getParams('com_ottomo')->get('mailer', 'mail');
         if (!in_array($mailer, array('mail', 'sendmail', 'smtp'), true)) {
-            JPluginHelper::importPlugin('ottomo-providers', $mailer);
-            foreach ((array)JDispatcher::getInstance()->trigger('batchSize', array($limit)) as $size) {
+            PluginHelper::importPlugin('ottomo-providers', $mailer);
+            foreach ((array)OttomoCompat::trigger('onOttomoBatchSize', array($limit)) as $size) {
                 if ((int)$size > 0) {
                     $limit = min($limit, (int)$size);
                 }
@@ -551,7 +558,7 @@ class OttomoModelNewsletters extends OttomoModel
             return;
         }
         $db = $this->getDbo();
-        $now = JFactory::getDate();
+        $now = Factory::getDate();
         $date = $db->quote($now->format('Y-m-d'));
         $time = $db->quote($now->format('H:i:s'));
         $query = $db->getQuery(true)
@@ -588,8 +595,8 @@ class OttomoModelNewsletters extends OttomoModel
         $link = $type == 2 ? substr((string)$this->getState('link'), 0, 2048) : '';
 
         // Validation for front-end
-        $application = JFactory::getApplication();
-        if ($application->isSite()) {
+        $application = Factory::getApplication();
+        if ($application->isClient('site')) {
             // Validate campaign id
             $query = $db->getQuery(true);
             $query->select('*')->from($db->quoteName('#__ottomo_email_campaigns'))->where($db->quoteName('id').' = '.$id)->where($db->quoteName('published').' = 1');
@@ -597,7 +604,7 @@ class OttomoModelNewsletters extends OttomoModel
             $row = $db->loadObject();
             if (!$row) {
                 $this->setState('errorType', 'campaign');
-                $this->setError(JText::_('COM_OTTOMO_INVALID_CAMPAIGN'));
+                $this->setError(Text::_('COM_OTTOMO_INVALID_CAMPAIGN'));
                 return false;
             }
 
@@ -608,7 +615,7 @@ class OttomoModelNewsletters extends OttomoModel
             $row = $db->loadObject();
             if (!$row) {
                 $this->setState('errorType', 'subscriber');
-                $this->setError(JText::_('COM_OTTOMO_INVALID_SUBSCRIBER'));
+                $this->setError(Text::_('COM_OTTOMO_INVALID_SUBSCRIBER'));
                 return false;
             }
 
@@ -622,13 +629,13 @@ class OttomoModelNewsletters extends OttomoModel
             $row = $db->loadObject();
             if ($row) {
                 $this->setState('errorType', 'duplicate');
-                $this->setError(JText::_('COM_OTTOMO_DUPLICATE_TRACKING_DETECTED'));
+                $this->setError(Text::_('COM_OTTOMO_DUPLICATE_TRACKING_DETECTED'));
                 return false;
             }
 
         }
 
-        $jDate = JFactory::getDate();
+        $jDate = Factory::getDate();
         $date = $jDate->format('Y-m-d');
         $time = $jDate->format('H:i:s');
         $query = $db->getQuery(true);

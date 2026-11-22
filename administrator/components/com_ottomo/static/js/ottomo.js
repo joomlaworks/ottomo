@@ -126,9 +126,10 @@
   }
   Ottomo.request = request;
 
-  /** A language string passed with JText::script(). */
+  /** A language string passed with Text::script() (Joomla.Text on Joomla 4+, Joomla.JText on Joomla 3). */
   function text(key, fallback) {
-    var value = window.Joomla && Joomla.JText ? Joomla.JText._(key, fallback) : fallback;
+    var strings = window.Joomla && (Joomla.Text || Joomla.JText);
+    var value = strings ? strings._(key, fallback) : fallback;
     return value || fallback || key;
   }
 
@@ -561,9 +562,7 @@
         return;
       }
       dialog.classList.add('otm-preview-frame');
-      var t = function(key, fallback) {
-        return window.Joomla && Joomla.JText ? Joomla.JText._(key, fallback) : fallback;
-      };
+      var t = text;
       // Toggle groups: the width (desktop / mobile) and the colour scheme the email is shown in (its dark mode)
       var toggles = function(label, choices, onChoose) {
         var group = document.createElement('div');
@@ -649,7 +648,7 @@
     // Markup for a sortable item inside a designer position (same markup as OttomoHelperTemplate, edit mode)
     Ottomo.sortableItem = function(data) {
       var t = function(key, fallback) {
-        return (window.Joomla && Joomla.JText ? Joomla.JText._(key, fallback) : fallback).replace(/"/g, '&quot;');
+        return text(key, fallback).replace(/"/g, '&quot;');
       };
       return '<div class="text-right otm-sortable-item"><div class="text-left otm-position-content">' + data + '</div>' +
         '<button type="button" class="otm-nsl-btn otm-nsl-btn--move otm-sortable-handle" title="' + t('COM_OTTOMO_EDITOR_MOVE', 'Move') + '" aria-label="' + t('COM_OTTOMO_EDITOR_MOVE', 'Move') + '">' + Ottomo.icons.arrowsMove + '</button>' +

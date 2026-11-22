@@ -9,16 +9,21 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Form\Form;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Table\Table;
+
 class OttomoModelSettings extends OttomoModel
 {
     protected $extensionID = null;
 
     public function getForm()
     {
-        $component = JComponentHelper::getComponent('com_ottomo');
+        $component = ComponentHelper::getComponent('com_ottomo');
         $this->extensionID = $component->id;
-        JForm::addFormPath(JPATH_ADMINISTRATOR.'/components/com_ottomo');
-        $form = JForm::getInstance('com_ottomo.settings', 'config', array('control' => 'jform'), false, '/config');
+        Form::addFormPath(JPATH_ADMINISTRATOR.'/components/com_ottomo');
+        $form = Form::getInstance('com_ottomo.settings', 'config', array('control' => 'jform'), false, '/config');
         $form->bind($component->params);
         return $form;
     }
@@ -33,15 +38,15 @@ class OttomoModelSettings extends OttomoModel
         $params = isset($data['params']) && is_array($data['params']) ? $data['params'] : array();
         $option = 'com_ottomo';
 
-        $table = JTable::getInstance('extension');
+        $table = Table::getInstance('extension');
 
         // Save the rules.
         if (isset($params['rules'])) {
             $rules = new JAccessRules((array)$params['rules']);
-            $asset = JTable::getInstance('asset');
+            $asset = Table::getInstance('asset');
 
             if (!$asset->loadByName($option)) {
-                $root = JTable::getInstance('asset');
+                $root = Table::getInstance('asset');
                 $root->loadByName('root.1');
                 $asset->name = $option;
                 $asset->title = $option;
@@ -59,9 +64,9 @@ class OttomoModelSettings extends OttomoModel
         }
 
         // Load the previous Data
-        $component = JComponentHelper::getComponent($option);
+        $component = ComponentHelper::getComponent($option);
         if (!$component->id || !$table->load($component->id) || $table->element !== $option) {
-            $this->setError($table->getError() ?: JText::_('COM_OTTOMO_AN_ERROR_OCCURED'));
+            $this->setError($table->getError() ?: Text::_('COM_OTTOMO_AN_ERROR_OCCURED'));
             return false;
         }
 

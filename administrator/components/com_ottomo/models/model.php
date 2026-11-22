@@ -9,10 +9,13 @@
 
 defined('_JEXEC') or die ;
 
-JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_ottomo/models');
-JTable::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_ottomo/tables');
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Table\Table;
 
-class OttomoModel extends JModelLegacy
+BaseDatabaseModel::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_ottomo/models');
+Table::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_ottomo/tables');
+
+class OttomoModel extends BaseDatabaseModel
 {
     public static function getInstance($type, $prefix = 'OttomoModel', $config = array())
     {

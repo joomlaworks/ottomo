@@ -9,6 +9,8 @@
 
 defined('_JEXEC') or die ;
 
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 /**
  * Batch "Set topics" for selected newsletters or subscribers, shown in a SuperModal frame.
  */
@@ -16,7 +18,7 @@ class OttomoViewBatch extends OttomoView
 {
     public function display($tpl = null)
     {
-        $input = JFactory::getApplication()->input;
+        $input = OttomoCompat::input();
         $this->type = in_array($input->getCmd('type'), array('newsletters', 'subscribers'), true) ? $input->getCmd('type') : 'subscribers';
         $this->ids = array_values(array_filter(array_map('intval', (array)$input->get('cid', array(), 'array'))));
         $this->topics = OttomoHelperHTML::topics('checkboxes', array(), 'topics[]', '', false);

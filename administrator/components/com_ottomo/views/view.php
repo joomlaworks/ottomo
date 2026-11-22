@@ -9,8 +9,21 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Filter\OutputFilter;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\View\HtmlView;
+use Joomla\CMS\Pagination\Pagination;
+use Joomla\CMS\Toolbar\ToolbarHelper;
+use Joomla\CMS\Uri\Uri;
+use Joomla\String\StringHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 #[\AllowDynamicProperties]
-class OttomoView extends JViewLegacy
+class OttomoView extends HtmlView
 {
     protected $regions = null;
 
@@ -32,13 +45,13 @@ class OttomoView extends JViewLegacy
         JLoader::register('OttomoHelperHTML', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/html.php');
 
         // Add common variables to the view
-        $application = JFactory::getApplication();
+        $application = Factory::getApplication();
 
-        $this->option = $application->input->getCmd('option');
-        $this->view = $application->input->getCmd('view', 'dashboard');
-        $this->task = $application->input->getCmd('task');
-        $this->format = $application->input->getCmd('format', 'html');
-        $this->extension = $application->input->getCmd('extension');
+        $this->option = OttomoCompat::input()->getCmd('option');
+        $this->view = OttomoCompat::input()->getCmd('view', 'dashboard');
+        $this->task = OttomoCompat::input()->getCmd('task');
+        $this->format = OttomoCompat::input()->getCmd('format', 'html');
+        $this->extension = OttomoCompat::input()->getCmd('extension');
         $this->prefix = $this->option.'.'.$this->view;
         if ($this->extension) {
             $this->prefix .= '.'.$this->extension;
@@ -51,11 +64,11 @@ class OttomoView extends JViewLegacy
         $this->status = $application->getUserStateFromRequest($this->prefix.'.status', 'status', -1, 'int');
         $this->topic = $application->getUserStateFromRequest($this->prefix.'.topic', 'topic', 0, 'int');
         $this->search = $application->getUserStateFromRequest($this->prefix.'.search', 'search', '', 'string');
-        $this->params = JComponentHelper::getParams($this->option);
-        $this->tmpl = $application->input->getCmd('tmpl', 'index');
-        $this->template = $application->input->getCmd('template');
-        $this->editor = $application->input->getCmd('editor');
-        $this->file = $application->input->get('file');
+        $this->params = ComponentHelper::getParams($this->option);
+        $this->tmpl = OttomoCompat::input()->getCmd('tmpl', 'index');
+        $this->template = OttomoCompat::input()->getCmd('template');
+        $this->editor = OttomoCompat::input()->getCmd('editor');
+        $this->file = OttomoCompat::input()->get('file');
 
         // Add custom template path
         $this->addTemplatePath(JPATH_BASE.'/components/com_ottomo/layouts');
@@ -66,7 +79,7 @@ class OttomoView extends JViewLegacy
     public function display($tpl = null)
     {
         // Get application
-        $application = JFactory::getApplication();
+        $application = Factory::getApplication();
 
         // Add styles
         $this->addStyles();
@@ -81,20 +94,20 @@ class OttomoView extends JViewLegacy
             $this->numOfRows = count($this->rows);
         }
         if (isset($this->row)) {
-            JFilterOutput::objectHTMLSafe($this->row);
+            OutputFilter::objectHTMLSafe($this->row);
         }
 
         // Add pagination
         $this->addPagination();
 
         // Extra tasks only for administration views
-        if ($application->isAdmin() && $this->option == 'com_ottomo') {
+        if ($application->isClient('administrator') && $this->option == 'com_ottomo') {
 
             // Keep alive the session
-            JHtml::_('behavior.keepalive');
+            HTMLHelper::_('behavior.keepalive');
 
             // Auto-set the layout in case it has not be set by the child view or by the URL
-            if ($application->input->getCmd('layout') == '' && $this->getLayout() == 'default') {
+            if (OttomoCompat::input()->getCmd('layout') == '' && $this->getLayout() == 'default') {
                 $layout = (isset($this->rows)) ? 'list' : 'form';
                 $this->setLayout($layout);
             }
@@ -115,7 +128,7 @@ class OttomoView extends JViewLegacy
 
     public function setLayout($name)
     {
-        $layout = JFactory::getApplication()->input->getCmd('layout', $name);
+        $layout = OttomoCompat::input()->getCmd('layout', $name);
         parent::setLayout($layout);
     }
 
@@ -164,64 +177,59 @@ class OttomoView extends JViewLegacy
 
     protected function addStyles()
     {
-        $application = JFactory::getApplication();
-        $document = JFactory::getDocument();
+        $application = Factory::getApplication();
+        $document = OttomoCompat::document();
         if ($document->getType() == 'html') {
-            if ($application->isAdmin()) {
+            if ($application->isClient('administrator')) {
                 // One stylesheet for the backend (the statistics widget adds css/ottomo-graphs.css, shared with the control panel module)
-                $document->addStyleSheet(OttomoHelperHTML::asset(JURI::base(true).'/components/com_ottomo/static/css/ottomo.css'));
-                $document->addStyleSheet(OttomoHelperHTML::asset(JURI::base(true).'/components/com_ottomo/static/js/vendor/supermodal/supermodal.min.css'));
-            } elseif (JFile::exists(JPATH_COMPONENT.'/static/css/style.css')) {
-                $document->addStyleSheet(OttomoHelperHTML::asset(JURI::base(true).'/components/com_ottomo/static/css/style.css'));
+                $document->addStyleSheet(OttomoHelperHTML::asset(Uri::base(true).'/components/com_ottomo/static/css/ottomo.css'));
+                $document->addStyleSheet(OttomoHelperHTML::asset(Uri::base(true).'/components/com_ottomo/static/js/vendor/supermodal/supermodal.min.css'));
+            } elseif (is_file(JPATH_COMPONENT.'/static/css/style.css')) {
+                $document->addStyleSheet(OttomoHelperHTML::asset(Uri::base(true).'/components/com_ottomo/static/css/style.css'));
             }
         }
     }
 
     protected function addScripts()
     {
-        $application = JFactory::getApplication();
-        $document = JFactory::getDocument();
+        $application = Factory::getApplication();
+        $document = OttomoCompat::document();
         if ($document->getType() == 'html') {
-            if ($application->isAdmin()) {
-                $document->addScript(OttomoHelperHTML::asset(JURI::base(true).'/components/com_ottomo/static/js/vendor/supermodal/supermodal.min.js'));
-                JHtml::_('behavior.core');
-                JText::script('JLIB_HTML_PLEASE_MAKE_A_SELECTION_FROM_THE_LIST');
+            if ($application->isClient('administrator')) {
+                $document->addScript(OttomoHelperHTML::asset(Uri::base(true).'/components/com_ottomo/static/js/vendor/supermodal/supermodal.min.js'));
+                HTMLHelper::_('behavior.core');
+                Text::script('JLIB_HTML_PLEASE_MAKE_A_SELECTION_FROM_THE_LIST');
                 foreach (array('SENT_TO_N', 'SEND_FAILED_N', 'CSV_UPLOADING', 'CSV_READY', 'BATCH_SELECT_TOPICS', 'REQUEST_FAILED', 'EDITOR_DEVICE', 'EDITOR_DESKTOP', 'EDITOR_MOBILE', 'EDITOR_SCHEME', 'EDITOR_LIGHT', 'EDITOR_DARK', 'OPEN_IN_NEW_TAB', 'PREFLIGHT_SIZE_NOW', 'PREFLIGHT_SIZE_OVER', 'PREFLIGHT_CHECKING') as $key) {
-                    JText::script('COM_OTTOMO_'.$key); // used by the frames and Ottomo.preview() (js/ottomo.js)
+                    Text::script('COM_OTTOMO_'.$key); // used by the frames and Ottomo.preview() (js/ottomo.js)
                 }
             }
-            if ($application->isAdmin()) {
+            if ($application->isClient('administrator')) {
                 // One script for the backend (vanilla JS): lists, frames, the campaign wizard, the designer, statistics
-                $document->addScript(OttomoHelperHTML::asset(JURI::base(true).'/components/com_ottomo/static/js/ottomo.js'));
+                $document->addScript(OttomoHelperHTML::asset(Uri::base(true).'/components/com_ottomo/static/js/ottomo.js'));
             }
         }
     }
 
     protected function addTitle()
     {
-        if (!class_exists('JToolBarHelper')) {
+        if (!OttomoCompat::isAdmin()) {
             return false;
         }
-        $title = 'COM_OTTOMO_'.JString::strtoupper($this->view);
+        $title = 'COM_OTTOMO_'.StringHelper::strtoupper($this->view);
         if ($this->task == 'edit') {
             $title .= $this->row->id ? '_EDIT' : '_ADD';
         }
-        $this->title = JText::_($title);
-        JToolBarHelper::title($this->title, 'ottomo');
+        $this->title = Text::_($title);
+        ToolbarHelper::title($this->title, 'ottomo');
     }
 
     protected function addButtons()
     {
-        if (!class_exists('JToolBarHelper')) {
-            return false;
-        }
+        require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/classes/toolbar.php';
 
-        require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/classes/buttons/standard.php';
-        require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/classes/buttons/batch.php';
-
-        $headerToolbar = JToolbar::getInstance('header');
-        $subheaderToolbar = JToolbar::getInstance('subheader');
-        $batchToolbar = JToolbar::getInstance('batch');
+        $headerToolbar = new OttomoToolbar();
+        $subheaderToolbar = new OttomoToolbar();
+        $batchToolbar = new OttomoToolbar();
 
         if ($this->task == 'edit') {
             $headerToolbar->appendButton('OttomoStandard', 'save', 'JTOOLBAR_SAVE', $this->view.'.save', false);
@@ -271,15 +279,14 @@ class OttomoView extends JViewLegacy
     protected function addPagination()
     {
         if (isset($this->total)) {
-            jimport('joomla.html.pagination');
-            $this->pagination = new JPagination($this->total, $this->limitstart, $this->limit);
+            $this->pagination = new Pagination($this->total, $this->limitstart, $this->limit);
         }
     }
 
     public function addColumn($name, $property, $ordering = null, $attributes = '')
     {
         $column = new stdClass();
-        $column->heading = is_null($ordering) ? JText::_($name) : JHTML::_('grid.sort', $name, $ordering, $this->orderingDir, $this->ordering);
+        $column->heading = is_null($ordering) ? Text::_($name) : HTMLHelper::_('grid.sort', $name, $ordering, $this->orderingDir, $this->ordering);
         $column->property = $property;
         if (!empty($attributes)) {
             $attributes = ' '.$attributes;
@@ -313,7 +320,7 @@ class OttomoView extends JViewLegacy
     /** This list as if no search or filter had been applied: sorting and page size are kept, so are a picker's own parameters */
     public function resetLink()
     {
-        $uri = JUri::getInstance();
+        $uri = Uri::getInstance();
         $query = $uri->getQuery(true);
         unset($query['task']);
         foreach ($this->allFilterDefaults() as $name => $default) {

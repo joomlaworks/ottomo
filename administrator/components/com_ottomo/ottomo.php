@@ -9,14 +9,17 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\Controller\BaseController;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 // Check component access
-$user = JFactory::getUser();
+$user = OttomoCompat::user();
 if (!$user->authorise('core.manage', 'com_ottomo')) {
-    throw new Exception(JText::_('JLIB_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
+    throw new Exception(Text::_('JLIB_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
 }
 
-jimport('joomla.filesystem.file');
-jimport('joomla.filesystem.folder');
 
 // Add auto load classes
 JLoader::register('OttomoController', JPATH_COMPONENT.'/controller.php');
@@ -24,6 +27,6 @@ JLoader::register('OttomoModel', JPATH_COMPONENT.'/models/model.php');
 JLoader::register('OttomoView', JPATH_COMPONENT.'/views/view.php');
 
 // Bootstrap
-$controller = JControllerLegacy::getInstance('Ottomo');
-$controller->execute(JFactory::getApplication()->input->get('task'));
+$controller = BaseController::getInstance('Ottomo');
+$controller->execute(OttomoCompat::input()->get('task'));
 $controller->redirect();

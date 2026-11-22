@@ -9,6 +9,10 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Plugin\PluginHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoControllerExtension extends OttomoController
 {
     public function getData()
@@ -19,9 +23,8 @@ class OttomoControllerExtension extends OttomoController
         $type = $this->input->getCmd('type');
         $id = $this->input->getInt('id');
         if ($extension) {
-            $dispatcher = JDispatcher::getInstance();
-            JPluginHelper::importPlugin('ottomo-content', $extension);
-            $results = $dispatcher->trigger('ottomoExtensionRow'.ucfirst($type), array($id));
+            PluginHelper::importPlugin('ottomo-content', $extension);
+            $results = OttomoCompat::trigger('onOttomoExtensionRow'.ucfirst($type), array($id));
             if ($type == 'link') {
                 echo implode('', $results);
             } elseif (!empty($results[0])) { // nothing for content this user may not see

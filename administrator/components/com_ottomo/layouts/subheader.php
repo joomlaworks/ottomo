@@ -7,7 +7,9 @@
  * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 
-defined('_JEXEC') or die; ?>
+defined('_JEXEC') or die;
+
+use Joomla\CMS\Language\Text; ?>
 
 <?php
 // Templates list view contains its own subheader with package upload input
@@ -23,17 +25,17 @@ if (!($this->view == 'templates' && $this->task != 'edit')): ?>
     if ($this->view == 'dashboard'): ?>
     <a class="otm-btn otm-btn--icon otm-btn--plus otm-btn--header" href="index.php?option=com_ottomo&amp;view=newsletters&amp;task=edit">
         <?php echo OttomoHelperHTML::icon('plus-lg'); ?>
-        <span><?php echo JText::_('COM_OTTOMO_NEW_CAMPAIGN'); ?></span>
+        <span><?php echo Text::_('COM_OTTOMO_NEW_CAMPAIGN'); ?></span>
     </a>
-    <a class="otm-btn otm-btn--generic otm-btn--header otm-header-secondary" href="index.php?option=com_ottomo&amp;view=import&amp;tmpl=component" data-frame-open data-frame-reload data-frame-title="<?php echo htmlspecialchars(JText::_('COM_OTTOMO_IMPORT'), ENT_QUOTES, 'UTF-8'); ?>">
+    <a class="otm-btn otm-btn--generic otm-btn--header otm-header-secondary" href="index.php?option=com_ottomo&amp;view=import&amp;tmpl=component" data-frame-open data-frame-reload data-frame-title="<?php echo htmlspecialchars(Text::_('COM_OTTOMO_IMPORT'), ENT_QUOTES, 'UTF-8'); ?>">
         <?php echo OttomoHelperHTML::icon('upload'); ?>
-        <span><?php echo JText::_('COM_OTTOMO_IMPORT_SUBSCRIBERS'); ?></span>
+        <span><?php echo Text::_('COM_OTTOMO_IMPORT_SUBSCRIBERS'); ?></span>
     </a>
     <?php if (!empty($this->health)): ?>
     <?php $health = $this->health; $label = array('ok' => 'COM_OTTOMO_HEALTH_OK', 'warning' => 'COM_OTTOMO_HEALTH_WARNING', 'error' => 'COM_OTTOMO_HEALTH_ERROR'); ?>
     <a class="otm-health otm-health--<?php echo $health->level; ?>" href="index.php?option=com_ottomo&amp;view=settings&amp;task=edit" title="<?php echo htmlspecialchars($health->message, ENT_QUOTES, 'UTF-8'); ?>" data-health="<?php echo $health->level; ?>">
         <span class="otm-health__dot" aria-hidden="true"></span>
-        <span><?php echo JText::_($label[$health->level]); ?></span>
+        <span><?php echo Text::_($label[$health->level]); ?></span>
         <span class="visually-hidden">: <?php echo htmlspecialchars($health->message, ENT_QUOTES, 'UTF-8'); ?></span>
     </a>
     <?php endif; ?>
@@ -73,7 +75,7 @@ if (!($this->view == 'templates' && $this->task != 'edit')): ?>
             </div>
             <?php endforeach; ?>
             <?php if ($this->filtersActive()): ?>
-            <a class="otm-filters__reset" href="<?php echo $this->resetLink(); ?>" data-role="reset-filters"><?php echo OttomoHelperHTML::icon('x-lg'); ?><span><?php echo JText::_('COM_OTTOMO_RESET_FILTERS'); ?></span></a>
+            <a class="otm-filters__reset" href="<?php echo $this->resetLink(); ?>" data-role="reset-filters"><?php echo OttomoHelperHTML::icon('x-lg'); ?><span><?php echo Text::_('COM_OTTOMO_RESET_FILTERS'); ?></span></a>
             <?php endif; ?>
         </div>
     </div>

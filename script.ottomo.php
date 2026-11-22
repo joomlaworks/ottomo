@@ -9,20 +9,47 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Installer\Installer;
+use Joomla\CMS\Version;
+use Joomla\Filesystem\Folder;
+
+/**
+ * The package's installer script, the same for Joomla 3.x UTD and Joomla 4/5/6 (self-contained: on a first install
+ * none of Ottomo's files are on the site yet when it runs).
+ */
 class Com_OttomoInstallerScript
 {
+    /** Requirements: PHP 7.1 and Joomla 3.10 (Joomla 3.x UTD) or newer. */
+    public function preflight($type, $parent)
+    {
+        if ($type === 'uninstall') {
+            return true;
+        }
+        if (version_compare(PHP_VERSION, '7.1', 'lt')) {
+            Factory::getApplication()->enqueueMessage(sprintf('Ottomo requires PHP 7.1 or newer (this site runs PHP %s).', PHP_VERSION), 'error');
+            return false;
+        }
+        $version = new Version();
+        if (!$version->isCompatible('3.10')) {
+            Factory::getApplication()->enqueueMessage(sprintf('Ottomo requires Joomla 3.x UTD (or Joomla 3.10), 4, 5 or 6 (this site runs Joomla %s).', JVERSION), 'error');
+            return false;
+        }
+        return true;
+    }
+
     public function postflight($type, $parent)
     {
-        // Load language
-        $language = JFactory::getLanguage();
-        $language->load('com_ottomo');
+        if ($type === 'uninstall') {
+            return true; // Joomla 4+ runs postflight after an uninstall too
+        }
 
-        // Get database
-        $db = JFactory::getDbo();
+        $db = $this->db();
+        $modern = $this->isModern();
 
         // Get manifest
         $src = $parent->getParent()->getPath('source');
-        $manifest = $parent->getParent()->manifest;
+        $manifest = $this->manifest($parent);
 
         // Install plugins
         $plugins = $manifest->xpath('plugins/plugin');
@@ -33,6 +60,11 @@ class Com_OttomoInstallerScript
             $group = (string)$plugin->attributes()->group;
             $path = $src.'/plugins/'.$group.'/'.$name;
 
+            // K2 exists for Joomla 3 only
+            if ($group === 'ottomo-content' && $name === 'k2' && $modern) {
+                continue;
+            }
+
             // Already on the site? (an update keeps the state the site chose)
             $query = $db->getQuery(true);
             $query->select('COUNT(*)')->from($db->quoteName('#__extensions'))->where($db->quoteName('type').' = '.$db->quote('plugin'))->where($db->quoteName('element').' = '.$db->quote($name))->where($db->quoteName('folder').' = '.$db->quote($group));
@@ -40,7 +72,7 @@ class Com_OttomoInstallerScript
             $existed = (int)$db->loadResult() > 0;
 
             // Install
-            $installer = new JInstaller();
+            $installer = $this->installer($db);
             $result = $installer->install($path);
 
             // Enable the plugin when it is new to the site (a fresh installation, or a plugin added by an update)
@@ -68,7 +100,7 @@ class Com_OttomoInstallerScript
             $path = ($client == 'administrator') ? $src.'/administrator/modules/'.$name : $src.'/modules/'.$name;
 
             // Install
-            $installer = new JInstaller();
+            $installer = $this->installer($db);
             $result = $installer->install($path);
 
             // Publish the administrator modules. Only for fresh installations, not updates!
@@ -101,15 +133,15 @@ class Com_OttomoInstallerScript
             }
         }
 
-        // Install templates
+        // Register the built-in email templates (their files came with the component)
+        require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
         require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/models/model.php';
-        JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_ottomo/models');
-        $model = JModelLegacy::getInstance('Templates', 'OttomoModel');
-        $templates = JFolder::folders($src.'/components/com_ottomo/templates');
-        foreach ($templates as $template) {
+        require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/models/templates.php';
+        $model = new OttomoModelTemplates();
+        foreach (Folder::folders($src.'/components/com_ottomo/templates') as $template) {
             $model->setState('source', 'path');
-            $model->setState('folder', $src.'/components/com_ottomo/templates/'.$template);
-            $model->install();
+            $model->setState('folder', JPATH_SITE.'/components/com_ottomo/templates/'.$template);
+            $model->install(true);
         }
 
         // Tasks for fresh installations
@@ -133,16 +165,8 @@ class Com_OttomoInstallerScript
 
     public function uninstall($parent)
     {
-
-        // Load language
-        $language = JFactory::getLanguage();
-        $language->load('com_ottomo');
-
-        // Get database
-        $db = JFactory::getDBO();
-
-        // Get manifest
-        $manifest = $parent->getParent()->manifest;
+        $db = $this->db();
+        $manifest = $this->manifest($parent);
 
         // Uninstall plugins
         $plugins = $manifest->xpath('plugins/plugin');
@@ -158,7 +182,7 @@ class Com_OttomoInstallerScript
             $id = $db->loadResult();
             if ($id) {
                 // Uninstall
-                $installer = new JInstaller();
+                $installer = $this->installer($db);
                 $result = $installer->uninstall('plugin', $id);
             }
 
@@ -181,11 +205,43 @@ class Com_OttomoInstallerScript
             if (count($instances)) {
                 foreach ($instances as $id) {
                     // Unistall module instance
-                    $installer = new JInstaller();
+                    $installer = $this->installer($db);
                     $result = $installer->uninstall('module', $id);
                 }
             }
         }
     }
 
+    private function manifest($parent)
+    {
+        return method_exists($parent, 'getManifest') ? $parent->getManifest() : $parent->getParent()->manifest;
+    }
+
+    private function isModern()
+    {
+        $version = new Version();
+        return $version->isCompatible('4.0');
+    }
+
+    private function db()
+    {
+        if (method_exists('Joomla\\CMS\\Factory', 'getContainer') && interface_exists('Joomla\\Database\\DatabaseInterface')) {
+            try {
+                return Factory::getContainer()->get('Joomla\\Database\\DatabaseInterface');
+            } catch (\Throwable $e) {
+                // below
+            }
+        }
+        return Factory::getDbo();
+    }
+
+    /** A separate installer for each bundled extension (the package's own installer is busy). */
+    private function installer($db)
+    {
+        $installer = new Installer();
+        if (method_exists($installer, 'setDatabase')) {
+            $installer->setDatabase($db);
+        }
+        return $installer;
+    }
 }

@@ -9,24 +9,28 @@
 
 defined('_JEXEC') or die ;
 
-jimport('joomla.form.formfield');
+use Joomla\CMS\Form\FormField;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\Filesystem\Folder;
 
-class JFormFieldTemplate extends JFormField
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
+
+class JFormFieldTemplate extends FormField
 {
     public $type = 'template';
 
     public function getInput()
     {
-        jimport('joomla.filesystem.folder');
         $moduleTemplatesPath = JPATH_SITE.'/modules/mod_ottomo/tmpl';
-        $moduleTemplatesFolders = JFolder::folders($moduleTemplatesPath);
-        $db = JFactory::getDBO();
+        $moduleTemplatesFolders = Folder::folders($moduleTemplatesPath);
+        $db = OttomoCompat::db();
         $query = "SELECT template FROM #__template_styles WHERE client_id = 0 AND home = 1";
         $db->setQuery($query);
         $template = $db->loadResult();
         $templatePath = JPATH_SITE.'/templates/'.$template.'/html/mod_ottomo';
-        if (JFolder::exists($templatePath)) {
-            $templateFolders = JFolder::folders($templatePath);
+        if (is_dir($templatePath)) {
+            $templateFolders = Folder::folders($templatePath);
             $folders = @array_merge($templateFolders, $moduleTemplatesFolders);
             $folders = @array_unique($folders);
         } else {
@@ -35,9 +39,9 @@ class JFormFieldTemplate extends JFormField
         sort($folders);
         $options = array();
         foreach ($folders as $folder) {
-            $options[] = JHTML::_('select.option', $folder, ucfirst(str_replace(array('-', '_'), ' ', $folder))); // "section" -> "Section"
+            $options[] = HTMLHelper::_('select.option', $folder, ucfirst(str_replace(array('-', '_'), ' ', $folder))); // "section" -> "Section"
         }
-        return JHTML::_('select.genericlist', $options, $this->name, '', 'value', 'text', $this->value);
+        return HTMLHelper::_('select.genericlist', $options, $this->name, '', 'value', 'text', $this->value);
     }
 
 }

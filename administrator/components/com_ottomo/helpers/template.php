@@ -8,6 +8,18 @@
  */
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Uri\Uri;
+use Joomla\Filesystem\Folder;
+use Joomla\String\StringHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 JLoader::register('OttomoHelperHTML', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/html.php');
 JLoader::register('OttomoHelperData', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/data.php');
 
@@ -28,15 +40,14 @@ class OttomoHelperTemplate
         self::$tracking = $tracking;
 
         // Import filesystem classes
-        jimport('joomla.filesystem.file');
 
         // Load language file
-        $siteLanguage = JComponentHelper::getParams('com_languages')->get('site');
-        $language = JFactory::getLanguage();
+        $siteLanguage = ComponentHelper::getParams('com_languages')->get('site');
+        $language = OttomoCompat::language();
         $language->load('com_ottomo', JPATH_SITE.'/components/com_ottomo', $siteLanguage);
 
         // Get date
-        $date = JFactory::getDate();
+        $date = Factory::getDate();
 
         // Determine paths
         self::setPaths($newsletter->template);
@@ -44,38 +55,22 @@ class OttomoHelperTemplate
         // Sample data
         self::loadSampleData();
 
-        // Get document
-        $document = JDocument::getInstance('html');
-
-        // Empty head data
-        $head = $document->getHeadData();
-        foreach ($head as $key => $data) {
-            $head[$key] = (is_array($data)) ? array() : '';
-        }
-        $head = $document->setHeadData($head);
-
-        // Set title
-        $document->setTitle($newsletter->subject);
-
-        // Set base
-        $document->setBase(self::$base);
-
-        // Set generator
-        $document->setGenerator('JoomlaWorks Ottomo Newsletter Component for Joomla');
-
         // Set the mode
         self::$mode = $mode;
 
-        // Add needed files to head
+        // The head: title, base and, in the designer, its editing styles (they never reach the email)
+        $head = '<title>'.htmlspecialchars((string)$newsletter->subject, ENT_QUOTES, 'UTF-8').'</title>'."\n"
+            .'<base href="'.htmlspecialchars(self::$base, ENT_QUOTES, 'UTF-8').'" />'."\n"
+            .'<meta name="generator" content="Ottomo" />';
         if (self::$mode == 'edit') {
-            // Styles
             JLoader::register('OttomoHelperHTML', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/html.php');
-            $document->addStyleSheet(OttomoHelperHTML::asset(JURI::base(true).'/components/com_ottomo/static/css/designer.css'));
+            $head .= "\n".'<link href="'.htmlspecialchars(OttomoHelperHTML::asset(Uri::base(true).'/components/com_ottomo/static/css/designer.css'), ENT_QUOTES, 'UTF-8').'" rel="stylesheet" />';
         }
 
-        // Set the buffer
-        $params = array('template' => self::$folder, 'file' => 'default.php', 'directory' => self::$directory);
-        $buffer = $document->render(false, $params);
+        // The template's default.php (no Joomla document: the same on Joomla 3 and 4+, and nothing of the admin page
+        // leaks into the email); <jdoc:include type="head" /> is where the head goes
+        $buffer = self::includeFile(self::$directory.'/'.self::$folder.'/default.php');
+        $buffer = preg_replace('#<jdoc:include\s+type="head"\s*/?>#i', $head, $buffer);
 
         // Set the search and replacements arrays. Common replacements first.
         $patterns = array();
@@ -87,7 +82,7 @@ class OttomoHelperTemplate
 
         // Site URL
         $patterns[] = '{{site}}';
-        $replacements[] = JURI::root();
+        $replacements[] = Uri::root();
 
         // Date
         $patterns[] = '{{date}}';
@@ -128,7 +123,7 @@ class OttomoHelperTemplate
         $patterns[] = '{{subscribe}}';
         JLoader::register('OttomoHelperSettings', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/settings.php');
         $subscribePage = trim((string)OttomoHelperSettings::get('subscribePage'));
-        $replacements[] = htmlspecialchars($subscribePage !== '' ? $subscribePage : JURI::root(), ENT_QUOTES, 'UTF-8');
+        $replacements[] = htmlspecialchars($subscribePage !== '' ? $subscribePage : Uri::root(), ENT_QUOTES, 'UTF-8');
 
         // Newsletter topics
         $patterns[] = '{{topic_ids}}';
@@ -137,14 +132,13 @@ class OttomoHelperTemplate
         // Edit mode
         if (self::$mode == 'edit') {
             // Get extension buttons
-            $dispatcher = JDispatcher::getInstance();
-            JPluginHelper::importPlugin('ottomo-content');
-            $buttons = $dispatcher->trigger('ottomoExtensionEditorButton');
+            PluginHelper::importPlugin('ottomo-content');
+            $buttons = OttomoCompat::trigger('onOttomoExtensionEditorButton');
             $buttons = array_filter($buttons);
 
             // Labels of the block controls
-            $moveLabel = htmlspecialchars(JText::_('COM_OTTOMO_EDITOR_MOVE'), ENT_QUOTES, 'UTF-8');
-            $removeLabel = htmlspecialchars(JText::_('COM_OTTOMO_EDITOR_REMOVE_BLOCK'), ENT_QUOTES, 'UTF-8');
+            $moveLabel = htmlspecialchars(Text::_('COM_OTTOMO_EDITOR_MOVE'), ENT_QUOTES, 'UTF-8');
+            $removeLabel = htmlspecialchars(Text::_('COM_OTTOMO_EDITOR_REMOVE_BLOCK'), ENT_QUOTES, 'UTF-8');
 
             // Match all the positions
             preg_match_all('#\{\{position:([a-z0-9_]+):(text|html)\}\}#i', $buffer, $matches);
@@ -174,17 +168,17 @@ class OttomoHelperTemplate
                         $class .= ' otm-sample-data';
                     }
 
-                    $replacement = '<div class="'.$class.'"><ul class="otm-extension-menu extension-count'.count($buttons).'"><li><span class="otm-nsl-btn"><a class="otm-extension-menu-add-button">'.OttomoHelperHTML::icon('plus-circle').'<span class="visually-hidden">'.JText::_('COM_OTTOMO_ADD').'</span></a></span><ul>';
+                    $replacement = '<div class="'.$class.'"><ul class="otm-extension-menu extension-count'.count($buttons).'"><li><span class="otm-nsl-btn"><a class="otm-extension-menu-add-button">'.OttomoHelperHTML::icon('plus-circle').'<span class="visually-hidden">'.Text::_('COM_OTTOMO_ADD').'</span></a></span><ul>';
 
                     // Add the custom content button
-                    $replacement .= '<li><a class="otm-custom-content-button" data-target="'.$name.'" href="#"> <img src="'.JURI::root(true).'/administrator/components/com_ottomo/static/images/html.svg" width="32" height="32" alt="" /> <span class="link">HTML</span></a></li>';
+                    $replacement .= '<li><a class="otm-custom-content-button" data-target="'.$name.'" href="#"> <img src="'.Uri::root(true).'/administrator/components/com_ottomo/static/images/html.svg" width="32" height="32" alt="" /> <span class="link">HTML</span></a></li>';
 
                     // Add the extension buttons to position
                     if (count($buttons)) {
                         foreach ($buttons as $button) {
                             $class = 'otm-modal-'.strtolower($button->extension);
-                            $link = isset($button->link) ? $button->link.'&fieldid='.$name : JURI::base(true).'/index.php?option=com_ottomo&view=extension&extension='.$button->extension.'&editor='.$name.'&template='.$newsletter->template.'&tmpl=component';
-                            $replacement .= '<li><a class="otm-extension-button otm-modal '.$class.'" href="'.$link.'"> <img src="'.JURI::root(true).'/plugins/ottomo-content/'.$button->extension.'/icon.svg" width="32" height="32" alt="" /> <span class="link">'.$button->label.'</span></a></li>';
+                            $link = isset($button->link) ? $button->link.'&fieldid='.$name : Uri::base(true).'/index.php?option=com_ottomo&view=extension&extension='.$button->extension.'&editor='.$name.'&template='.$newsletter->template.'&tmpl=component';
+                            $replacement .= '<li><a class="otm-extension-button otm-modal '.$class.'" href="'.$link.'"> <img src="'.Uri::root(true).'/plugins/ottomo-content/'.$button->extension.'/icon.svg" width="32" height="32" alt="" /> <span class="link">'.$button->label.'</span></a></li>';
                         }
                     }
                     $replacement .= '</ul></li></ul><div id="'.$name.'" class="otm-extensions-data otm-sortable">';
@@ -295,8 +289,8 @@ class OttomoHelperTemplate
 
             // In send mode add the open tracking image
             if (self::$mode == 'send' && self::$tracking) {
-                $trackingImage = '<img style="width: 1px; height: 1px; border: none;" src="'.self::route('index.php?option=com_ottomo&task=newsletters.track&id={{campaign_id}}&subscriber={{subscriber_id}}&type=3&hash={{subscriber_hash}}&format=raw').'" alt="'.JText::_('COM_OTTOMO_TRACKING_IMAGE').'" />';
-                $buffer = JString::str_ireplace('</body>', $trackingImage.'</body>', $buffer);
+                $trackingImage = '<img style="width: 1px; height: 1px; border: none;" src="'.self::route('index.php?option=com_ottomo&task=newsletters.track&id={{campaign_id}}&subscriber={{subscriber_id}}&type=3&hash={{subscriber_hash}}&format=raw').'" alt="'.Text::_('COM_OTTOMO_TRACKING_IMAGE').'" />';
+                $buffer = StringHelper::str_ireplace('</body>', $trackingImage.'</body>', $buffer);
             }
         }
 
@@ -314,7 +308,7 @@ class OttomoHelperTemplate
 
         // Perform all the replacements
         foreach ($patterns as $key => $pattern) {
-            $buffer = JString::str_ireplace($pattern, $replacements[$key], $buffer);
+            $buffer = StringHelper::str_ireplace($pattern, $replacements[$key], $buffer);
         }
 
         // Click tracking for external links (template and content alike), now that every placeholder is filled
@@ -333,6 +327,17 @@ class OttomoHelperTemplate
 
         // Return the buffer
         return $buffer;
+    }
+
+    /** A template file's output (included in its own scope). */
+    protected static function includeFile($file)
+    {
+        if (!is_file($file)) {
+            return '';
+        }
+        ob_start();
+        include $file;
+        return (string)ob_get_clean();
     }
 
     /** Gmail clips emails whose HTML is larger than this (bytes); the pre-flight checklist warns above it. */
@@ -415,7 +420,7 @@ class OttomoHelperTemplate
     public static function uniqueEnding($html, $newsletterId)
     {
         $marker = '<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:transparent;mso-hide:all;" aria-hidden="true">'
-            .(int)$newsletterId.'.'.JFactory::getDate()->format('YmdHis').'</div>';
+            .(int)$newsletterId.'.'.Factory::getDate()->format('YmdHis').'</div>';
         $count = 0;
         $html = preg_replace('#</body>#i', $marker.'</body>', $html, 1, $count);
         return $count ? $html : $html.$marker;
@@ -423,7 +428,7 @@ class OttomoHelperTemplate
 
     public static function loadSampleData()
     {
-        if (JFile::exists(self::$directory.'/'.self::$folder.'/sampleData.ini')) {
+        if (is_file(self::$directory.'/'.self::$folder.'/sampleData.ini')) {
             self::$sampleData = parse_ini_file(self::$directory.'/'.self::$folder.'/sampleData.ini');
         }
     }
@@ -441,7 +446,7 @@ class OttomoHelperTemplate
             if (is_array(self::$sampleData) && isset(self::$sampleData[$name])) {
                 $value = '<div contenteditable="true">'.self::$sampleData[$name].'</div>';
                 // Resolved here: positions are filled in after the placeholders, and sample content may be saved as is
-                $value = str_replace(array('{{base}}', '{{site}}'), array(self::$base, JURI::root()), $value);
+                $value = str_replace(array('{{base}}', '{{site}}'), array(self::$base, Uri::root()), $value);
                 self::$sampleDataIndex[$name] = true;
             }
         }
@@ -457,8 +462,8 @@ class OttomoHelperTemplate
         // Render
         $buffer = '';
         $path = self::$directory.'/'.self::$folder.'/extensions';
-        $layout = JString::strtolower($extension).'.php';
-        if (JFile::exists($path.'/'.$layout)) {
+        $layout = StringHelper::strtolower($extension).'.php';
+        if (is_file($path.'/'.$layout)) {
             ob_start();
             include $path.'/'.$layout;
             $buffer = ob_get_clean();
@@ -475,8 +480,8 @@ class OttomoHelperTemplate
         if ($own !== '') {
             return nl2br(htmlspecialchars($own, ENT_QUOTES, 'UTF-8'));
         }
-        JFactory::getLanguage()->load('com_ottomo', JPATH_SITE.'/components/com_ottomo');
-        return JText::sprintf('COM_OTTOMO_TMPL_WHY', '{{topics}}', '{{sitename}}');
+        OttomoCompat::language()->load('com_ottomo', JPATH_SITE.'/components/com_ottomo');
+        return Text::sprintf('COM_OTTOMO_TMPL_WHY', '{{topics}}', '{{sitename}}');
     }
 
     /** The site's default template (client 0), e.g. "cassiopeia"; '' when none */
@@ -484,7 +489,7 @@ class OttomoHelperTemplate
     {
         static $template = null;
         if ($template === null) {
-            $db = JFactory::getDbo();
+            $db = OttomoCompat::db();
             $query = $db->getQuery(true)
                 ->select($db->quoteName('s.template'))
                 ->from($db->quoteName('#__template_styles', 's'))
@@ -527,21 +532,19 @@ class OttomoHelperTemplate
 
     public static function setPaths($templateId)
     {
-        $model = JModelLegacy::getInstance('Templates', 'OttomoModel');
+        $model = BaseDatabaseModel::getInstance('Templates', 'OttomoModel');
         $template = $model->getTable();
         $template->load($templateId);
         if (!$template->id) {
-            JError::raiseError(404, JText::_('COM_OTTOMO_TEMPLATE_NOT_FOUND'));
-
-            return false;
+            throw new Exception(Text::_('COM_OTTOMO_TEMPLATE_NOT_FOUND'), 404);
         }
         self::$folder = $template->folder;
         $location = self::location($template->folder);
         if (is_file($location->path.'/default.php')) {
             self::$directory = dirname($location->path);
-            self::$base = JURI::root().$location->rel.'/';
+            self::$base = Uri::root().$location->rel.'/';
         } else {
-            JError::raiseError(404, JText::_('COM_OTTOMO_TEMPLATE_NOT_FOUND'));
+            throw new Exception(Text::_('COM_OTTOMO_TEMPLATE_NOT_FOUND'), 404);
         }
     }
 
@@ -553,11 +556,9 @@ class OttomoHelperTemplate
 
     public static function route($url)
     {
-        $application = JApplication::getInstance('site');
-        $router = $application->getRouter();
-        $uri = $router->build($url);
+        $uri = OttomoCompat::siteRouter()->build($url);
         $result = $uri->toString();
-        $result = str_replace(JURI::base(true).'/', JURI::root(false), $result);
+        $result = str_replace(Uri::base(true).'/', Uri::root(false), $result);
         $result = preg_replace('/\s/u', '%20', $result);
         $result = htmlspecialchars($result);
 
@@ -575,12 +576,12 @@ class OttomoHelperTemplate
         $ids = array_values(array_filter(array_map('intval', (array)$ids)));
         $names = array();
         if (count($ids)) {
-            $db = JFactory::getDbo();
+            $db = OttomoCompat::db();
             $query = $db->getQuery(true)->select($db->quoteName('name'))->from($db->quoteName('#__ottomo_topics'))
                 ->where($db->quoteName('id').' IN ('.implode(',', $ids).')')->order($db->quoteName('name'));
             $names = (array)$db->setQuery($query)->loadColumn();
         }
-        $text = count($names) ? implode(', ', $names) : JText::_('COM_OTTOMO_TMPL_OUR_NEWSLETTER');
+        $text = count($names) ? implode(', ', $names) : Text::_('COM_OTTOMO_TMPL_OUR_NEWSLETTER');
         return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
     }
 
@@ -607,7 +608,7 @@ class OttomoHelperTemplate
     {
         $url = $matches[1];
         $route = self::route('index.php?'.$url);
-        $route = JString::str_ireplace('&amp;', '&', $route);
+        $route = StringHelper::str_ireplace('&amp;', '&', $route);
         if (self::$tracking) {
             $route = strtr(base64_encode($route), '+/=', '-_,');
             $link = self::route('index.php?option=com_ottomo&task=newsletters.track&id={{campaign_id}}&subscriber={{subscriber_id}}&type=2&hash={{subscriber_hash}}&redirect='.$route.'&format=raw');
@@ -622,20 +623,20 @@ class OttomoHelperTemplate
     {
         $source = self::location($template->folder)->path;
         $files = array();
-        if ($template->folder && JFolder::exists($source)) {
-            $list = JFolder::files($source, '.php', true, true);
+        if ($template->folder && is_dir($source)) {
+            $list = Folder::files($source, '.php', true, true);
             foreach ($list as $entry) {
                 $row = new stdClass();
                 $row->name = basename($entry);
                 $row->path = str_replace($source.'/', '', $entry);
-                $row->link = JRoute::_('index.php?option=com_ottomo&view=files&task=edit&template='.$template->id.'&file='.base64_encode($row->path));
+                $row->link = Route::_('index.php?option=com_ottomo&view=files&task=edit&template='.$template->id.'&file='.base64_encode($row->path));
                 $files[] = $row;
             }
 
             return $files;
         } else {
-            $application = JFactory::getApplication();
-            $application->enqueueMessage(JText::_('COM_OTTOMO_AN_ERROR_OCCURED'), 'error');
+            $application = Factory::getApplication();
+            $application->enqueueMessage(Text::_('COM_OTTOMO_AN_ERROR_OCCURED'), 'error');
             $application->redirect('index.php?option=com_ottomo&view=templates');
         }
     }
@@ -649,9 +650,9 @@ class OttomoHelperTemplate
         $response->contents = '';
         $source = self::location($template->folder)->path;
         if ($response->path) {
-            if (!JFile::exists($source.'/'.$response->path)) {
-                $application = JFactory::getApplication();
-                $application->enqueueMessage(JText::_('COM_OTTOMO_AN_ERROR_OCCURED'), 'error');
+            if (!is_file($source.'/'.$response->path)) {
+                $application = Factory::getApplication();
+                $application->enqueueMessage(Text::_('COM_OTTOMO_AN_ERROR_OCCURED'), 'error');
                 $application->redirect('index.php?option=com_ottomo&view=templates');
             }
             $response->contents = htmlspecialchars(file_get_contents($source.'/'.$response->path));
@@ -706,7 +707,7 @@ class OttomoHelperTemplate
             $html .= '<div>'.nl2br(htmlspecialchars($address, ENT_QUOTES, 'UTF-8')).'</div>';
         }
         if (!$hasUnsubscribe) {
-            $html .= '<div style="margin-top:6px;"><a href="{{unsubscribe}}" style="'.$style.'text-decoration:underline;">'.JText::_('COM_OTTOMO_FOOTER_UNSUBSCRIBE').'</a></div>';
+            $html .= '<div style="margin-top:6px;"><a href="{{unsubscribe}}" style="'.$style.'text-decoration:underline;">'.Text::_('COM_OTTOMO_FOOTER_UNSUBSCRIBE').'</a></div>';
         }
         $html .= '</div>';
         $count = 0;

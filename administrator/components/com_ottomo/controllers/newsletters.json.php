@@ -9,12 +9,20 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\Session\Session;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoControllerNewsletters extends OttomoController
 {
     public function send()
     {
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
-        $params = JComponentHelper::getParams('com_ottomo');
+        Session::checkToken() or jexit(Text::_('JINVALID_TOKEN'));
+        $params = ComponentHelper::getParams('com_ottomo');
         $model = OttomoModel::getInstance('Newsletters');
         $model->setState('id', $this->input->getInt('id'));
         $limit = max(1, (int)$params->get('limit', 50));
@@ -57,7 +65,7 @@ class OttomoControllerNewsletters extends OttomoController
         $range = $this->input->getInt('range');
         $topicId = $this->input->getInt('topicId');
         if ($range) {
-            $date = JFactory::getDate();
+            $date = Factory::getDate();
             if ($range == 1) {
                 $startDate = $date->format('Y-m-d');
             } else {
@@ -80,7 +88,7 @@ class OttomoControllerNewsletters extends OttomoController
             if ($topicId) {
                 $model->setState('topic', $topicId);
             }
-            $model->setState('ordering', JFactory::getDbo()->quoteName('date'));
+            $model->setState('ordering', OttomoCompat::db()->quoteName('date'));
             $model->setState('orderingDir', 'ASC');
             $model->setState('type', 1);
             $sent = $model->getStatistics();
@@ -94,7 +102,7 @@ class OttomoControllerNewsletters extends OttomoController
                 $endDate = $startDate;
             }
 
-            $columns = array(JText::_('COM_OTTOMO_DATE'), JText::_('COM_OTTOMO_REQUESTS'), JText::_('COM_OTTOMO_OPENED'), JText::_('COM_OTTOMO_CLICKED'));
+            $columns = array(Text::_('COM_OTTOMO_DATE'), Text::_('COM_OTTOMO_REQUESTS'), Text::_('COM_OTTOMO_OPENED'), Text::_('COM_OTTOMO_CLICKED'));
             $properties = array('sent', 'opens', 'clicks');
             $colors = array('#b8b8b8', '#00aced', '#33b6b2');
 
@@ -155,16 +163,15 @@ class OttomoControllerNewsletters extends OttomoController
             $data = $object;
 
         } else {
-            $dispatcher = JDispatcher::getInstance();
-            JPluginHelper::importPlugin('ottomo-providers', $source);
+            PluginHelper::importPlugin('ottomo-providers', $source);
             if (!isset($endDate)) {
                 $endDate = $startDate;
             }
             try {
-                $results = $dispatcher->trigger('statistics', array($startDate, $endDate, $topicId));
+                $results = OttomoCompat::trigger('onOttomoStatistics', array($startDate, $endDate, $topicId));
                 $data = $results[0];
             } catch (Exception $e) {
-                JResponse::setHeader('Status', $e->getCode());
+                Factory::getApplication()->setHeader('Status', $e->getCode());
                 $data = $e->getMessage();
             }
         }

@@ -9,6 +9,8 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Factory;
+
 /**
  * Kunena's forum members (Kunena 5.x for Joomla 3): the Joomla accounts with a forum profile
  * (#__kunena_users), which can sign in and aren't banned from the forum.
@@ -62,7 +64,7 @@ class OttomoImporterKunena extends OttomoImporter
     protected function membersQuery()
     {
         $db = $this->db;
-        $now = $db->quote(JFactory::getDate()->toSql());
+        $now = $db->quote(Factory::getDate()->toSql());
         return $db->getQuery(true)
             ->from($db->quoteName('#__kunena_users', 'k'))
             ->join('INNER', $db->quoteName('#__users', 'u').' ON '.$db->quoteName('u.id').' = '.$db->quoteName('k.userid'))

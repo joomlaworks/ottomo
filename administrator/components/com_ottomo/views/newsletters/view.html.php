@@ -9,6 +9,16 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Filter\OutputFilter;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Mail\MailHelper;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\Uri\Uri;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoViewNewsletters extends OttomoView
 {
     public function display($tpl = null)
@@ -22,7 +32,7 @@ class OttomoViewNewsletters extends OttomoView
         $model->setState('published', $this->published);
         $model->setState('topic', $this->topic);
         $model->setState('search', $this->search);
-        $this->templateFilter = JFactory::getApplication()->getUserStateFromRequest($this->prefix.'.filter_template', 'filter_template', 0, 'int');
+        $this->templateFilter = Factory::getApplication()->getUserStateFromRequest($this->prefix.'.filter_template', 'filter_template', 0, 'int');
         $model->setState('filterTemplate', $this->templateFilter);
         $this->rows = $model->getList();
 
@@ -53,11 +63,11 @@ class OttomoViewNewsletters extends OttomoView
         $this->addFilter($searchFilter);
 
         $stateFilter = OttomoHelperHTML::state($this->published, 'published', '', true, 'COM_OTTOMO_SENT', 'COM_OTTOMO_NOT_SENT');
-        $this->addFilter($stateFilter, JText::_('COM_OTTOMO_STATE'));
+        $this->addFilter($stateFilter, Text::_('COM_OTTOMO_STATE'));
 
         $topicFilter = OttomoHelperHTML::topics('list', $this->topic);
-        $this->addFilter($topicFilter, JText::_('COM_OTTOMO_TOPIC'));
-        $this->addFilter(OttomoHelperHTML::templates($this->templateFilter), JText::_('COM_OTTOMO_TEMPLATE'));
+        $this->addFilter($topicFilter, Text::_('COM_OTTOMO_TOPIC'));
+        $this->addFilter(OttomoHelperHTML::templates($this->templateFilter), Text::_('COM_OTTOMO_TEMPLATE'));
 
         // Add batch operations fields
         $this->batchTopics = OttomoHelperHTML::topics('list', null, 'topics[]', 'multiple="multiple" size="10"', false);
@@ -70,21 +80,21 @@ class OttomoViewNewsletters extends OttomoView
     public function edit($tpl = null)
     {
         // Load scripts
-        $document = JFactory::getDocument();
+        $document = OttomoCompat::document();
         $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/ace/1.45.2/ace.js');
         foreach (array('PREFLIGHT_BLOCKED', 'PREFLIGHT_WARNINGS', 'PREFLIGHT_READY', 'PREHEADER_COUNT', 'STEP_COMPLETE') as $key) {
-            JText::script('COM_OTTOMO_'.$key);
+            Text::script('COM_OTTOMO_'.$key);
         }
-        JText::script('COM_OTTOMO_EDITOR_MOVE');
-        JText::script('COM_OTTOMO_EDITOR_REMOVE_BLOCK');
-        $document->addScriptDeclaration('Ottomo.adminPath = "'.JURI::base().'"; Ottomo.sitePath = "'.JURI::root().'";');
+        Text::script('COM_OTTOMO_EDITOR_MOVE');
+        Text::script('COM_OTTOMO_EDITOR_REMOVE_BLOCK');
+        $document->addScriptDeclaration('Ottomo.adminPath = "'.Uri::base().'"; Ottomo.sitePath = "'.Uri::root().'";');
 
         // Get row
         $model = OttomoModel::getInstance('Newsletters');
-        $model->setState('id', JFactory::getApplication()->input->getInt('id'));
+        $model->setState('id', OttomoCompat::input()->getInt('id'));
         $this->row = $model->getRow();
         // "Use template" (Templates page): a new campaign starts with that template chosen
-        $template = JFactory::getApplication()->input->getInt('template');
+        $template = OttomoCompat::input()->getInt('template');
         if (!$this->row->id && $template > 0) {
             $this->row->template = $template;
         }
@@ -92,7 +102,7 @@ class OttomoViewNewsletters extends OttomoView
         // Get newsletter data
         $this->row->data = $model->getNewsletterData();
         foreach ($this->row->data as $data) {
-            JFilterOutput::objectHTMLSafe($data);
+            OutputFilter::objectHTMLSafe($data);
         }
 
         // Get newsletter topics
@@ -129,23 +139,22 @@ class OttomoViewNewsletters extends OttomoView
         $this->setLayout('popup');
         $this->error = '';
         $this->total = 0;
-        $params = JComponentHelper::getParams('com_ottomo');
+        $params = ComponentHelper::getParams('com_ottomo');
         $this->limit = (int)$params->get('limit', 50) ?: 50;
 
         // Get row
         $model = OttomoModel::getInstance('Newsletters');
-        $model->setState('id', JFactory::getApplication()->input->getInt('id'));
+        $model->setState('id', OttomoCompat::input()->getInt('id'));
         $row = $model->getRow();
         $row->topics = array_filter((array)$model->getNewsletterTopics());
         $this->row = $row;
 
         // Verify that we can send in case a provider has been selected
         if (!in_array($params->get('mailer', 'mail'), array('mail', 'sendmail', 'smtp'))) {
-            $dispatcher = JDispatcher::getInstance();
-            JPluginHelper::importPlugin('ottomo-providers', $params->get('mailer', 'mail'));
-            $result = $dispatcher->trigger('verify');
+            PluginHelper::importPlugin('ottomo-providers', $params->get('mailer', 'mail'));
+            $result = OttomoCompat::trigger('onOttomoVerify');
             if (isset($result[0]) && $result[0] === false) {
-                $this->error = JText::_('COM_OTTOMO_COULD_NOT_INITIATE_SERVICE');
+                $this->error = Text::_('COM_OTTOMO_COULD_NOT_INITIATE_SERVICE');
             }
         }
 
@@ -156,31 +165,30 @@ class OttomoViewNewsletters extends OttomoView
             $this->total = $model->getRemaining((int)$row->id);
         }
         if (!$this->error && !$this->total) {
-            $this->error = JText::_('COM_OTTOMO_THERE_ARE_NO_SUBSCRIBERS_FOR_THE_SPECIFIC_NEWSLETTER');
+            $this->error = Text::_('COM_OTTOMO_THERE_ARE_NO_SUBSCRIBERS_FOR_THE_SPECIFIC_NEWSLETTER');
         }
 
         // Pre-flight checks (Settings > Campaigns): the same blocking checks as the Send step, on the server
         JLoader::register('OttomoHelperSettings', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/settings.php');
         if (!$this->error && OttomoHelperSettings::enabled('preflightRequired')) {
-            jimport('joomla.mail.helper');
             $failed = array();
             if (trim((string)$row->subject) === '') {
-                $failed[] = JText::_('COM_OTTOMO_PREFLIGHT_SUBJECT');
+                $failed[] = Text::_('COM_OTTOMO_PREFLIGHT_SUBJECT');
             }
             $sender = OttomoHelperSettings::sender($row);
-            if ($sender->name === '' || !JMailHelper::isEmailAddress($sender->email)) {
-                $failed[] = JText::_('COM_OTTOMO_PREFLIGHT_SENDER');
+            if ($sender->name === '' || !MailHelper::isEmailAddress($sender->email)) {
+                $failed[] = Text::_('COM_OTTOMO_PREFLIGHT_SENDER');
             }
             if (!OttomoHelperSettings::enabled('complianceFooter')) {
                 JLoader::register('OttomoHelperTemplate', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/template.php');
                 $row->data = $model->getNewsletterData();
                 $html = OttomoHelperTemplate::render($row, 'send', false);
                 if (stripos($html, 'subscribers.unsubscribe') === false) {
-                    $failed[] = JText::_('COM_OTTOMO_PREFLIGHT_UNSUBSCRIBE');
+                    $failed[] = Text::_('COM_OTTOMO_PREFLIGHT_UNSUBSCRIBE');
                 }
             }
             if (count($failed)) {
-                $this->error = JText::_('COM_OTTOMO_PREFLIGHT_BLOCKED').' '.implode(' · ', $failed);
+                $this->error = Text::_('COM_OTTOMO_PREFLIGHT_BLOCKED').' '.implode(' · ', $failed);
             }
         }
 

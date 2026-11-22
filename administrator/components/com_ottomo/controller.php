@@ -9,8 +9,17 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\Controller\BaseController;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Session\Session;
+use Joomla\String\StringHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 #[\AllowDynamicProperties]
-class OttomoController extends JControllerLegacy
+class OttomoController extends BaseController
 {
     protected $default_view = 'dashboard';
 
@@ -31,7 +40,7 @@ class OttomoController extends JControllerLegacy
         $controller = strtolower(substr(get_class($this), strlen('OttomoController')));
         $contexts = array_filter(array($controller, strtolower((string)$this->view)));
         $name = strtolower((string)$task);
-        $user = JFactory::getUser();
+        $user = OttomoCompat::user();
         $allowed = true;
         if (in_array('settings', $contexts, true) && !$user->authorise('core.admin', 'com_ottomo')) {
             $allowed = false;
@@ -43,12 +52,12 @@ class OttomoController extends JControllerLegacy
             }
         }
         if (!$allowed) {
-            $application = JFactory::getApplication();
+            $application = Factory::getApplication();
             if ($this->input->getWord('format', 'html') !== 'html') {
-                throw new Exception(JText::_('JERROR_ALERTNOAUTHOR'), 403);
+                throw new Exception(Text::_('JERROR_ALERTNOAUTHOR'), 403);
             }
-            $application->enqueueMessage(JText::_('JERROR_ALERTNOAUTHOR'), 'error');
-            $application->redirect(JRoute::_(in_array('settings', $contexts, true) ? 'index.php?option=com_ottomo' : 'index.php?option=com_ottomo&view=templates', false));
+            $application->enqueueMessage(Text::_('JERROR_ALERTNOAUTHOR'), 'error');
+            $application->redirect(Route::_(in_array('settings', $contexts, true) ? 'index.php?option=com_ottomo' : 'index.php?option=com_ottomo&view=templates', false));
         }
         return parent::execute($task);
     }
@@ -60,7 +69,7 @@ class OttomoController extends JControllerLegacy
 
     public function edit()
     {
-        $document = JFactory::getDocument();
+        $document = OttomoCompat::document();
         $viewType = $document->getType();
         $viewName = $this->view;
         switch ($viewName) {
@@ -88,7 +97,6 @@ class OttomoController extends JControllerLegacy
         if ($model = $this->getModel()) {
             $view->setModel($model, true);
         }
-        $view->assignRef('document', $document);
         $view->edit();
         return $this;
     }
@@ -100,11 +108,11 @@ class OttomoController extends JControllerLegacy
 
     public function save()
     {
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+        Session::checkToken() or jexit(Text::_('JINVALID_TOKEN'));
         $model = $this->getModel();
         $model->setState('data', $this->input->post->getArray());
         if ($model->save()) {
-            $message = JText::_('COM_OTTOMO_SAVED');
+            $message = Text::_('COM_OTTOMO_SAVED');
             $type = 'message';
         } else {
             $message = htmlspecialchars((string)$model->getError(), ENT_QUOTES, 'UTF-8');
@@ -125,44 +133,44 @@ class OttomoController extends JControllerLegacy
 
     public function publish()
     {
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+        Session::checkToken() or jexit(Text::_('JINVALID_TOKEN'));
         $model = $this->getModel();
-        $model->setState('id', $this->input->getVar('cid'));
+        $model->setState('id', $this->input->get('cid', array(), 'array'));
         $model->publish();
-        $this->setRedirect('index.php?option=com_ottomo&view='.$this->view, JText::_('COM_OTTOMO_'.JString::strtoupper($this->view).'_PUBLISHED'));
+        $this->setRedirect('index.php?option=com_ottomo&view='.$this->view, Text::_('COM_OTTOMO_'.StringHelper::strtoupper($this->view).'_PUBLISHED'));
     }
 
     public function unpublish()
     {
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+        Session::checkToken() or jexit(Text::_('JINVALID_TOKEN'));
         $model = $this->getModel();
-        $model->setState('id', $this->input->getVar('cid'));
+        $model->setState('id', $this->input->get('cid', array(), 'array'));
         $model->unpublish();
-        $this->setRedirect('index.php?option=com_ottomo&view='.$this->view, JText::_('COM_OTTOMO_'.JString::strtoupper($this->view).'_UNPUBLISHED'));
+        $this->setRedirect('index.php?option=com_ottomo&view='.$this->view, Text::_('COM_OTTOMO_'.StringHelper::strtoupper($this->view).'_UNPUBLISHED'));
 
     }
 
     public function copy()
     {
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+        Session::checkToken() or jexit(Text::_('JINVALID_TOKEN'));
         $model = $this->getModel();
-        $model->setState('id', $this->input->getVar('cid'));
+        $model->setState('id', $this->input->get('cid', array(), 'array'));
         $model->copy();
-        $this->setRedirect('index.php?option=com_ottomo&view='.$this->view, JText::_('COM_OTTOMO_'.JString::strtoupper($this->view).'_COPIED'));
+        $this->setRedirect('index.php?option=com_ottomo&view='.$this->view, Text::_('COM_OTTOMO_'.StringHelper::strtoupper($this->view).'_COPIED'));
     }
 
     public function remove()
     {
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+        Session::checkToken() or jexit(Text::_('JINVALID_TOKEN'));
         $model = $this->getModel();
-        $model->setState('id', $this->input->getVar('cid'));
+        $model->setState('id', $this->input->get('cid', array(), 'array'));
         $model->remove();
-        $this->setRedirect('index.php?option=com_ottomo&view='.$this->view, JText::_('COM_OTTOMO_'.JString::strtoupper($this->view).'_DELETED'));
+        $this->setRedirect('index.php?option=com_ottomo&view='.$this->view, Text::_('COM_OTTOMO_'.StringHelper::strtoupper($this->view).'_DELETED'));
     }
 
     public function batch()
     {
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+        Session::checkToken() or jexit(Text::_('JINVALID_TOKEN'));
         $model = $this->getModel();
         $model->setState('data', $this->input->getArray());
         $model->batch();

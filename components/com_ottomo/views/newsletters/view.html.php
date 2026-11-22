@@ -9,18 +9,23 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoViewNewsletters extends OttomoView
 {
     public function display($tpl = null)
     {
         // Get row
         $model = OttomoModel::getInstance('Newsletters');
-        $model->setState('id', JFactory::getApplication()->input->getInt('id'));
+        $model->setState('id', OttomoCompat::input()->getInt('id'));
         $row = $model->getRow();
 
         //Check that newsletter exists
         if (!$row->id || !$row->published) {
-            JError::raiseError(404, JText::_('COM_OTTOMO_NOT_FOUND'));
+            throw new Exception(Text::_('COM_OTTOMO_NOT_FOUND'), 404);
             return;
         }
 
@@ -32,9 +37,9 @@ class OttomoViewNewsletters extends OttomoView
 
         // Check for subscriber data passed in the URL ( This happens when a user clicks to open a mail from the mailbox to the browser)
         $subscriber = false;
-        $application = JFactory::getApplication();
-        $subscriberId = $application->input->getInt('subscriber');
-        $subscriberHash = $application->input->getCmd('hash');
+        $application = Factory::getApplication();
+        $subscriberId = OttomoCompat::input()->getInt('subscriber');
+        $subscriberHash = OttomoCompat::input()->getCmd('hash');
         // Only a genuine subscriber link personalises the page (an invalid hash shows the public version)
         if ($subscriberId && $subscriberHash && OttomoHelperData::checkHash($row->id, $subscriberId, $subscriberHash)) {
             $subscriber = new stdClass();

@@ -9,6 +9,12 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Session\Session;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoControllerExport extends OttomoController
 {
     /**
@@ -17,19 +23,19 @@ class OttomoControllerExport extends OttomoController
      */
     public function download()
     {
-        JSession::checkToken('get') or jexit(JText::_('JINVALID_TOKEN'));
-        $session = JFactory::getSession();
-        $name = (string)$session->get('export.file', '', 'com_ottomo');
+        Session::checkToken('get') or jexit(Text::_('JINVALID_TOKEN'));
+        $session = OttomoCompat::session();
+        $name = (string)$session->get('com_ottomo.export.file', '');
         $file = preg_match('/^ottomo-export-[a-f0-9]{32}\.csv$/', $name) ? JPATH_SITE.'/tmp/'.$name : null;
         if (!$file || !is_file($file)) {
-            throw new Exception(JText::_('COM_OTTOMO_EXPORT_FILE_NOT_FOUND'), 404);
+            throw new Exception(Text::_('COM_OTTOMO_EXPORT_FILE_NOT_FOUND'), 404);
         }
-        $session->clear('export.file', 'com_ottomo');
+        $session->clear('com_ottomo.export.file');
 
-        $application = JFactory::getApplication();
+        $application = Factory::getApplication();
         $application->clearHeaders();
         $application->setHeader('Content-Type', 'text/csv; charset=utf-8', true);
-        $application->setHeader('Content-Disposition', 'attachment; filename="subscribers-'.JFactory::getDate()->format('Y-m-d').'.csv"', true);
+        $application->setHeader('Content-Disposition', 'attachment; filename="subscribers-'.Factory::getDate()->format('Y-m-d').'.csv"', true);
         $application->setHeader('Content-Length', (string)filesize($file), true);
         $application->setHeader('Cache-Control', 'no-store', true);
         $application->sendHeaders();

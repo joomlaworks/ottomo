@@ -9,18 +9,24 @@
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\CMSPlugin;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 #[\AllowDynamicProperties]
-class plgOttomoprovidersSendpulse extends JPlugin
+class plgOttomoprovidersSendpulse extends CMSPlugin
 {
     public function __construct(&$subject, $config)
     {
         parent::__construct($subject, $config);
-        JFactory::getLanguage()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo'); // Ottomo's backend language file
-        $settings = JComponentHelper::getParams('com_ottomo');
+        OttomoCompat::language()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo'); // Ottomo's backend language file
+        $settings = ComponentHelper::getParams('com_ottomo');
         $this->params->merge($settings);
     }
 
-    public function send(&$mailer, $recipients, $params, $topics, $newsletterId = 0)
+    public function onOttomoSend($mailer, $recipients, $params, $topics, $newsletterId = 0)
     {
         JLoader::register('OttomoHelperData', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/data.php');
         $token = $this->getAccessToken();
@@ -80,7 +86,7 @@ class plgOttomoprovidersSendpulse extends JPlugin
         }
     }
 
-    public function verify()
+    public function onOttomoVerify()
     {
         $clientId = trim((string) $this->params->get('sendpulseClientId'));
         $clientSecret = trim((string) $this->params->get('sendpulseClientSecret'));
@@ -96,16 +102,16 @@ class plgOttomoprovidersSendpulse extends JPlugin
         }
     }
 
-    public function statistics($startDate, $endDate, $topicId)
+    public function onOttomoStatistics($startDate, $endDate, $topicId)
     {
         $columns = array(
-            JText::_('COM_OTTOMO_DATE'),
-            JText::_('COM_OTTOMO_REQUESTS'),
-            JText::_('COM_OTTOMO_OPENED'),
-            JText::_('COM_OTTOMO_CLICKED'),
-            JText::_('COM_OTTOMO_BOUNCES'),
-            JText::_('COM_OTTOMO_UNSUBSCRIBES'),
-            JText::_('COM_OTTOMO_SPAM_REPORTS'),
+            Text::_('COM_OTTOMO_DATE'),
+            Text::_('COM_OTTOMO_REQUESTS'),
+            Text::_('COM_OTTOMO_OPENED'),
+            Text::_('COM_OTTOMO_CLICKED'),
+            Text::_('COM_OTTOMO_BOUNCES'),
+            Text::_('COM_OTTOMO_UNSUBSCRIBES'),
+            Text::_('COM_OTTOMO_SPAM_REPORTS'),
         );
         $properties = array('sent', 'opens', 'clicks', 'bounces', 'unsubscribes', 'spam');
         $colors = array('#b8b8b8', '#00aced', '#33b6b2', '#e87e04', '#c74484', '#e74b3c');

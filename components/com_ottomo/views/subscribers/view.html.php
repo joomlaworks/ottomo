@@ -9,19 +9,24 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoViewSubscribers extends OttomoView
 {
     public function display($tpl = null)
     {
         // Get subscriber
         $model = OttomoModel::getInstance('Subscribers');
-        $model->setState('id', JFactory::getApplication()->input->getInt('id'));
+        $model->setState('id', OttomoCompat::input()->getInt('id'));
         $this->row = $model->getRow();
 
         // Check that we have a valid subscriber
         if (!$this->row->id || !$this->row->status) {
-            $application = JFactory::getApplication();
-            $application->enqueueMessage(JText::_('COM_OTTOMO_NOT_FOUND'), 'error');
+            $application = Factory::getApplication();
+            $application->enqueueMessage(Text::_('COM_OTTOMO_NOT_FOUND'), 'error');
             return;
         }
 
@@ -36,10 +41,10 @@ class OttomoViewSubscribers extends OttomoView
         $this->topics = $model->getList();
 
         // Pass the hash variable to the view
-        $this->hash = JFactory::getApplication()->input->getCmd('hash');
+        $this->hash = OttomoCompat::input()->getCmd('hash');
 
         // Pass the newsletter id to the view
-        $this->newsletterId = JFactory::getApplication()->input->getInt('newsletter');
+        $this->newsletterId = OttomoCompat::input()->getInt('newsletter');
 
         // Set the layout
         $this->setLayout('subscriber');

@@ -9,7 +9,14 @@
 
 defined('_JEXEC') or die ;
 
-class OttomoTableNewsletters extends JTable
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Mail\MailHelper;
+use Joomla\CMS\Table\Table;
+use Joomla\Utilities\ArrayHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
+class OttomoTableNewsletters extends Table
 {
     public function __construct($db)
     {
@@ -18,16 +25,15 @@ class OttomoTableNewsletters extends JTable
 
     public function check()
     {
-        jimport('joomla.mail.helper');
         if (trim($this->subject) == '') {
-            $this->setError(JText::_('COM_OTTOMO_NEWSLETTER_MUST_HAVE_A_SUBJECT'));
+            $this->setError(Text::_('COM_OTTOMO_NEWSLETTER_MUST_HAVE_A_SUBJECT'));
             return false;
         }
         // Sender name and address are optional (empty: Settings > Sending, see OttomoHelperSettings::sender())
         $this->senderName = trim((string)$this->senderName);
         $this->senderEmail = trim((string)$this->senderEmail);
-        if ($this->senderEmail !== '' && !JMailHelper::isEmailAddress($this->senderEmail)) {
-            $this->setError(JText::_('COM_OTTOMO_INVALID_EMAIL_ADDRESS'));
+        if ($this->senderEmail !== '' && !MailHelper::isEmailAddress($this->senderEmail)) {
+            $this->setError(Text::_('COM_OTTOMO_INVALID_EMAIL_ADDRESS'));
             return false;
         }
         // TEXT columns cannot have a default on MySQL: never leave them NULL (strict mode)
@@ -39,7 +45,7 @@ class OttomoTableNewsletters extends JTable
         }
         $this->template = (int)$this->template;
         if (!$this->template) {
-            $this->setError(JText::_('COM_OTTOMO_NEWSLETTER_MUST_HAVE_A_TEMPLATE'));
+            $this->setError(Text::_('COM_OTTOMO_NEWSLETTER_MUST_HAVE_A_TEMPLATE'));
             return false;
         }
         return true;
@@ -47,9 +53,9 @@ class OttomoTableNewsletters extends JTable
 
     public function delete($id = null)
     {
-        $db = JFactory::getDbo();
+        $db = OttomoCompat::db();
         $id = (array)$id;
-        JArrayHelper::toInteger($id);
+        ArrayHelper::toInteger($id);
 
         $query = $db->getQuery(true);
         $query->delete($db->quoteName('#__ottomo_email_campaigns'));
@@ -84,11 +90,11 @@ class OttomoTableNewsletters extends JTable
 
     public function batch($data)
     {
-        $db = JFactory::getDbo();
+        $db = OttomoCompat::db();
         $ids = (array)$data['cid'];
         $topics = (array)$data['topics'];
-        JArrayHelper::toInteger($ids);
-        JArrayHelper::toInteger($topics);
+        ArrayHelper::toInteger($ids);
+        ArrayHelper::toInteger($topics);
         if (!count($ids) || !count($topics)) {
             return false;
         }

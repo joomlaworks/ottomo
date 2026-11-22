@@ -9,6 +9,11 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Session\Session;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 JLoader::register('OttomoHelperSettings', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/settings.php');
 
 class OttomoControllerSettings extends OttomoController
@@ -16,9 +21,9 @@ class OttomoControllerSettings extends OttomoController
     /** Test the saved sending settings (Settings > Sending > Test connection). */
     public function testConnection()
     {
-        JSession::checkToken() or jexit(json_encode(array('level' => 'error', 'message' => JText::_('JINVALID_TOKEN'))));
-        if (!JFactory::getUser()->authorise('core.admin', 'com_ottomo')) {
-            jexit(json_encode(array('level' => 'error', 'message' => JText::_('JERROR_ALERTNOAUTHOR'))));
+        Session::checkToken() or jexit(json_encode(array('level' => 'error', 'message' => Text::_('JINVALID_TOKEN'))));
+        if (!OttomoCompat::user()->authorise('core.admin', 'com_ottomo')) {
+            jexit(json_encode(array('level' => 'error', 'message' => Text::_('JERROR_ALERTNOAUTHOR'))));
         }
         $result = OttomoHelperSettings::checkConnection(false);
         // The default sender's domain: SPF, DKIM and DMARC

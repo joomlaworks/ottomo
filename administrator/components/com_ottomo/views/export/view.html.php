@@ -9,6 +9,11 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 JLoader::register('OttomoHelperExport', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/export.php');
 
 class OttomoViewExport extends OttomoView
@@ -17,10 +22,10 @@ class OttomoViewExport extends OttomoView
     {
         // What to export: the ticked rows, else the Subscribers list as filtered/searched (all its pages),
         // else everyone ("Export all": scope=all). Kept in the session for export.run.
-        $application = JFactory::getApplication();
-        $ids = array_values(array_filter(array_map('intval', (array)$application->input->get('cid', array(), 'array'))));
+        $application = Factory::getApplication();
+        $ids = array_values(array_filter(array_map('intval', (array)OttomoCompat::input()->get('cid', array(), 'array'))));
         $scope = array('mode' => 'all');
-        if ($application->input->getCmd('scope') !== 'all') {
+        if (OttomoCompat::input()->getCmd('scope') !== 'all') {
             if (count($ids)) {
                 $scope = array('mode' => 'selected', 'ids' => $ids);
             } else {
@@ -34,7 +39,7 @@ class OttomoViewExport extends OttomoView
                 }
             }
         }
-        JFactory::getSession()->set('export.scope', $scope, 'com_ottomo');
+        OttomoCompat::session()->set('com_ottomo.export.scope', $scope);
         $this->scope = $scope['mode'];
 
         // Get the total rows
@@ -44,7 +49,7 @@ class OttomoViewExport extends OttomoView
 
         // Check that we have subscribers
         if (!$this->counter) {
-            JError::raiseNotice('', JText::_('COM_OTTOMO_THERE_ARE_NO_SUBSCRIBERS_TO_EXPORT'));
+            Factory::getApplication()->enqueueMessage(Text::_('COM_OTTOMO_THERE_ARE_NO_SUBSCRIBERS_TO_EXPORT'), 'notice');
             return;
         }
 
@@ -63,13 +68,13 @@ class OttomoViewExport extends OttomoView
 
         // Unguessable file name, kept server-side: export.run and export.download only accept this one.
         // A new export replaces this session's previous, never downloaded one.
-        $session = JFactory::getSession();
-        $previous = (string)$session->get('export.file', '', 'com_ottomo');
+        $session = OttomoCompat::session();
+        $previous = (string)$session->get('com_ottomo.export.file', '');
         if (preg_match('/^ottomo-export-[a-f0-9]{32}\.csv$/', $previous) && is_file(JPATH_SITE.'/tmp/'.$previous)) {
             @unlink(JPATH_SITE.'/tmp/'.$previous);
         }
         $this->filename = 'ottomo-export-'.bin2hex(random_bytes(16)).'.csv';
-        $session->set('export.file', $this->filename, 'com_ottomo');
+        $session->set('com_ottomo.export.file', $this->filename);
 
         // Remove exports left behind by interrupted runs (older than one hour)
         foreach ((array)glob(JPATH_SITE.'/tmp/ottomo-export-*.csv') as $stale) {

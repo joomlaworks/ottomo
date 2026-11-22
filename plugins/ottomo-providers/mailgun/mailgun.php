@@ -9,18 +9,24 @@
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\CMSPlugin;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 #[\AllowDynamicProperties]
-class plgOttomoprovidersMailgun extends JPlugin
+class plgOttomoprovidersMailgun extends CMSPlugin
 {
     public function __construct(&$subject, $config)
     {
         parent::__construct($subject, $config);
-        JFactory::getLanguage()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo'); // Ottomo's backend language file
-        $settings = JComponentHelper::getParams('com_ottomo');
+        OttomoCompat::language()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo'); // Ottomo's backend language file
+        $settings = ComponentHelper::getParams('com_ottomo');
         $this->params->merge($settings);
     }
 
-    public function send(&$mailer, $recipients, $params, $topics, $newsletterId = 0)
+    public function onOttomoSend($mailer, $recipients, $params, $topics, $newsletterId = 0)
     {
         $domain = trim((string) $this->params->get('mailgunDomain'));
         JLoader::register('OttomoHelperData', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/data.php');
@@ -73,7 +79,7 @@ class plgOttomoprovidersMailgun extends JPlugin
         return array(); // one call for the batch: it throws when the batch fails
     }
 
-    public function verify()
+    public function onOttomoVerify()
     {
         $apiKey = trim((string) $this->params->get('mailgunApiKey'));
         $domain = trim((string) $this->params->get('mailgunDomain'));
@@ -89,7 +95,7 @@ class plgOttomoprovidersMailgun extends JPlugin
         }
     }
 
-    public function statistics($startDate, $endDate, $topicId)
+    public function onOttomoStatistics($startDate, $endDate, $topicId)
     {
         $domain = trim((string) $this->params->get('mailgunDomain'));
         if (!$startDate) {
@@ -111,14 +117,14 @@ class plgOttomoprovidersMailgun extends JPlugin
         $response = $this->call($domain . '/stats/total?' . $query . $events, array(), 'GET');
 
         $columns = array(
-            JText::_('COM_OTTOMO_DATE'),
-            JText::_('COM_OTTOMO_REQUESTS'),
-            JText::_('COM_OTTOMO_OPENED'),
-            JText::_('COM_OTTOMO_CLICKED'),
-            JText::_('COM_OTTOMO_DELIVERED'),
-            JText::_('COM_OTTOMO_BOUNCES'),
-            JText::_('COM_OTTOMO_UNSUBSCRIBES'),
-            JText::_('COM_OTTOMO_SPAM_REPORTS'),
+            Text::_('COM_OTTOMO_DATE'),
+            Text::_('COM_OTTOMO_REQUESTS'),
+            Text::_('COM_OTTOMO_OPENED'),
+            Text::_('COM_OTTOMO_CLICKED'),
+            Text::_('COM_OTTOMO_DELIVERED'),
+            Text::_('COM_OTTOMO_BOUNCES'),
+            Text::_('COM_OTTOMO_UNSUBSCRIBES'),
+            Text::_('COM_OTTOMO_SPAM_REPORTS'),
         );
         $properties = array('accepted', 'opened', 'clicked', 'delivered', 'failed', 'unsubscribed', 'complained');
         $colors = array('#b8b8b8', '#00aced', '#33b6b2', '#3fa800', '#e87e04', '#c74484', '#e74b3c');

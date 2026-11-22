@@ -9,6 +9,14 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Captcha\Captcha;
+use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 /**
  * Data for the sub-templates (tmpl/<name>/default.php, overridable in templates/<template>/html/mod_ottomo/<name>/).
  * Sub-templates only deal with markup: the fields, topics and spam protection come from here.
@@ -38,7 +46,7 @@ class modOttomoHelper
     public static function getLayout($params)
     {
         $layout = preg_replace('/[^a-z0-9_-]/i', '', (string)$params->get('template', self::DEFAULT_LAYOUT));
-        $template = JFactory::getApplication()->getTemplate();
+        $template = Factory::getApplication()->getTemplate();
         foreach (array(JPATH_THEMES.'/'.$template.'/html/mod_ottomo/', JPATH_SITE.'/modules/mod_ottomo/tmpl/') as $base) {
             if ($layout !== '' && is_file($base.$layout.'/default.php')) {
                 return $layout;
@@ -77,7 +85,7 @@ class modOttomoHelper
         $field = new stdClass();
         $field->name = $name;
         $field->id = 'otm-module-'.(int)$module->id.'-'.$name;
-        $field->label = JText::_($label);
+        $field->label = Text::_($label);
         $field->type = $type;
         $field->required = (bool)$required;
         $field->autocomplete = $autocomplete;
@@ -156,19 +164,19 @@ class modOttomoHelper
             .'<input type="hidden" name="option" value="com_ottomo" />'
             .'<input type="hidden" name="task" value="subscribers.subscribe" />'
             .'<input type="hidden" name="format" value="raw" />'
-            .JHtml::_('form.token');
+            .HTMLHelper::_('form.token');
     }
 
     public static function loadAssets($layout)
     {
-        $document = JFactory::getDocument();
+        $document = OttomoCompat::document();
         JLoader::register('OttomoHelperHTML', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/html.php');
-        $override = '/templates/'.JFactory::getApplication()->getTemplate().'/html/mod_ottomo/'.$layout.'/css/style.css';
+        $override = '/templates/'.Factory::getApplication()->getTemplate().'/html/mod_ottomo/'.$layout.'/css/style.css';
         $stylesheet = is_file(JPATH_SITE.$override) ? $override : '/modules/mod_ottomo/tmpl/'.$layout.'/css/style.css';
         if (is_file(JPATH_SITE.$stylesheet)) {
-            $document->addStyleSheet(OttomoHelperHTML::asset(JUri::root(true).$stylesheet));
+            $document->addStyleSheet(OttomoHelperHTML::asset(Uri::root(true).$stylesheet));
         }
-        $document->addScript(OttomoHelperHTML::asset(JUri::root(true).'/modules/mod_ottomo/includes/js/script.js'), 'text/javascript', true);
+        $document->addScript(OttomoHelperHTML::asset(Uri::root(true).'/modules/mod_ottomo/includes/js/script.js'), array(), array('defer' => true));
     }
 
     /** Honeypot (Ottomo Settings > Signup forms): invisible to people, keyboard and screen-reader users */
@@ -179,7 +187,7 @@ class modOttomoHelper
             return '';
         }
         return '<div class="otm-module-hp" aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">'
-            .'<label for="otm-module-'.(int)$module->id.'-website">'.JText::_('MOD_OTTOMO_HONEYPOT_LABEL').'</label>'
+            .'<label for="otm-module-'.(int)$module->id.'-website">'.Text::_('MOD_OTTOMO_HONEYPOT_LABEL').'</label>'
             .'<input type="text" name="ottomo_website" id="otm-module-'.(int)$module->id.'-website" value="" tabindex="-1" autocomplete="off" />'
             .'</div>';
     }
@@ -192,7 +200,7 @@ class modOttomoHelper
         if ($plugin === '') {
             return '';
         }
-        $captcha = JCaptcha::getInstance($plugin, array('namespace' => 'mod_ottomo_'.(int)$module->id));
+        $captcha = Captcha::getInstance($plugin, array('namespace' => 'mod_ottomo_'.(int)$module->id));
         return $captcha ? (string)$captcha->display('ottomo_captcha', 'otm-module-'.(int)$module->id.'-captcha', 'otm-captcha') : '';
     }
 }

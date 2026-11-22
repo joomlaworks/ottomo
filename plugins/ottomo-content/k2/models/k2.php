@@ -9,6 +9,14 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\Filesystem\File;
+use Joomla\String\StringHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoModelK2 extends OttomoModel
 {
     public function getList()
@@ -107,10 +115,10 @@ class OttomoModelK2 extends OttomoModel
                 $children[$pt] = $list;
             }
         }
-        $list = JHTML::_('menu.treerecurse', 0, '', array(), $children, 9999, 0, 0);
+        $list = HTMLHelper::_('menu.treerecurse', 0, '', array(), $children, 9999, 0, 0);
         $mitems = array();
         foreach ($list as $item) {
-            $mitems[] = JHTML::_('select.option', $item->id, '&nbsp;&nbsp;&nbsp;'.$item->treename);
+            $mitems[] = HTMLHelper::_('select.option', $item->id, '&nbsp;&nbsp;&nbsp;'.$item->treename);
         }
         return $mitems;
     }
@@ -156,7 +164,7 @@ class OttomoModelK2 extends OttomoModel
             $author->link = null;
         } else {
             JLoader::register('OttomoHelperK2', dirname(__FILE__).'/../helpers/helper.php');
-            $author = JFactory::getUser($userID);
+            $author = OttomoCompat::user($userID);
             $author->link = OttomoHelperK2::getUserRoute($author->id);
         }
         return $author;
@@ -169,11 +177,10 @@ class OttomoModelK2 extends OttomoModel
         if (isset($K2ItemExtraFieldsInstances[$itemExtraFields])) {
             return $K2ItemExtraFieldsInstances[$itemExtraFields];
         }
-        jimport('joomla.filesystem.file');
         $db = $this->getDBO();
         $jsonObjects = is_string($itemExtraFields) ? json_decode($itemExtraFields) : null;
         $imgExtensions = array('jpg', 'jpeg', 'gif', 'png');
-        $params = JComponentHelper::getParams('com_k2');
+        $params = ComponentHelper::getParams('com_k2');
         if (!is_array($jsonObjects) || count($jsonObjects) < 1) {
             return null;
         }
@@ -200,7 +207,7 @@ class OttomoModelK2 extends OttomoModel
                     if ($rows[$i]->type == 'textfield' || $rows[$i]->type == 'textarea' || $rows[$i]->type == 'date') {
                         $value = $object->value;
                         if ($rows[$i]->type == 'date' && $value) {
-                            $value = JHTML::_('date', $value, JText::_('K2_DATE_FORMAT_LC'), null);
+                            $value = HTMLHelper::_('date', $value, Text::_('K2_DATE_FORMAT_LC'), null);
                         }
 
                     } elseif ($rows[$i]->type == 'labels') {
@@ -210,8 +217,8 @@ class OttomoModelK2 extends OttomoModel
                         }
                         $value = '';
                         foreach ($labels as $label) {
-                            $label = JString::trim($label);
-                            $label = JString::str_ireplace('-', ' ', $label);
+                            $label = StringHelper::trim($label);
+                            $label = StringHelper::str_ireplace('-', ' ', $label);
                             $value .= '<a href="index.php?option=com_k2&view=itemlist&task=search&searchword='.urlencode($label).'">'.$label.'</a> ';
                         }
 
@@ -266,7 +273,7 @@ class OttomoModelK2 extends OttomoModel
 
                             case 'lightbox':
                                 $filename = @basename($object->value[1]);
-                                $extension = JFile::getExt($filename);
+                                $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
                                 if (!empty($extension) && in_array($extension, $imgExtensions)) {
                                     $attributes = 'class="modal"';
                                 } else {
@@ -274,8 +281,8 @@ class OttomoModelK2 extends OttomoModel
                                 }
                                 break;
                         }
-                        $object->value[0] = JString::trim($object->value[0]);
-                        $object->value[1] = JString::trim($object->value[1]);
+                        $object->value[0] = StringHelper::trim($object->value[0]);
+                        $object->value[1] = StringHelper::trim($object->value[1]);
 
                         if ($object->value[1] && ($object->value[1] != 'http://' || $object->value[1] != 'https://')) {
                             if ($object->value[0] == '') {

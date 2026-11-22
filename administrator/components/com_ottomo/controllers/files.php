@@ -9,13 +9,17 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Session\Session;
+use Joomla\Filesystem\File;
+
 class OttomoControllerFiles extends OttomoController
 {
     // Permissions (ottomo.templates): OttomoController::execute()
 
     public function save()
     {
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+        Session::checkToken() or jexit(Text::_('JINVALID_TOKEN'));
         $templateId = $this->input->getInt('template');
         $contents = $this->input->get('contents', '', 'raw');
         $file = $this->input->get('file');
@@ -28,17 +32,17 @@ class OttomoControllerFiles extends OttomoController
         JLoader::register('OttomoHelperTemplate', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/template.php');
         $fullpath = OttomoHelperTemplate::location($template->folder)->path.'/'.$filepath;
         $fullpath = str_replace('..', '', $fullpath);
-        if ($template->folder && $file && $filepath && JFile::exists($fullpath)) {
-            $result = JFile::write($fullpath, $contents);
+        if ($template->folder && $file && $filepath && is_file($fullpath)) {
+            $result = File::write($fullpath, $contents);
             if ($result) {
-                $message = JText::_('COM_OTTOMO_SAVED');
+                $message = Text::_('COM_OTTOMO_SAVED');
                 $type = 'message';
             } else {
-                $message = JText::_('COM_OTTOMO_AN_ERROR_OCCURED');
+                $message = Text::_('COM_OTTOMO_AN_ERROR_OCCURED');
                 $type = 'error';
             }
         } else {
-            $message = JText::_('COM_OTTOMO_AN_ERROR_OCCURED');
+            $message = Text::_('COM_OTTOMO_AN_ERROR_OCCURED');
             $type = 'error';
         }
 

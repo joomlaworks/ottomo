@@ -9,6 +9,11 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoViewSettings extends OttomoView
 {
     /**
@@ -21,20 +26,20 @@ class OttomoViewSettings extends OttomoView
 
     public function edit($tpl = null)
     {
-        $application = JFactory::getApplication();
-        $user = JFactory::getUser();
+        $application = Factory::getApplication();
+        $user = OttomoCompat::user();
 
         if (!$user->authorise('core.admin', 'com_ottomo')) {
-            $application->enqueueMessage(JText::_('JERROR_ALERTNOAUTHOR'));
+            $application->enqueueMessage(Text::_('JERROR_ALERTNOAUTHOR'));
             $application->redirect('index.php');
         }
 
         $model = $this->getModel();
         $model->setState('option', 'com_ottomo');
         $form = $model->getForm();
-        $this->assignRef('form', $form);
+        $this->form = $form;
         $id = $model->getExtensionID();
-        $this->assignRef('id', $id);
+        $this->id = $id;
         $this->setLayout('settings');
         parent::display($tpl);
 

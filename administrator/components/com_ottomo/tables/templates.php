@@ -9,7 +9,10 @@
 
 defined('_JEXEC') or die ;
 
-class OttomoTableTemplates extends JTable
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Table\Table;
+
+class OttomoTableTemplates extends Table
 {
     public function __construct($db)
     {
@@ -19,11 +22,11 @@ class OttomoTableTemplates extends JTable
     public function check()
     {
         if (trim($this->name) == '') {
-            $this->setError(JText::_('COM_OTTOMO_TEMPLATE_MUST_HAVE_A_NAME'));
+            $this->setError(Text::_('COM_OTTOMO_TEMPLATE_MUST_HAVE_A_NAME'));
             return false;
         }
         if (!self::validFolder($this->folder)) {
-            $this->setError(JText::_('COM_OTTOMO_TEMPLATE_MUST_HAVE_A_FOLDER'));
+            $this->setError(Text::_('COM_OTTOMO_TEMPLATE_MUST_HAVE_A_FOLDER'));
             return false;
         }
         return true;

@@ -7,14 +7,17 @@
  * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 
-defined('_JEXEC') or die ; ?>
+defined('_JEXEC') or die ;
+
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text; ?>
 <?php
 $meta = array();
 if ($row->category) {
     $meta[] = '<a href="'.$row->category->link.'" style="color: inherit; text-decoration: none;">'.htmlspecialchars($row->category->name, ENT_QUOTES, 'UTF-8').'</a>';
 }
 if ($row->date) {
-    $meta[] = JHtml::_('date', $row->date, JText::_('DATE_FORMAT_LC3'));
+    $meta[] = HTMLHelper::_('date', $row->date, Text::_('DATE_FORMAT_LC3'));
 }
 if ($row->author) {
     $name = htmlspecialchars($row->author->name, ENT_QUOTES, 'UTF-8');
@@ -51,5 +54,5 @@ if ($row->author) {
 		<?php foreach ($row->tags as $i => $tag): ?><?php echo $i ? ' &middot; ' : ''; ?><a href="<?php echo $tag->link; ?>" style="color: inherit;"><?php echo htmlspecialchars($tag->name, ENT_QUOTES, 'UTF-8'); ?></a><?php endforeach; ?>
 	</p>
 	<?php endif; ?>
-	<p style="margin: 0;"><a href="<?php echo $row->link; ?>" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 600; color: #3b342c; text-decoration: underline;"><?php echo JText::_('COM_OTTOMO_TMPL_READ_MORE'); ?></a></p>
+	<p style="margin: 0;"><a href="<?php echo $row->link; ?>" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 600; color: #3b342c; text-decoration: underline;"><?php echo Text::_('COM_OTTOMO_TMPL_READ_MORE'); ?></a></p>
 </div>

@@ -9,18 +9,24 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Session\Session;
+use Joomla\Filesystem\File;
+use Joomla\Filesystem\Folder;
+
 class OttomoControllerTemplates extends OttomoController
 {
     // Permissions (ottomo.templates): OttomoController::execute()
 
     public function install()
     {
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+        Session::checkToken() or jexit(Text::_('JINVALID_TOKEN'));
         $model = OttomoModel::getInstance('Templates');
         $package = $this->input->files->get('package', null, 'raw');
         $model->setState('package', $package);
         if ($model->install()) {
-            $this->setRedirect('index.php?option=com_ottomo&view=templates', JText::_('COM_OTTOMO_TEMPLATE_INSTALLED'));
+            $this->setRedirect('index.php?option=com_ottomo&view=templates', Text::_('COM_OTTOMO_TEMPLATE_INSTALLED'));
         } else {
             $this->setRedirect('index.php?option=com_ottomo&view=templates', $model->getError(), 'error');
         }
@@ -28,12 +34,12 @@ class OttomoControllerTemplates extends OttomoController
 
     public function remove()
     {
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+        Session::checkToken() or jexit(Text::_('JINVALID_TOKEN'));
         $model = OttomoModel::getInstance('Templates');
-        $id = $this->input->getVar('cid');
+        $id = $this->input->get('cid', array(), 'array');
         $model->setState('id', $id);
         if ($model->uninstall()) {
-            $this->setRedirect('index.php?option=com_ottomo&view=templates', JText::_('COM_OTTOMO_TEMPLATES_DELETED'));
+            $this->setRedirect('index.php?option=com_ottomo&view=templates', Text::_('COM_OTTOMO_TEMPLATES_DELETED'));
         } else {
             $this->setRedirect('index.php?option=com_ottomo&view=templates', $model->getError(), 'error');
         }
@@ -41,7 +47,7 @@ class OttomoControllerTemplates extends OttomoController
 
     public function download()
     {
-        JSession::checkToken('get') or jexit(JText::_('JINVALID_TOKEN'));
+        Session::checkToken('get') or jexit(Text::_('JINVALID_TOKEN'));
         $id = $this->input->getInt('id');
         $model = OttomoModel::getInstance('Templates');
         $table = $model->getTable();
@@ -49,13 +55,13 @@ class OttomoControllerTemplates extends OttomoController
         if ($table->id) {
             JLoader::register('OttomoHelperTemplate', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/template.php');
             $source = OttomoHelperTemplate::location($table->folder)->path;
-            if ($table->folder && JFolder::exists($source)) {
+            if ($table->folder && is_dir($source)) {
                 // Built under an unguessable name and deleted as soon as it is read
                 $filename = $table->folder.'.zip';
                 $target = JPATH_SITE.'/tmp/ottomo-template-'.bin2hex(random_bytes(16)).'.zip';
                 $adapter = JArchive::getAdapter('zip');
                 if ($adapter->isSupported()) {
-                    $files = JFolder::files($source, '.', true, true);
+                    $files = Folder::files($source, '.', true, true);
                     $data = array();
                     foreach ($files as $file) {
                         $tmp = array();
@@ -67,25 +73,25 @@ class OttomoControllerTemplates extends OttomoController
                     $result = $adapter->create($target, $data);
                     if ($result) {
                         $length = filesize($target);
-                        $buffer = JFile::read($target);
-                        JFile::delete($target);
+                        $buffer = file_get_contents($target);
+                        File::delete($target);
                         ob_end_clean();
-                        JResponse::clearHeaders();
-                        JResponse::setHeader('Pragma', 'public', true);
-                        JResponse::setHeader('Expires', '0', true);
-                        JResponse::setHeader('Cache-Control', 'must-revalidate, post-check=0, pre-check=0', true);
-                        JResponse::setHeader('Content-Type', 'application/zip', true);
-                        JResponse::setHeader('Content-Disposition', 'attachment; filename="'.$filename.'"', true);
-                        JResponse::setHeader('Content-Transfer-Encoding', 'binary', true);
-                        JResponse::setHeader('Content-Length', $length, true);
-                        JResponse::sendHeaders();
+                        Factory::getApplication()->clearHeaders();
+                        Factory::getApplication()->setHeader('Pragma', 'public', true);
+                        Factory::getApplication()->setHeader('Expires', '0', true);
+                        Factory::getApplication()->setHeader('Cache-Control', 'must-revalidate, post-check=0, pre-check=0', true);
+                        Factory::getApplication()->setHeader('Content-Type', 'application/zip', true);
+                        Factory::getApplication()->setHeader('Content-Disposition', 'attachment; filename="'.$filename.'"', true);
+                        Factory::getApplication()->setHeader('Content-Transfer-Encoding', 'binary', true);
+                        Factory::getApplication()->setHeader('Content-Length', $length, true);
+                        Factory::getApplication()->sendHeaders();
                         echo $buffer;
                         exit ;
                     } else {
-                        $this->setRedirect('index.php?option=com_ottomo&view=templates', JText::_('COM_OTTOMO_COULD_NOT_CREATE_DOWNLOAD_FILE'), 'error');
+                        $this->setRedirect('index.php?option=com_ottomo&view=templates', Text::_('COM_OTTOMO_COULD_NOT_CREATE_DOWNLOAD_FILE'), 'error');
                     }
                 } else {
-                    $this->setRedirect('index.php?option=com_ottomo&view=templates', JText::_('COM_OTTOMO_NO_ZIP_SUPPORT'), 'error');
+                    $this->setRedirect('index.php?option=com_ottomo&view=templates', Text::_('COM_OTTOMO_NO_ZIP_SUPPORT'), 'error');
                 }
 
             }

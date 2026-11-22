@@ -9,6 +9,12 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoControllerNewsletters extends OttomoController
 {
     public function track()
@@ -16,10 +22,10 @@ class OttomoControllerNewsletters extends OttomoController
         $id = $this->input->getInt('id');
         $subscriberID = $this->input->getInt('subscriber');
         $type = $this->input->getInt('type');
-        $hash = $this->input->getVar('hash');
+        $hash = $this->input->getString('hash');
         $allowed = array(2, 3);
         if (!in_array($type, $allowed)) {
-            throw new Exception(JText::_('COM_OTTOMO_INVALID_TYPE'), 400);
+            throw new Exception(Text::_('COM_OTTOMO_INVALID_TYPE'), 400);
             return $this;
         }
 
@@ -35,7 +41,7 @@ class OttomoControllerNewsletters extends OttomoController
         $redirect = preg_replace('/[^A-Za-z0-9\-_,+\/=]/', '', (string)$this->input->getString('redirect'));
         $redirect = (string)base64_decode(strtr($redirect, '-_,', '+/='), true);
         // Internal links, or external ones Ottomo signed when it wrapped them: anything else goes to the home page
-        $internal = $redirect !== '' && JURI::isInternal($redirect);
+        $internal = $redirect !== '' && Uri::isInternal($redirect);
         $signed = !$internal && preg_match('#^https?://#i', $redirect) && function_exists('hash_equals')
             && hash_equals(OttomoHelperData::linkSignature($redirect), (string)$this->input->getCmd('sig'));
         $redirect = $internal || $signed ? $redirect : '';
@@ -45,14 +51,14 @@ class OttomoControllerNewsletters extends OttomoController
             return $this;
         }
         if ($model->getState('type') == 3) {
-            JResponse::setHeader('Content-disposition', 'inline; filename="open.gif"', true);
-            $document = JFactory::getDocument();
+            Factory::getApplication()->setHeader('Content-disposition', 'inline; filename="open.gif"', true);
+            $document = OttomoCompat::document();
             $document->setMimeEncoding('image/gif');
             readfile(JPATH_ADMINISTRATOR.'/components/com_ottomo/static/images/open.gif');
             return $this;
         }
         if ($redirect === '') {
-            $this->setRedirect(JURI::root());
+            $this->setRedirect(Uri::root());
         } else {
             $this->setRedirect($redirect);
         }

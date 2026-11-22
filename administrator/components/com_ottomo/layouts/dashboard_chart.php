@@ -10,32 +10,35 @@
 // Statistics widget, shared by the component dashboard and the control panel module (mod_ottomo (administrator)).
 // Styles: css/ottomo-graphs.css (self-contained, .otm-stats). Behaviour: js/ottomo.js (Statistics).
 defined('_JEXEC') or die ;
+
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
 $ranges = array('day' => 'COM_OTTOMO_DAY', 'week' => 'COM_OTTOMO_WEEK', 'month' => 'COM_OTTOMO_MONTH');
 ?>
 <div class="otm-stats">
-    <form name="otm-statistics-form" id="otm-statistics-form" class="otm-stats__form" action="<?php echo JRoute::_('index.php'); ?>" method="get">
+    <form name="otm-statistics-form" id="otm-statistics-form" class="otm-stats__form" action="<?php echo Route::_('index.php'); ?>" method="get">
 
         <?php if ($this->params->get('source') != 'ses'): ?>
         <div class="otm-stats__toolbar">
             <div class="otm-stats__topic">
-                <label class="otm-stats__sr" for="topicId"><?php echo JText::_('COM_OTTOMO_TOPIC'); ?></label>
+                <label class="otm-stats__sr" for="topicId"><?php echo Text::_('COM_OTTOMO_TOPIC'); ?></label>
                 <?php echo $this->topicsFilter; ?>
             </div>
             <div class="otm-stats__dates">
-                <label for="startDate"><?php echo JText::_('COM_OTTOMO_DATE_FROM'); ?></label>
+                <label for="startDate"><?php echo Text::_('COM_OTTOMO_DATE_FROM'); ?></label>
                 <input type="date" name="startDate" id="startDate" value="" />
-                <label for="endDate"><?php echo JText::_('COM_OTTOMO_DATE_TO'); ?></label>
+                <label for="endDate"><?php echo Text::_('COM_OTTOMO_DATE_TO'); ?></label>
                 <input type="date" name="endDate" id="endDate" value="" />
-                <button type="button" class="otm-stats__apply" id="otm-statistics-form-apply"><?php echo JText::_('COM_OTTOMO_APPLY'); ?></button>
+                <button type="button" class="otm-stats__apply" id="otm-statistics-form-apply"><?php echo Text::_('COM_OTTOMO_APPLY'); ?></button>
             </div>
         </div>
 
         <div class="otm-stats__kpis" data-role="stats-primary" aria-live="polite"></div>
         <div class="otm-stats__secondary" data-role="stats-secondary" hidden></div>
 
-        <div class="otm-stats__ranges" role="group" aria-label="<?php echo htmlspecialchars(JText::_('COM_OTTOMO_PERIOD'), ENT_QUOTES, 'UTF-8'); ?>">
+        <div class="otm-stats__ranges" role="group" aria-label="<?php echo htmlspecialchars(Text::_('COM_OTTOMO_PERIOD'), ENT_QUOTES, 'UTF-8'); ?>">
             <?php foreach ($ranges as $range => $label): ?>
-            <button type="button" class="otm-statistics-range<?php echo $range == 'month' ? ' otm-active' : ''; ?>" data-range="<?php echo $range; ?>" aria-pressed="<?php echo $range == 'month' ? 'true' : 'false'; ?>"><?php echo JText::_($label); ?></button>
+            <button type="button" class="otm-statistics-range<?php echo $range == 'month' ? ' otm-active' : ''; ?>" data-range="<?php echo $range; ?>" aria-pressed="<?php echo $range == 'month' ? 'true' : 'false'; ?>"><?php echo Text::_($label); ?></button>
             <?php endforeach; ?>
         </div>
         <?php endif; ?>

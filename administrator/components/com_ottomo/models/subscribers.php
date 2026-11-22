@@ -9,6 +9,18 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Mail\MailHelper;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Uri\Uri;
+use Joomla\Registry\Registry;
+use Joomla\String\StringHelper;
+use Joomla\Utilities\ArrayHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoModelSubscribers extends OttomoModel
 {
     const STATUS_PENDING = 0;
@@ -53,8 +65,7 @@ class OttomoModelSubscribers extends OttomoModel
         $db = $this->getDbo();
         $search = trim((string)$this->getState('search'));
         if ($search) {
-            jimport('joomla.mail.helper');
-            if (JMailHelper::isEmailAddress($search)) {
+            if (MailHelper::isEmailAddress($search)) {
                 $query->where($db->quoteName('subscriber.email').' = '.$db->quote($search));
             } else {
                 $search = $db->quote('%'.$db->escape($search, true).'%');
@@ -83,13 +94,12 @@ class OttomoModelSubscribers extends OttomoModel
 
     public function validate()
     {
-        jimport('joomla.mail.helper');
         $db = $this->getDbo();
         $data = $this->getState('data');
 
         //Check that we are getting data from a module
         if (!isset($data['module']) || !$data['module']) {
-            $this->setError(JText::_('COM_OTTOMO_AN_ERROR_OCCURED'));
+            $this->setError(Text::_('COM_OTTOMO_AN_ERROR_OCCURED'));
             return false;
         }
         //Get module parameters
@@ -103,26 +113,26 @@ class OttomoModelSubscribers extends OttomoModel
         $db->setQuery($query, 0, 1);
         $module = $db->loadObject();
         if (is_null($module)) {
-            $this->setError(JText::_('COM_OTTOMO_AN_ERROR_OCCURED'));
+            $this->setError(Text::_('COM_OTTOMO_AN_ERROR_OCCURED'));
             return false;
         }
-        $params = new JRegistry($module->params);
+        $params = new Registry($module->params);
 
         //Check that at least one topic has been set
         if (!isset($data['topics'])) {
-            $this->setError(JText::_('COM_OTTOMO_NO_TOPIC_SELECTED'));
+            $this->setError(Text::_('COM_OTTOMO_NO_TOPIC_SELECTED'));
             return false;
         }
         $data['topics'] = (array)$data['topics'];
-        JArrayHelper::toInteger($data['topics']);
+        ArrayHelper::toInteger($data['topics']);
         if (empty($data['topics'])) {
-            $this->setError(JText::_('COM_OTTOMO_NO_TOPIC_SELECTED'));
+            $this->setError(Text::_('COM_OTTOMO_NO_TOPIC_SELECTED'));
             return false;
         }
 
         //Check for valid email
-        if (!JMailHelper::isEmailAddress($data['email'])) {
-            $this->setError(JText::_('COM_OTTOMO_PLEASE_ENTER_A_VALID_EMAIL_ADDRESS'));
+        if (!MailHelper::isEmailAddress($data['email'])) {
+            $this->setError(Text::_('COM_OTTOMO_PLEASE_ENTER_A_VALID_EMAIL_ADDRESS'));
             return false;
         }
 
@@ -134,7 +144,7 @@ class OttomoModelSubscribers extends OttomoModel
         $db->setQuery($query, 0, 1);
         $existing = $db->loadObject();
         if ($existing && (int)$existing->status !== self::STATUS_UNSUBSCRIBED) {
-            $this->setError(JText::_('COM_OTTOMO_THIS_EMAIL_IS_ALREADY_USED'));
+            $this->setError(Text::_('COM_OTTOMO_THIS_EMAIL_IS_ALREADY_USED'));
             return false;
         }
         if ($existing) {
@@ -143,72 +153,72 @@ class OttomoModelSubscribers extends OttomoModel
         }
 
         //Check rest fields
-        if ($params->get('subscriberName') == '2' && JString::trim($data['name']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_NAME_IS_REQUIRED'));
+        if ($params->get('subscriberName') == '2' && StringHelper::trim($data['name']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_NAME_IS_REQUIRED'));
             return false;
         }
-        if ($params->get('subscriberBirthday') == '2' && JString::trim($data['birthday']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_DATE_OF_BIRTH_IS_REQUIRED'));
-            return false;
-        }
-
-        if ($params->get('subscriberAddress') == '2' && JString::trim($data['address']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_ADDRESS_IS_REQUIRED'));
+        if ($params->get('subscriberBirthday') == '2' && StringHelper::trim($data['birthday']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_DATE_OF_BIRTH_IS_REQUIRED'));
             return false;
         }
 
-        if ($params->get('subscriberCity') == '2' && JString::trim($data['city']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_CITY_IS_REQUIRED'));
+        if ($params->get('subscriberAddress') == '2' && StringHelper::trim($data['address']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_ADDRESS_IS_REQUIRED'));
             return false;
         }
 
-        if ($params->get('subscriberState') == '2' && JString::trim($data['state']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_STATE_PROVINCE_IS_REQUIRED'));
+        if ($params->get('subscriberCity') == '2' && StringHelper::trim($data['city']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_CITY_IS_REQUIRED'));
             return false;
         }
 
-        if ($params->get('subscriberZip') == '2' && JString::trim($data['zip']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_ZIP_CODE_IS_REQUIRED'));
+        if ($params->get('subscriberState') == '2' && StringHelper::trim($data['state']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_STATE_PROVINCE_IS_REQUIRED'));
             return false;
         }
 
-        if ($params->get('subscriberCountry') == '2' && JString::trim($data['country']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_COUNTRY_IS_REQUIRED'));
+        if ($params->get('subscriberZip') == '2' && StringHelper::trim($data['zip']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_ZIP_CODE_IS_REQUIRED'));
             return false;
         }
 
-        if ($params->get('subscriberPhone') == '2' && JString::trim($data['phone']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_TELEPHONE_FIXED_IS_REQUIRED'));
+        if ($params->get('subscriberCountry') == '2' && StringHelper::trim($data['country']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_COUNTRY_IS_REQUIRED'));
             return false;
         }
 
-        if ($params->get('subscriberMobile') == '2' && JString::trim($data['mobile']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_TELEPHONE_MOBILE_IS_REQUIRED'));
+        if ($params->get('subscriberPhone') == '2' && StringHelper::trim($data['phone']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_TELEPHONE_FIXED_IS_REQUIRED'));
             return false;
         }
 
-        if ($params->get('subscriberFax') == '2' && JString::trim($data['fax']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_FAX_IS_REQUIRED'));
+        if ($params->get('subscriberMobile') == '2' && StringHelper::trim($data['mobile']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_TELEPHONE_MOBILE_IS_REQUIRED'));
             return false;
         }
 
-        if ($params->get('subscriberVat') == '2' && JString::trim($data['vat']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_VAT_NO_IS_REQUIRED'));
+        if ($params->get('subscriberFax') == '2' && StringHelper::trim($data['fax']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_FAX_IS_REQUIRED'));
             return false;
         }
 
-        if ($params->get('subscriberTax') == '2' && JString::trim($data['tax']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_TAX_AUTHORITY_IS_REQUIRED'));
+        if ($params->get('subscriberVat') == '2' && StringHelper::trim($data['vat']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_VAT_NO_IS_REQUIRED'));
             return false;
         }
 
-        if ($params->get('subscriberCompany') == '2' && JString::trim($data['company']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_COMPANY_NAME_IS_REQUIRED'));
+        if ($params->get('subscriberTax') == '2' && StringHelper::trim($data['tax']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_TAX_AUTHORITY_IS_REQUIRED'));
             return false;
         }
 
-        if ($params->get('subscriberPosition') == '2' && JString::trim($data['position']) == '') {
-            $this->setError(JText::_('COM_OTTOMO_POSITION_IN_COMPANY_IS_REQUIRED'));
+        if ($params->get('subscriberCompany') == '2' && StringHelper::trim($data['company']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_COMPANY_NAME_IS_REQUIRED'));
+            return false;
+        }
+
+        if ($params->get('subscriberPosition') == '2' && StringHelper::trim($data['position']) == '') {
+            $this->setError(Text::_('COM_OTTOMO_POSITION_IN_COMPANY_IS_REQUIRED'));
             return false;
         }
 
@@ -226,7 +236,7 @@ class OttomoModelSubscribers extends OttomoModel
         $db->setQuery($query);
         $id = (int)$db->loadResult();
         if (!$id) {
-            $this->setError(JText::_('COM_OTTOMO_INVALID_ACTIVATION_TOKEN'));
+            $this->setError(Text::_('COM_OTTOMO_INVALID_ACTIVATION_TOKEN'));
             return false;
         }
         $query = $db->getQuery(true);
@@ -290,7 +300,7 @@ class OttomoModelSubscribers extends OttomoModel
         }
         // Suppression: an unsubscribed address stays unsubscribed whatever the backend (or an import) sends.
         // Only its owner may sign up again (site, double opt-in: validate() then status 0 with an activation link).
-        if (!$isNew && !JFactory::getApplication()->isSite()) {
+        if (!$isNew && !Factory::getApplication()->isClient('site')) {
             $query = $db->getQuery(true)
                 ->select($db->quoteName('status'))
                 ->from($db->quoteName('#__ottomo_subscribers'))
@@ -315,7 +325,7 @@ class OttomoModelSubscribers extends OttomoModel
 
         $topics = isset($data['topics']) ? (array)$data['topics'] : array();
         $data = array();
-        JArrayHelper::toInteger($topics);
+        ArrayHelper::toInteger($topics);
         foreach ($topics as $topic) {
             if ($topic > 0) {
                 $data[] = array($topic, (int)$table->id);
@@ -334,13 +344,13 @@ class OttomoModelSubscribers extends OttomoModel
         }
 
         // Send activation email
-        $mainframe = JFactory::getApplication();
-        if ($mainframe->isSite() && $table->activation && $table->status == self::STATUS_PENDING) {
+        $mainframe = Factory::getApplication();
+        if ($mainframe->isClient('site') && $table->activation && $table->status == self::STATUS_PENDING) {
 
-            $params = JComponentHelper::getParams('com_ottomo');
-            $uri = JURI::getInstance();
+            $params = ComponentHelper::getParams('com_ottomo');
+            $uri = Uri::getInstance();
             $base = $uri->toString(array('scheme', 'user', 'pass', 'host', 'port'));
-            $activationLink = $base.JRoute::_('index.php?option=com_ottomo&task=subscribers.activate&hash='.$table->activation, false);
+            $activationLink = $base.Route::_('index.php?option=com_ottomo&task=subscribers.activate&hash='.$table->activation, false);
             JLoader::register('OttomoHelperSettings', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/settings.php');
             $sender = OttomoHelperSettings::sender();
             $this->sendActivationEmail($table, $activationLink, $sender->email, $sender->name);
@@ -356,21 +366,21 @@ class OttomoModelSubscribers extends OttomoModel
         JLoader::register('OttomoHelperSettings', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/settings.php');
         $siteName = OttomoHelperSettings::siteName();
         $name = trim((string)$subscriber->name);
-        $greeting = ($name !== '' && strcasecmp($name, (string)$subscriber->email) !== 0) ? JText::sprintf('COM_OTTOMO_ACTIVATION_EMAIL_GREETING_NAME', $name) : JText::_('COM_OTTOMO_ACTIVATION_EMAIL_GREETING');
-        $intro = JText::sprintf('COM_OTTOMO_ACTIVATION_EMAIL_INTRO', $siteName);
-        $button = JText::_('COM_OTTOMO_ACTIVATION_EMAIL_BUTTON');
-        $ignore = JText::_('COM_OTTOMO_ACTIVATION_EMAIL_IGNORE');
-        $subject = JText::sprintf('COM_OTTOMO_ACTIVATION_EMAIL_SUBJECT', $siteName);
+        $greeting = ($name !== '' && strcasecmp($name, (string)$subscriber->email) !== 0) ? Text::sprintf('COM_OTTOMO_ACTIVATION_EMAIL_GREETING_NAME', $name) : Text::_('COM_OTTOMO_ACTIVATION_EMAIL_GREETING');
+        $intro = Text::sprintf('COM_OTTOMO_ACTIVATION_EMAIL_INTRO', $siteName);
+        $button = Text::_('COM_OTTOMO_ACTIVATION_EMAIL_BUTTON');
+        $ignore = Text::_('COM_OTTOMO_ACTIVATION_EMAIL_IGNORE');
+        $subject = Text::sprintf('COM_OTTOMO_ACTIVATION_EMAIL_SUBJECT', $siteName);
 
         // "Powered by Ottomo" at the very end (transactional emails only, never in campaign templates)
         $poweredUrl = 'https://www.joomlaworks.net/ottomo';
-        $text = $greeting."\n\n".$intro."\n\n".$button.":\n".$link."\n\n".$ignore."\n\n-- \n".JText::sprintf('COM_OTTOMO_POWERED_BY', 'Ottomo').': '.$poweredUrl."\n";
+        $text = $greeting."\n\n".$intro."\n\n".$button.":\n".$link."\n\n".$ignore."\n\n-- \n".Text::sprintf('COM_OTTOMO_POWERED_BY', 'Ottomo').': '.$poweredUrl."\n";
 
         $e = function ($value) {
             return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
         };
         $font = 'font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Helvetica,Arial,sans-serif;';
-        $html = '<!DOCTYPE html><html lang="'.$e(JFactory::getLanguage()->getTag()).'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>'.$e($subject).'</title></head>'
+        $html = '<!DOCTYPE html><html lang="'.$e(OttomoCompat::language()->getTag()).'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>'.$e($subject).'</title></head>'
             .'<body style="margin:0;padding:0;background:#f4f4f5;">'
             .'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5;"><tr><td align="center" style="padding:32px 12px;">'
             .'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;">'
@@ -383,11 +393,11 @@ class OttomoModelSubscribers extends OttomoModel
             .'</table>'
             .'<p style="margin:24px 0 0;'.$font.'font-size:13px;line-height:24px;color:#a1a1aa;">'
             .'<a href="'.$poweredUrl.'" style="color:#a1a1aa;text-decoration:none;">'
-            .JText::sprintf('COM_OTTOMO_POWERED_BY', '<img src="'.$e(rtrim(JUri::root(), '/').'/components/com_ottomo/static/images/powered-by-ottomo.png').'" width="132" height="33" alt="Ottomo" style="display:inline-block;width:132px;height:33px;border:0;vertical-align:-8px;margin-left:5px;">')
+            .Text::sprintf('COM_OTTOMO_POWERED_BY', '<img src="'.$e(rtrim(Uri::root(), '/').'/components/com_ottomo/static/images/powered-by-ottomo.png').'" width="132" height="33" alt="Ottomo" style="display:inline-block;width:132px;height:33px;border:0;vertical-align:-8px;margin-left:5px;">')
             .'</a></p>'
             .'</td></tr></table></body></html>';
 
-        $mailer = JFactory::getMailer();
+        $mailer = OttomoCompat::mailer();
         $mailer->setSender(array($senderEmail, $senderName));
         $mailer->addRecipient($subscriber->email);
         $mailer->setSubject($subject);
@@ -413,7 +423,7 @@ class OttomoModelSubscribers extends OttomoModel
     {
         $id = (int)$this->getState('id');
         $topics = $this->getState('topics');
-        JArrayHelper::toInteger($topics);
+        ArrayHelper::toInteger($topics);
         $db = $this->getDbo();
         if (count($topics)) {
             $query = $db->getQuery(true);

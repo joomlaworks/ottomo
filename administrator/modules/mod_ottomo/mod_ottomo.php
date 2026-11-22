@@ -10,12 +10,17 @@
 // Control panel module: Ottomo at a glance (totals, quick actions) + the statistics widget of the component dashboard
 defined('_JEXEC') or die ;
 
-JFactory::getLanguage()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo');
+use Joomla\CMS\Helper\ModuleHelper;
+use Joomla\CMS\Uri\Uri;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
+OttomoCompat::language()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo');
 require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/views/dashboard/view.html.php';
 JLoader::register('OttomoHelperHTML', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/html.php');
 
-$base = JURI::base(true).'/components/com_ottomo';
-JFactory::getDocument()->addStyleSheet(OttomoHelperHTML::asset($base.'/static/css/ottomo-graphs.css'));
+$base = Uri::base(true).'/components/com_ottomo';
+OttomoCompat::document()->addStyleSheet(OttomoHelperHTML::asset($base.'/static/css/ottomo-graphs.css'));
 
 // Totals
 $model = OttomoModel::getInstance('Newsletters');
@@ -45,4 +50,4 @@ $view = new OttomoViewDashboard();
 $view->chart('module', $params);
 $chart = ob_get_clean();
 
-require JModuleHelper::getLayoutPath('mod_ottomo', $params->get('layout', 'default'));
+require ModuleHelper::getLayoutPath('mod_ottomo', $params->get('layout', 'default'));

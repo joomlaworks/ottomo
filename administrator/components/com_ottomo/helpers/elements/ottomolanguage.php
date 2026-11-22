@@ -9,14 +9,17 @@
 
 defined('_JEXEC') or die ;
 
-jimport('joomla.form.formfield');
+use Joomla\CMS\Form\FormField;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 
 /**
  * Loads Ottomo's backend language file for a module's settings form (the modules have no language files of their
  * own). Put it first in the fieldset: Joomla creates all the fields of a fieldset before rendering their labels.
  * Renders nothing.
  */
-class JFormFieldOttomoLanguage extends JFormField
+class JFormFieldOttomoLanguage extends FormField
 {
     public $type = 'OttomoLanguage';
 
@@ -24,7 +27,7 @@ class JFormFieldOttomoLanguage extends JFormField
 
     public function setup(SimpleXMLElement $element, $value, $group = null)
     {
-        $language = JFactory::getLanguage();
+        $language = OttomoCompat::language();
         $language->load('com_ottomo', JPATH_ADMINISTRATOR) || $language->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo');
         return parent::setup($element, $value, $group);
     }

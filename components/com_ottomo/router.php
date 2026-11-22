@@ -60,7 +60,21 @@ function OttomoBuildRoute(&$query)
     return $segments;
 }
 
-function OttomoParseRoute($segments)
+/**
+ * Joomla 4+ expects the segments to be used up (left over segments are a 404); Joomla turns the first "-" of each
+ * segment into ":" (Ottomo's values never contain ":", but tracking redirects are URL-safe base64, with "-").
+ */
+function OttomoParseRoute(&$segments)
+{
+    $values = array();
+    foreach ($segments as $segment) {
+        $values[] = str_replace(':', '-', (string)$segment);
+    }
+    $segments = array();
+    return ottomoParseSegments($values);
+}
+
+function ottomoParseSegments($segments)
 {
     $vars = array();
     if ($segments[0] == 'subscribers') {

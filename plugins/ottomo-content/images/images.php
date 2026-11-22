@@ -9,18 +9,25 @@
 
 defined('_JEXEC') or die ;
 
-class plgOttomocontentImages extends JPlugin
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Uri\Uri;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
+class plgOttomocontentImages extends CMSPlugin
 {
     public function __construct(&$subject, $config)
     {
         parent::__construct($subject, $config);
-        JFactory::getLanguage()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo'); // Ottomo's backend language file
+        OttomoCompat::language()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo'); // Ottomo's backend language file
         $this->isInstalled = $this->isInstalled();
-        $settings = JComponentHelper::getParams('com_ottomo');
+        $settings = ComponentHelper::getParams('com_ottomo');
         $this->params->merge($settings);
     }
 
-    public function ottomoExtensionEditorButton()
+    public function onOttomoExtensionEditorButton()
     {
         if (!$this->isInstalled) {
             return false;
@@ -28,8 +35,8 @@ class plgOttomocontentImages extends JPlugin
 
         $button = new stdClass();
         $button->extension = $this->_name;
-        $button->label = JText::_('PLG_OTTOMO_CONTENT_IMAGES_LABEL');
-        $button->link = JURI::base(true).'/index.php?option=com_media&view=images&tmpl=component&asset=com_ottomo&folder=';
+        $button->label = Text::_('PLG_OTTOMO_CONTENT_IMAGES_LABEL');
+        $button->link = Uri::base(true).'/index.php?option=com_media&view=images&tmpl=component&asset=com_ottomo&folder=';
         return $button;
     }
 

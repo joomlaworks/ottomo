@@ -9,6 +9,9 @@
 
 // Send campaign: rendered inside a SuperModal frame (see js/ottomo.js -> Ottomo.frames.send)
 defined('_JEXEC') or die ;
+
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
 ?>
 <div class="otm-frame" data-frame="send">
     <div class="otm-frame__head">
@@ -19,19 +22,19 @@ defined('_JEXEC') or die ;
     <?php if ($this->error): ?>
     <div class="otm-frame__notice otm-frame__notice--error" role="alert"><?php echo $this->error; ?></div>
     <div class="otm-frame__actions">
-        <button type="button" class="otm-btn otm-btn--generic" data-frame-close><?php echo JText::_('COM_OTTOMO_CLOSE'); ?></button>
+        <button type="button" class="otm-btn otm-btn--generic" data-frame-close><?php echo Text::_('COM_OTTOMO_CLOSE'); ?></button>
     </div>
     <?php else: ?>
     <div data-state="ready">
-        <p class="otm-frame__notice"><?php echo $this->resume ? JText::sprintf('COM_OTTOMO_RESUME_TO_N', number_format((int)$this->total)) : JText::plural('COM_OTTOMO_SEND_TO_N_RECIPIENTS', $this->total); ?></p>
+        <p class="otm-frame__notice"><?php echo $this->resume ? Text::sprintf('COM_OTTOMO_RESUME_TO_N', number_format((int)$this->total)) : Text::plural('COM_OTTOMO_SEND_TO_N_RECIPIENTS', $this->total); ?></p>
         <div class="otm-frame__actions">
-            <button type="button" class="otm-btn otm-btn--generic" data-frame-close><?php echo JText::_('COM_OTTOMO_CANCEL'); ?></button>
-            <button type="button" class="otm-btn otm-btn--save" data-action="start"><?php echo OttomoHelperHTML::icon('envelope'); ?> <span><?php echo JText::_($this->resume ? 'COM_OTTOMO_RESUME_SENDING' : 'COM_OTTOMO_SEND'); ?></span></button>
+            <button type="button" class="otm-btn otm-btn--generic" data-frame-close><?php echo Text::_('COM_OTTOMO_CANCEL'); ?></button>
+            <button type="button" class="otm-btn otm-btn--save" data-action="start"><?php echo OttomoHelperHTML::icon('envelope'); ?> <span><?php echo Text::_($this->resume ? 'COM_OTTOMO_RESUME_SENDING' : 'COM_OTTOMO_SEND'); ?></span></button>
         </div>
     </div>
 
     <div data-state="running" hidden>
-        <p class="otm-frame__notice"><?php echo JText::_('COM_OTTOMO_SENDING_KEEP_OPEN'); ?></p>
+        <p class="otm-frame__notice"><?php echo Text::_('COM_OTTOMO_SENDING_KEEP_OPEN'); ?></p>
         <div class="otm-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="otm-progress__bar"></div></div>
         <p class="otm-frame__meta"><span data-role="done">0</span> / <?php echo (int)$this->total; ?></p>
     </div>
@@ -39,16 +42,16 @@ defined('_JEXEC') or die ;
     <div data-state="finished" hidden>
         <div class="otm-frame__notice otm-frame__notice--success" role="status" data-role="summary"></div>
         <div class="otm-frame__actions">
-            <button type="button" class="otm-btn otm-btn--save" data-frame-close><?php echo JText::_('COM_OTTOMO_CLOSE'); ?></button>
+            <button type="button" class="otm-btn otm-btn--save" data-frame-close><?php echo Text::_('COM_OTTOMO_CLOSE'); ?></button>
         </div>
     </div>
 
     <div data-state="failed" hidden>
         <div class="otm-frame__notice otm-frame__notice--error" role="alert" data-role="error"></div>
-        <p class="otm-frame__meta"><?php echo JText::_('COM_OTTOMO_SEND_RESUME_HINT'); ?></p>
+        <p class="otm-frame__meta"><?php echo Text::_('COM_OTTOMO_SEND_RESUME_HINT'); ?></p>
         <div class="otm-frame__actions">
-            <button type="button" class="otm-btn otm-btn--generic" data-frame-close><?php echo JText::_('COM_OTTOMO_CLOSE'); ?></button>
-            <button type="button" class="otm-btn otm-btn--save" data-action="resume"><?php echo OttomoHelperHTML::icon('envelope'); ?> <span><?php echo JText::_('COM_OTTOMO_RESUME_SENDING'); ?></span></button>
+            <button type="button" class="otm-btn otm-btn--generic" data-frame-close><?php echo Text::_('COM_OTTOMO_CLOSE'); ?></button>
+            <button type="button" class="otm-btn otm-btn--save" data-action="resume"><?php echo OttomoHelperHTML::icon('envelope'); ?> <span><?php echo Text::_('COM_OTTOMO_RESUME_SENDING'); ?></span></button>
         </div>
     </div>
 
@@ -59,7 +62,7 @@ defined('_JEXEC') or die ;
         <input type="hidden" name="total" value="<?php echo (int)$this->total; ?>" />
         <input type="hidden" name="after" value="0" />
         <input type="hidden" name="format" value="json" />
-        <?php echo JHTML::_('form.token'); ?>
+        <?php echo HTMLHelper::_('form.token'); ?>
     </form>
     <?php endif; ?>
 </div>

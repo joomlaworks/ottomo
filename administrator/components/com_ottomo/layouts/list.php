@@ -7,7 +7,10 @@
  * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 
-defined('_JEXEC') or die ; ?>
+defined('_JEXEC') or die ;
+
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text; ?>
 <div id="otm-admin-container" class="otm-listed-items otm-admin-list otm-admin-view-<?php echo $this->view; ?>">
 	
 	<script>
@@ -21,17 +24,17 @@ defined('_JEXEC') or die ; ?>
 				return 'cid[]=' + encodeURIComponent(el.value);
 			});
 			if (!ids.length) {
-				alert(Joomla.JText._('JLIB_HTML_PLEASE_MAKE_A_SELECTION_FROM_THE_LIST', 'Please first make a selection from the list.'));
+				alert((Joomla.Text || Joomla.JText)._('JLIB_HTML_PLEASE_MAKE_A_SELECTION_FROM_THE_LIST', 'Please first make a selection from the list.'));
 				return false;
 			}
 			Ottomo.frame('index.php?option=com_ottomo&view=batch&tmpl=component&type=' + view + '&' + ids.join('&'),
-				<?php echo json_encode(JText::_('COM_OTTOMO_SET_TOPICS')); ?>, { reload: true });
+				<?php echo json_encode(Text::_('COM_OTTOMO_SET_TOPICS')); ?>, { reload: true });
 			return false;
 		}
 
 		// Subscribers import / export (SuperModal frames)
 		if (task === 'subscribers.import') {
-			Ottomo.frame('index.php?option=com_ottomo&view=import&tmpl=component', <?php echo json_encode(JText::_('COM_OTTOMO_IMPORT')); ?>, { reload: true });
+			Ottomo.frame('index.php?option=com_ottomo&view=import&tmpl=component', <?php echo json_encode(Text::_('COM_OTTOMO_IMPORT')); ?>, { reload: true });
 			return false;
 		}
 		// Export: the ticked rows; else the filtered/searched list (all its pages); else everyone. "Export all": everyone.
@@ -42,7 +45,7 @@ defined('_JEXEC') or die ; ?>
 					url += '&cid[]=' + encodeURIComponent(el.value);
 				});
 			}
-			Ottomo.frame(url, <?php echo json_encode(JText::_('COM_OTTOMO_EXPORTING_SUBSCRIBERS')); ?>);
+			Ottomo.frame(url, <?php echo json_encode(Text::_('COM_OTTOMO_EXPORTING_SUBSCRIBERS')); ?>);
 			return false;
 		}
 
@@ -50,10 +53,10 @@ defined('_JEXEC') or die ; ?>
 		if (task === 'subscribers.removeUnsubscribed') {
 			var unsubscribed = <?php echo isset($this->unsubscribedCount) ? (int)$this->unsubscribedCount : 0; ?>;
 			if (!unsubscribed) {
-				window.alert(<?php echo json_encode(JText::_('COM_OTTOMO_NO_UNSUBSCRIBED')); ?>);
+				window.alert(<?php echo json_encode(Text::_('COM_OTTOMO_NO_UNSUBSCRIBED')); ?>);
 				return false;
 			}
-			if (!window.confirm(<?php echo json_encode(JText::_('COM_OTTOMO_CONFIRM_DELETE_UNSUBSCRIBED')); ?>.replace('%s', unsubscribed.toLocaleString()))) {
+			if (!window.confirm(<?php echo json_encode(Text::_('COM_OTTOMO_CONFIRM_DELETE_UNSUBSCRIBED')); ?>.replace('%s', unsubscribed.toLocaleString()))) {
 				return false;
 			}
 			Joomla.submitform(task);
@@ -63,12 +66,12 @@ defined('_JEXEC') or die ; ?>
 		// Deleting cannot be undone: say what happens to the related data
 		if (/\.remove$/.test(task)) {
 			var confirmations = <?php echo json_encode(array(
-				'newsletters' => JText::_('COM_OTTOMO_CONFIRM_DELETE_NEWSLETTERS'),
-				'subscribers' => JText::_('COM_OTTOMO_CONFIRM_DELETE_SUBSCRIBERS'),
-				'topics' => JText::_('COM_OTTOMO_CONFIRM_DELETE_TOPICS'),
-				'templates' => JText::_('COM_OTTOMO_CONFIRM_DELETE_TEMPLATES'),
+				'newsletters' => Text::_('COM_OTTOMO_CONFIRM_DELETE_NEWSLETTERS'),
+				'subscribers' => Text::_('COM_OTTOMO_CONFIRM_DELETE_SUBSCRIBERS'),
+				'topics' => Text::_('COM_OTTOMO_CONFIRM_DELETE_TOPICS'),
+				'templates' => Text::_('COM_OTTOMO_CONFIRM_DELETE_TEMPLATES'),
 			)); ?>;
-			if (!window.confirm(confirmations[view] || <?php echo json_encode(JText::_('COM_OTTOMO_CONFIRM_DELETE')); ?>)) {
+			if (!window.confirm(confirmations[view] || <?php echo json_encode(Text::_('COM_OTTOMO_CONFIRM_DELETE')); ?>)) {
 				return false;
 			}
 		}
@@ -86,7 +89,7 @@ defined('_JEXEC') or die ; ?>
 			return;
 		}
 		var filtered = <?php echo ($this->search !== '' || (int)$this->topic > 0 || (int)$this->status !== -1) ? 'true' : 'false'; ?>;
-		var labels = <?php echo json_encode(array('all' => JText::_('COM_OTTOMO_EXPORT'), 'filtered' => JText::_('COM_OTTOMO_EXPORT_FILTERED'), 'selected' => JText::_('COM_OTTOMO_EXPORT_SELECTED_N'))); ?>;
+		var labels = <?php echo json_encode(array('all' => Text::_('COM_OTTOMO_EXPORT'), 'filtered' => Text::_('COM_OTTOMO_EXPORT_FILTERED'), 'selected' => Text::_('COM_OTTOMO_EXPORT_SELECTED_N'))); ?>;
 		var update = function() {
 			var selected = document.querySelectorAll('#adminForm input[name="cid[]"]:checked').length;
 			button.textContent = selected ? labels.selected.replace('%d', selected) : (filtered ? labels.filtered : labels.all);
@@ -108,7 +111,7 @@ defined('_JEXEC') or die ; ?>
                 <table class="table table-striped">
                     <thead class="otm-items-header">
                         <tr>
-                        	<th><?php echo JHtml::_('grid.checkall'); ?></th>
+                        	<th><?php echo HTMLHelper::_('grid.checkall'); ?></th>
                             <?php foreach ($this->columns as $column): ?>
                             <th<?php echo $column->attributes; ?>><?php echo $column->heading; ?></th>
                             <?php endforeach; ?>
@@ -118,7 +121,7 @@ defined('_JEXEC') or die ; ?>
                     <tbody>
                         <?php foreach ($this->rows as $i => $row):?>
                         <tr>
-                        	<td><?php echo JHtml::_('grid.id', $i, $row->id); ?>
+                        	<td><?php echo HTMLHelper::_('grid.id', $i, $row->id); ?>
                             <?php foreach ($this->columns as $column): $property = $column->property; ?>
                             <td<?php echo $column->attributes; ?>><?php echo $row->$property; ?></td>
                             <?php endforeach; ?>
@@ -143,6 +146,6 @@ defined('_JEXEC') or die ; ?>
         <input type="hidden" name="boxchecked" value="0" />
         <input type="hidden" name="format" value="<?php echo $this->format; ?>" />
         <input type="hidden" name="total" value="<?php echo $this->total; ?>" />
-        <?php echo JHTML::_('form.token'); ?>
+        <?php echo HTMLHelper::_('form.token'); ?>
     </form>
 </div>

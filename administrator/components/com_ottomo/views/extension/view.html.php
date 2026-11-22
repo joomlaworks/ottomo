@@ -9,14 +9,19 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\Toolbar\ToolbarHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoViewExtension extends OttomoView
 {
     public function display($tpl = null)
     {
         // Pass the view to the plugin
-        $dispatcher = JDispatcher::getInstance();
-        JPluginHelper::importPlugin('ottomo-content', $this->extension);
-        $dispatcher->trigger('ottomoExtensionView', array(&$this));
+        PluginHelper::importPlugin('ottomo-content', $this->extension);
+        OttomoCompat::trigger('onOttomoExtensionView', array($this));
 
         // Set layout
         $this->setLayout('extension');
@@ -27,8 +32,8 @@ class OttomoViewExtension extends OttomoView
 
     protected function addTitle()
     {
-        $this->title = JText::_('COM_OTTOMO_'.strtoupper($this->view).'_'.strtoupper($this->extension));
-        JToolBarHelper::title($this->title, 'ottomo');
+        $this->title = Text::_('COM_OTTOMO_'.strtoupper($this->view).'_'.strtoupper($this->extension));
+        ToolbarHelper::title($this->title, 'ottomo');
     }
 
 }

@@ -9,8 +9,15 @@
 
 defined('_JEXEC') or die ;
 
-jimport('joomla.filesystem.file');
-jimport('joomla.filesystem.folder');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Installer\InstallerHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\Filesystem\File;
+use Joomla\Filesystem\Folder;
+use Joomla\Filesystem\Path;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 
 class ottomoModelTemplates extends OttomoModel
 {
@@ -59,52 +66,110 @@ class ottomoModelTemplates extends OttomoModel
 
     }
 
-    public function install()
+    /**
+     * Installs an email template package (an upload, or a folder: the built-in templates on installation). No Joomla
+     * installer adapter (their API differs between Joomla 3 and 4+): the files listed in manifest.xml are copied to
+     * components/com_ottomo/templates/<folder> and the template is registered (or updated, when the folder is taken and
+     * the manifest says method="upgrade", or when $overwrite is set).
+     */
+    public function install($overwrite = false)
     {
-        // Get package
         $source = $this->getState('source');
-        if ($source == 'path') {
-            $package = $this->getPackageFromFolder($this->getState('folder'));
-        } else {
-            $package = $this->getPackageFromUpload();
-        }
-
-        // Ensure we have a package
+        $package = $source == 'path' ? $this->getPackageFromFolder($this->getState('folder')) : $this->getPackageFromUpload();
         if (!$package) {
             return false;
         }
 
-        // Allow only ottomo templates installation from here
-        if ($package['type'] != 'ottomotemplate') {
-            $this->setError(JText::_('COM_OTTOMO_INVALID_PACKAGE_TYPE'));
-            return false;
-        }
-
-        // Get installer
-        $installer = $this->getInstaller();
-
-        //Install the package
-        if (!$installer->install($package['dir'])) {
+        try {
+            $result = $this->installFolder($package['dir'], $overwrite);
+        } catch (RuntimeException $e) {
+            $this->setError($e->getMessage());
             $result = false;
-        } else {
-            $result = true;
         }
-
-        // Set some model state values
-        $this->setState('name', $installer->get('name'));
         $this->setState('result', $result);
-        $this->setState('message', $installer->message);
-        $this->setState('extension.message', $installer->get('extension.message'));
 
         // Cleanup the install files (an uploaded package; a folder install has none and keeps its folder)
         if (!empty($package['packagefile'])) {
             if (!is_file($package['packagefile'])) {
-                $package['packagefile'] = JFactory::getConfig()->get('tmp_path').'/'.$package['packagefile'];
+                $package['packagefile'] = OttomoCompat::config('tmp_path').'/'.$package['packagefile'];
             }
-            JInstallerHelper::cleanupInstall($package['packagefile'], $package['extractdir']);
+            InstallerHelper::cleanupInstall($package['packagefile'], $package['extractdir']);
         }
 
         return $result;
+    }
+
+    protected function installFolder($dir, $overwrite)
+    {
+        $xml = is_file($dir.'/manifest.xml') ? @simplexml_load_file($dir.'/manifest.xml') : false;
+        if (!$xml || $xml->getName() !== 'extension' || (string)$xml['type'] !== 'ottomotemplate') {
+            throw new RuntimeException(Text::_('COM_OTTOMO_INVALID_PACKAGE_TYPE'));
+        }
+        // One directory name inside components/com_ottomo/templates: never a path
+        $folder = (string)$xml['folder'];
+        if (!preg_match('/^[A-Za-z0-9][A-Za-z0-9_.-]*$/', $folder)) {
+            throw new RuntimeException(Text::_('COM_OTTOMO_TEMPLATE_MUST_HAVE_A_FOLDER'));
+        }
+        $db = $this->getDbo();
+        $id = (int)$db->setQuery($db->getQuery(true)->select($db->quoteName('id'))->from($db->quoteName('#__ottomo_templates'))->where($db->quoteName('folder').' = '.$db->quote($folder)))->loadResult();
+        if ($id && !$overwrite && (string)$xml['method'] !== 'upgrade') {
+            throw new RuntimeException(Text::_('JLIB_INSTALLER_ABORT_TPL_INSTALL_ALREADY_INSTALLED'));
+        }
+
+        // The files the manifest lists (<files>, <images>, <css>; a folder="" attribute is their place in the package)
+        $target = JPATH_SITE.'/components/com_ottomo/templates/'.$folder;
+        if (realpath($dir) !== realpath($target)) {
+            if (!is_dir($target)) {
+                Folder::create($target);
+            }
+            foreach (array('files', 'images', 'css') as $group) {
+                foreach ($xml->$group as $node) {
+                    $base = trim((string)$node['folder'], '/');
+                    foreach ($node->children() as $child) {
+                        $name = trim((string)$child);
+                        if ($name === '' || !preg_match('#^[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)*$#', $name) || strpos($name, '..') !== false) {
+                            continue;
+                        }
+                        $from = $dir.'/'.($base !== '' ? $base.'/' : '').$name;
+                        if ($child->getName() === 'folder' && is_dir($from)) {
+                            Folder::copy($from, $target.'/'.$name, '', true);
+                        } elseif ($child->getName() === 'filename' && is_file($from)) {
+                            if (!is_dir(dirname($target.'/'.$name))) {
+                                Folder::create(dirname($target.'/'.$name));
+                            }
+                            File::copy($from, $target.'/'.$name);
+                        }
+                    }
+                }
+            }
+            if (!is_file($target.'/manifest.xml')) {
+                File::copy($dir.'/manifest.xml', $target.'/manifest.xml');
+            }
+        }
+
+        $table = $this->getTable();
+        if ($id) {
+            $table->load($id);
+        }
+        $manifest = self::manifestData($xml, $folder);
+        $table->name = $manifest['name'];
+        $table->folder = $folder;
+        $table->manifest = json_encode($manifest);
+        if (!$table->store()) {
+            throw new RuntimeException($table->getError());
+        }
+        $this->setState('name', $manifest['name']);
+        return true;
+    }
+
+    /** The manifest cache stored with a template (name, layout, author...). */
+    public static function manifestData($xml, $folder)
+    {
+        $manifest = array('name' => trim((string)$xml->name) !== '' ? trim((string)$xml->name) : $folder, 'type' => 'ottomotemplate');
+        foreach (array('creationDate', 'author', 'copyright', 'authorEmail', 'authorUrl', 'version', 'description', 'layout') as $key) {
+            $manifest[$key] = trim((string)$xml->$key);
+        }
+        return $manifest;
     }
 
     /**
@@ -127,7 +192,7 @@ class ottomoModelTemplates extends OttomoModel
         }
         $db = $this->getDbo();
         $known = $db->setQuery($db->getQuery(true)->select($db->quoteName('folder'))->from($db->quoteName('#__ottomo_templates')))->loadColumn();
-        foreach (JFolder::folders($root) as $folder) {
+        foreach (Folder::folders($root) as $folder) {
             if (in_array($folder, $known, true) || !preg_match('/^[A-Za-z0-9_.-]+$/', $folder) || !is_file($root.'/'.$folder.'/default.php') || !is_file($root.'/'.$folder.'/manifest.xml')) {
                 continue;
             }
@@ -135,10 +200,7 @@ class ottomoModelTemplates extends OttomoModel
             if (!$xml) {
                 continue;
             }
-            $manifest = array('name' => trim((string)$xml->name) !== '' ? trim((string)$xml->name) : $folder, 'type' => 'ottomotemplate');
-            foreach (array('creationDate', 'author', 'copyright', 'authorEmail', 'authorUrl', 'version', 'description', 'layout') as $key) {
-                $manifest[$key] = trim((string)$xml->$key);
-            }
+            $manifest = self::manifestData($xml, $folder);
             $table = $this->getTable();
             $table->name = $manifest['name'];
             $table->folder = $folder;
@@ -160,25 +222,25 @@ class ottomoModelTemplates extends OttomoModel
             $query = $db->getQuery(true)->select('COUNT(*)')->from($db->quoteName('#__ottomo_email_campaigns'))->where($db->quoteName('template').' = '.$id);
             $campaigns = (int)$db->setQuery($query)->loadResult();
             if ($table->id && $campaigns > 0) {
-                $inUse[] = JText::plural('COM_OTTOMO_TEMPLATE_IN_USE_N', $campaigns, $table->name);
+                $inUse[] = Text::plural('COM_OTTOMO_TEMPLATE_IN_USE_N', $campaigns, $table->name);
                 continue;
             }
             // In the site template: its files are not Ottomo's to delete (and the template would be found again)
             JLoader::register('OttomoHelperTemplate', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/template.php');
             if ($table->id && OttomoHelperTemplate::location($table->folder)->custom) {
-                $inUse[] = JText::sprintf('COM_OTTOMO_TEMPLATE_IN_SITE_TEMPLATE', $table->name);
+                $inUse[] = Text::sprintf('COM_OTTOMO_TEMPLATE_IN_SITE_TEMPLATE', $table->name);
                 continue;
             }
             if ($table->id && OttomoTableTemplates::validFolder($table->folder) && $table->folder != 'default') {
                 $path = JPATH_SITE.'/components/com_ottomo/templates/'.$table->folder;
-                if (JFolder::exists($path)) {
-                    JFolder::delete($path);
+                if (is_dir($path)) {
+                    Folder::delete($path);
                 }
                 $table->delete($id);
             }
         }
         if (count($inUse)) {
-            $this->setError(JText::_('COM_OTTOMO_TEMPLATES_NOT_DELETED').' '.implode(' ', $inUse));
+            $this->setError(Text::_('COM_OTTOMO_TEMPLATES_NOT_DELETED').' '.implode(' ', $inUse));
             return false;
         }
         return true;
@@ -194,17 +256,17 @@ class ottomoModelTemplates extends OttomoModel
     public function copy()
     {
         $ids = $this->getState('id');
-        $db = JFactory::getDbo();
+        $db = OttomoCompat::db();
         foreach ($ids as $id) {
             $source = $this->getTable();
             $source->load($id);
             if ($source->id) {
                 $target = $this->getTable();
-                $target->name = JText::sprintf('COM_OTTOMO_COPY_OF', $source->name);
+                $target->name = Text::sprintf('COM_OTTOMO_COPY_OF', $source->name);
                 // A readable, free folder name: linen-copy, linen-copy-2...
                 $base = preg_replace('/-copy(-\d+)?$/', '', $source->folder).'-copy';
                 $folder = $base;
-                for ($n = 2; JFolder::exists(JPATH_SITE.'/components/com_ottomo/templates/'.$folder) || $this->folderTaken($folder); $n++) {
+                for ($n = 2; is_dir(JPATH_SITE.'/components/com_ottomo/templates/'.$folder) || $this->folderTaken($folder); $n++) {
                     $folder = $base.'-'.$n;
                 }
                 $target->folder = $folder;
@@ -213,8 +275,8 @@ class ottomoModelTemplates extends OttomoModel
                 // From wherever its files are (the site template too); the copy is a regular Ottomo template
                 JLoader::register('OttomoHelperTemplate', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/template.php');
                 $path = OttomoHelperTemplate::location($source->folder)->path;
-                if ($source->folder && JFolder::exists($path)) {
-                    JFolder::copy($path, JPATH_SITE.'/components/com_ottomo/templates/'.$target->folder);
+                if ($source->folder && is_dir($path)) {
+                    Folder::copy($path, JPATH_SITE.'/components/com_ottomo/templates/'.$target->folder);
                 }
             }
 
@@ -227,56 +289,54 @@ class ottomoModelTemplates extends OttomoModel
         $package = $this->getState('package');
 
         // Load language file
-        $language = JFactory::getLanguage();
+        $language = OttomoCompat::language();
         $language->load('com_installer');
 
         // Make sure that file uploads are enabled in php.
         if (!(bool) ini_get('file_uploads')) {
-            $this->setError(JText::_('COM_INSTALLER_MSG_INSTALL_WARNINSTALLFILE'));
+            $this->setError(Text::_('COM_INSTALLER_MSG_INSTALL_WARNINSTALLFILE'));
             return false;
         }
 
         // Make sure that zlib is loaded so that the package can be unpacked.
         if (!extension_loaded('zlib')) {
-            $this->setError(JText::_('COM_INSTALLER_MSG_INSTALL_WARNINSTALLZLIB'));
+            $this->setError(Text::_('COM_INSTALLER_MSG_INSTALL_WARNINSTALLZLIB'));
             return false;
         }
 
         // If there is no uploaded file, we have a problem...
         if (!is_array($package)) {
-            $this->setError(JText::_('COM_INSTALLER_MSG_INSTALL_NO_FILE_SELECTED'));
+            $this->setError(Text::_('COM_INSTALLER_MSG_INSTALL_NO_FILE_SELECTED'));
             return false;
         }
 
         // Is the PHP tmp directory missing?
         if ($package['error'] && ($package['error'] == UPLOAD_ERR_NO_TMP_DIR)) {
-            $this->setError(JText::_('COM_INSTALLER_MSG_INSTALL_WARNINSTALLUPLOADERROR').'<br />'.JText::_('COM_INSTALLER_MSG_WARNINGS_PHPUPLOADNOTSET'));
+            $this->setError(Text::_('COM_INSTALLER_MSG_INSTALL_WARNINSTALLUPLOADERROR').'<br />'.Text::_('COM_INSTALLER_MSG_WARNINGS_PHPUPLOADNOTSET'));
             return false;
         }
 
         // Is the max upload size too small in php.ini?
         if ($package['error'] && ($package['error'] == UPLOAD_ERR_INI_SIZE)) {
-            $this->setError(JText::_('COM_INSTALLER_MSG_INSTALL_WARNINSTALLUPLOADERROR').'<br />'.JText::_('COM_INSTALLER_MSG_WARNINGS_SMALLUPLOADSIZE'));
+            $this->setError(Text::_('COM_INSTALLER_MSG_INSTALL_WARNINSTALLUPLOADERROR').'<br />'.Text::_('COM_INSTALLER_MSG_WARNINGS_SMALLUPLOADSIZE'));
             return false;
         }
 
         // Check if there was a different problem uploading the file.
         if ($package['error'] || $package['size'] < 1) {
-            $this->setError(JText::_('COM_INSTALLER_MSG_INSTALL_WARNINSTALLUPLOADERROR'));
+            $this->setError(Text::_('COM_INSTALLER_MSG_INSTALL_WARNINSTALLUPLOADERROR'));
             return false;
         }
 
         // Build the appropriate paths.
-        $config = JFactory::getConfig();
-        $tmp_dest = $config->get('tmp_path').'/'.$package['name'];
+        $tmp_dest = OttomoCompat::config('tmp_path').'/'.$package['name'];
         $tmp_src = $package['tmp_name'];
 
         // Move uploaded file.
-        jimport('joomla.filesystem.file');
-        JFile::upload($tmp_src, $tmp_dest, false, true);
+        File::upload($tmp_src, $tmp_dest, false, true);
 
         // Unpack the downloaded package file.
-        $package = JInstallerHelper::unpack($tmp_dest, true);
+        $package = InstallerHelper::unpack($tmp_dest, true);
 
         return $package;
 
@@ -285,41 +345,20 @@ class ottomoModelTemplates extends OttomoModel
     protected function getPackageFromFolder($path)
     {
         // Get the path to the package to install.
-        $p_dir = JPath::clean($path);
+        $p_dir = Path::clean($path);
 
         // Did you give us a valid directory?
         if (!is_dir($p_dir)) {
-            JError::raiseWarning('', JText::_('COM_INSTALLER_MSG_INSTALL_PLEASE_ENTER_A_PACKAGE_DIRECTORY'));
+            Factory::getApplication()->enqueueMessage(Text::_('COM_INSTALLER_MSG_INSTALL_PLEASE_ENTER_A_PACKAGE_DIRECTORY'), 'warning');
 
             return false;
-        }
-
-        // Detect the package type
-        $type = JInstallerHelper::detectType($p_dir);
-
-        // Did you give us a valid package?
-        if (!$type) {
-            JError::raiseWarning('', JText::_('COM_INSTALLER_MSG_INSTALL_PATH_DOES_NOT_HAVE_A_VALID_PACKAGE'));
         }
 
         $package['packagefile'] = null;
         $package['extractdir'] = null;
         $package['dir'] = $p_dir;
-        $package['type'] = $type;
 
         return $package;
-    }
-
-    protected function getInstaller()
-    {
-        // Import the installers
-        jimport('joomla.installer.installer');
-        jimport('joomla.installer.helper');
-
-        // Get an installer instance
-        $installer = new JInstaller(JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/classes', $classprefix = 'JInstallerAdapter', $adapterfolder = 'adapter');
-        $installer->setAdapter('ottomotemplate');
-        return $installer;
     }
 
 }

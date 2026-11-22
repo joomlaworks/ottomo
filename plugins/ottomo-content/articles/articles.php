@@ -9,18 +9,28 @@
 
 defined('_JEXEC') or die ;
 
-class plgOttomocontentArticles extends JPlugin
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Uri\Uri;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
+class plgOttomocontentArticles extends CMSPlugin
 {
     public function __construct(&$subject, $config)
     {
         parent::__construct($subject, $config);
-        JFactory::getLanguage()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo'); // Ottomo's backend language file
+        OttomoCompat::language()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo'); // Ottomo's backend language file
         $this->isInstalled = $this->isInstalled();
-        $settings = JComponentHelper::getParams('com_ottomo');
+        $settings = ComponentHelper::getParams('com_ottomo');
         $this->params->merge($settings);
     }
 
-    public function ottomoExtensionView(&$view)
+    public function onOttomoExtensionView($view)
     {
         if (!$this->allowed()) {
             $view->rows = array();
@@ -29,15 +39,15 @@ class plgOttomocontentArticles extends JPlugin
         }
 
         // Assign extension specific variables
-        $mainframe = JFactory::getApplication();
+        $mainframe = Factory::getApplication();
         $view->catid = $mainframe->getUserStateFromRequest($view->prefix.'.catid', 'catid', 0, 'int');
         $view->search = $mainframe->getUserStateFromRequest($view->prefix.'.search', 'search', '', 'string');
         $view->filterDefaults = array('catid' => 0);
         $view->search = strtolower($view->search);
 
         // Get rows
-        JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_content/models');
-        $model = JModelLegacy::getInstance('Articles', 'ContentModel', array('ignore_request' => true));
+        BaseDatabaseModel::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_content/models');
+        $model = BaseDatabaseModel::getInstance('Articles', 'ContentModel', array('ignore_request' => true));
         $model->setState('list.limit', $view->limit);
         $model->setState('list.start', $view->limitstart);
         $model->setState('list.ordering', $view->ordering);
@@ -52,11 +62,11 @@ class plgOttomocontentArticles extends JPlugin
             $model->setState('filter.seach', $view->search);
         }
         $rows = $model->getItems();
-        $view->assignRef('rows', $rows);
+        $view->rows = $rows;
 
         // Get total
         $total = $model->getTotal();
-        $view->assignRef('total', $total);
+        $view->total = $total;
 
         // Add columns
         $view->addColumn('COM_OTTOMO_TITLE', 'title', 'a.title');
@@ -70,29 +80,29 @@ class plgOttomocontentArticles extends JPlugin
         $view->addFilter($searchFilter);
 
         $stateFilter = OttomoHelperHTML::state($view->published);
-        $view->addFilter($stateFilter, JText::_('COM_OTTOMO_STATE'));
+        $view->addFilter($stateFilter, Text::_('COM_OTTOMO_STATE'));
 
-        $options = JHtml::_('category.options', 'com_content');
+        $options = HTMLHelper::_('category.options', 'com_content');
 
-        $categoryFilter = JHtml::_('select.genericlist', $options, 'catid', '', 'value', 'text', $view->catid);
-        $view->addFilter($categoryFilter, JText::_('COM_OTTOMO_CATEGORY'));
+        $categoryFilter = HTMLHelper::_('select.genericlist', $options, 'catid', '', 'value', 'text', $view->catid);
+        $view->addFilter($categoryFilter, Text::_('COM_OTTOMO_CATEGORY'));
 
     }
 
-    public function ottomoExtensionRowContent($id)
+    public function onOttomoExtensionRowContent($id)
     {
         if (!$this->allowed()) {
             return null;
         }
-        JModelLegacy::addIncludePath(JPATH_SITE.'/components/com_content/models');
+        BaseDatabaseModel::addIncludePath(JPATH_SITE.'/components/com_content/models');
         JLoader::register('ContentHelperRoute', JPATH_SITE.'/components/com_content/helpers/route.php');
-        $params = JComponentHelper::getParams('com_content');
-        $model = JModelLegacy::getInstance('Article', 'ContentModel', array('ignore_request' => true));
+        $params = ComponentHelper::getParams('com_content');
+        $model = BaseDatabaseModel::getInstance('Article', 'ContentModel', array('ignore_request' => true));
         $model->setState('article.id', $id);
         $model->setState('params', $params);
         $article = $model->getItem();
         // Only what this user may see on the site (view access levels of the article and its category)
-        $levels = JFactory::getUser()->getAuthorisedViewLevels();
+        $levels = OttomoCompat::user()->getAuthorisedViewLevels();
         if (!is_object($article) || empty($article->id) || !in_array((int)$article->access, $levels) || (isset($article->category_access) && !in_array((int)$article->category_access, $levels))) {
             return null;
         }
@@ -134,34 +144,34 @@ class plgOttomocontentArticles extends JPlugin
         }
         if (is_object($article->images)) {
             if ($this->params->get('contentIntroImage') && $article->images->image_intro) {
-                $article->introImage = JURI::root().$article->images->image_intro;
+                $article->introImage = Uri::root().$article->images->image_intro;
                 $article->introImageCaption = $article->images->image_intro_caption;
             }
             if ($this->params->get('contentFullImage') && $article->images->image_fulltext) {
-                $article->fullImage = JURI::root().$article->images->image_fulltext;
+                $article->fullImage = Uri::root().$article->images->image_fulltext;
                 $article->fullImageCaption = $article->images->image_fulltext_caption;
             }
         }
         return $article;
     }
 
-    public function ottomoExtensionRowLink($id)
+    public function onOttomoExtensionRowLink($id)
     {
-        $article = $this->ottomoExtensionRowContent($id);
+        $article = $this->onOttomoExtensionRowContent($id);
         if (!$article) {
             return '';
         }
         return '<a href="'.htmlspecialchars($article->link, ENT_QUOTES, 'UTF-8').'">'.$article->safeTitle.'</a>';
     }
 
-    public function ottomoExtensionEditorButton()
+    public function onOttomoExtensionEditorButton()
     {
         if (!$this->isInstalled || !$this->allowed()) {
             return false;
         }
         $button = new stdClass();
         $button->extension = $this->_name;
-        $button->label = JText::_('PLG_OTTOMO_CONTENT_ARTICLES_LABEL');
+        $button->label = Text::_('PLG_OTTOMO_CONTENT_ARTICLES_LABEL');
         return $button;
     }
 
@@ -173,7 +183,7 @@ class plgOttomocontentArticles extends JPlugin
     /** Articles are picked by those who manage them (com_content's own "Access Administration Interface") */
     protected function allowed()
     {
-        return (bool)JFactory::getUser()->authorise('core.manage', 'com_content');
+        return (bool)OttomoCompat::user()->authorise('core.manage', 'com_content');
     }
 
 }

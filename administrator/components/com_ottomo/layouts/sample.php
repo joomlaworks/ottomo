@@ -10,7 +10,10 @@
 // Test send result: rendered inside a SuperModal frame. The controller's messages are shown here
 // (and taken off the queue, so the template doesn't render them a second time).
 defined('_JEXEC') or die ;
-$messages = JFactory::getApplication()->getMessageQueue(true);
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+$messages = Factory::getApplication()->getMessageQueue(true);
 ?>
 <div class="otm-frame" data-frame="sample">
     <?php foreach ($messages as $message): ?>
@@ -18,6 +21,6 @@ $messages = JFactory::getApplication()->getMessageQueue(true);
     <div class="otm-frame__notice otm-frame__notice--<?php echo $error ? 'error' : 'success'; ?>" role="<?php echo $error ? 'alert' : 'status'; ?>"><?php echo htmlspecialchars($message['message'], ENT_QUOTES, 'UTF-8'); ?></div>
     <?php endforeach; ?>
     <div class="otm-frame__actions">
-        <button type="button" class="otm-btn otm-btn--save" data-frame-close><?php echo JText::_('COM_OTTOMO_CLOSE'); ?></button>
+        <button type="button" class="otm-btn otm-btn--save" data-frame-close><?php echo Text::_('COM_OTTOMO_CLOSE'); ?></button>
     </div>
 </div>

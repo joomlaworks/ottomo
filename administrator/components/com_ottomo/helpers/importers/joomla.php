@@ -9,6 +9,8 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Language\Text;
+
 /** Joomla's user accounts: those that can sign in (not blocked, activated). */
 class OttomoImporterJoomla extends OttomoImporter
 {
@@ -19,7 +21,7 @@ class OttomoImporterJoomla extends OttomoImporter
 
     public function label()
     {
-        return JText::_('COM_OTTOMO_IMPORT_SOURCE_JOOMLA');
+        return Text::_('COM_OTTOMO_IMPORT_SOURCE_JOOMLA');
     }
 
     public function isAvailable()

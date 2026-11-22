@@ -9,6 +9,12 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoViewTemplates extends OttomoView
 {
     public function display($tpl = null)
@@ -35,12 +41,12 @@ class OttomoViewTemplates extends OttomoView
     public function edit($tpl = null)
     {
         if (!OttomoHelperHTML::canManageTemplates()) {
-            JFactory::getApplication()->enqueueMessage(JText::_('JERROR_ALERTNOAUTHOR'), 'error');
-            JFactory::getApplication()->redirect(JRoute::_('index.php?option=com_ottomo&view=templates', false));
+            Factory::getApplication()->enqueueMessage(Text::_('JERROR_ALERTNOAUTHOR'), 'error');
+            Factory::getApplication()->redirect(Route::_('index.php?option=com_ottomo&view=templates', false));
         }
         // Get row
         $model = OttomoModel::getInstance('Templates');
-        $model->setState('id', JFactory::getApplication()->input->getInt('id'));
+        $model->setState('id', OttomoCompat::input()->getInt('id'));
         $this->row = $model->getRow();
 
         // Get files

@@ -9,6 +9,11 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Language\Text;
+use Joomla\String\StringHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 JLoader::register('OttomoImporter', __DIR__.'/importers/importer.php');
 
 /** Import sources (helpers/importers/*.php) and the save step shared by every way of importing. */
@@ -80,14 +85,14 @@ class OttomoHelperImport
             }
             foreach ($fields as $field) {
                 if (isset($record->$field) && $record->$field !== '') {
-                    $data[$field] = JString::substr($record->$field, 0, 255);
+                    $data[$field] = StringHelper::substr($record->$field, 0, 255);
                 }
             }
             $model->setState('data', $data);
             if ($model->save()) {
                 $counts[$status === 1 ? 'added' : 'unsubscribed']++;
             } else {
-                $errors[] = JText::sprintf('COM_OTTOMO_COULD_NOT_IMPORT_USER', $email, $model->getError());
+                $errors[] = Text::sprintf('COM_OTTOMO_COULD_NOT_IMPORT_USER', $email, $model->getError());
             }
             $known[$email] = $status; // the same address twice in one batch
         }
@@ -97,7 +102,7 @@ class OttomoHelperImport
     /** The addresses of $records that Ottomo already has (lowercased => status), in one query. */
     protected static function known(array $records)
     {
-        $db = JFactory::getDbo();
+        $db = OttomoCompat::db();
         $emails = array();
         foreach ($records as $record) {
             $email = strtolower(trim((string)$record->email));
@@ -123,12 +128,12 @@ class OttomoHelperImport
     /** The summary at the end of an import. */
     public static function summary(array $counts)
     {
-        $parts = array(JText::sprintf('COM_OTTOMO_IMPORT_ADDED', isset($counts['added']) ? (int)$counts['added'] : 0));
+        $parts = array(Text::sprintf('COM_OTTOMO_IMPORT_ADDED', isset($counts['added']) ? (int)$counts['added'] : 0));
         if (!empty($counts['existing'])) {
-            $parts[] = JText::sprintf('COM_OTTOMO_IMPORT_EXISTING', (int)$counts['existing']);
+            $parts[] = Text::sprintf('COM_OTTOMO_IMPORT_EXISTING', (int)$counts['existing']);
         }
         if (!empty($counts['unsubscribed'])) {
-            $parts[] = JText::sprintf('COM_OTTOMO_IMPORT_UNSUBSCRIBED', (int)$counts['unsubscribed']);
+            $parts[] = Text::sprintf('COM_OTTOMO_IMPORT_UNSUBSCRIBED', (int)$counts['unsubscribed']);
         }
         return implode(' · ', $parts);
     }

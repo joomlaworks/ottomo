@@ -9,11 +9,44 @@
 
 defined('_JEXEC') or die;
 
-use Joomla\CMS\Console\AbstractCommand;
-use Joomla\CMS\Console\CommandIO;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Mail\MailHelper;
+use Joomla\CMS\Table\Table;
+use Joomla\CMS\Uri\Uri;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 
 /** What every Ottomo command needs: Ottomo's classes, models and language. */
-abstract class OttomoCommand extends AbstractCommand
+/*
+ * The console of Joomla 3.x UTD (Joomla\CMS\Console) or of Joomla 4+ (Joomla\Console, see modern.php): each command
+ * defines its arguments and options in define() and runs in handle($io).
+ */
+if (class_exists('Joomla\\CMS\\Console\\AbstractCommand')) {
+    abstract class OttomoCommandBase extends \Joomla\CMS\Console\AbstractCommand
+    {
+        protected function configure()
+        {
+            $this->define();
+        }
+
+        protected function doExecute(\Joomla\CMS\Console\CommandIO $io)
+        {
+            return $this->handle($io);
+        }
+
+        protected function define()
+        {
+        }
+
+        abstract protected function handle($io);
+    }
+} else {
+    require_once __DIR__.'/modern.php';
+}
+
+abstract class OttomoCommand extends OttomoCommandBase
 {
     protected function bootstrap()
     {
@@ -24,11 +57,10 @@ abstract class OttomoCommand extends AbstractCommand
         JLoader::register('OttomoHelperImport', $base.'/helpers/import.php');
         JLoader::register('OttomoHelperSettings', $base.'/helpers/settings.php');
         JLoader::register('OttomoHelperTemplate', $base.'/helpers/template.php');
-        JModelLegacy::addIncludePath($base.'/models');
-        JTable::addIncludePath($base.'/tables');
-        jimport('joomla.mail.helper');
-        JFactory::getLanguage()->load('com_ottomo', $base);
-        JFactory::getLanguage()->load('com_ottomo', JPATH_SITE.'/components/com_ottomo');
+        BaseDatabaseModel::addIncludePath($base.'/models');
+        Table::addIncludePath($base.'/tables');
+        OttomoCompat::language()->load('com_ottomo', $base);
+        OttomoCompat::language()->load('com_ottomo', JPATH_SITE.'/components/com_ottomo');
     }
 
     /** IDs from a comma-separated option or repeated values ("1,2" or array("1", "2")). */
@@ -55,12 +87,12 @@ class OttomoCampaignListCommand extends OttomoCommand
         .'subscribers still waiting (an interrupted send). With --status, only drafts or only sent campaigns.';
     protected $readOnly = true;
 
-    protected function configure()
+    protected function define()
     {
         $this->addOption('status', null, self::OPTION_REQUIRED, 'Only "draft" or "sent" campaigns');
     }
 
-    protected function doExecute(CommandIO $io)
+    protected function handle($io)
     {
         $this->bootstrap();
         $io->title('Email Campaigns');
@@ -69,7 +101,7 @@ class OttomoCampaignListCommand extends OttomoCommand
             $io->error('--status must be "draft" or "sent".');
             return self::INVALID;
         }
-        $db = JFactory::getDbo();
+        $db = OttomoCompat::db();
         $query = $db->getQuery(true)
             ->select($db->quoteName(array('id', 'subject', 'published', 'sent')))
             ->from($db->quoteName('#__ottomo_email_campaigns'))
@@ -113,13 +145,13 @@ class OttomoCampaignSendCommand extends OttomoCommand
     protected $dryRun = true;
     protected $superUser = true;
 
-    protected function configure()
+    protected function define()
     {
         $this->addArgument('id', self::ARGUMENT_REQUIRED, 'The campaign ID');
         $this->addOption('batch', null, self::OPTION_REQUIRED, 'Recipients per batch (default: Settings > Sending)');
     }
 
-    protected function doExecute(CommandIO $io)
+    protected function handle($io)
     {
         $this->bootstrap();
         $io->title('Send Email Campaign');
@@ -143,13 +175,13 @@ class OttomoCampaignSendCommand extends OttomoCommand
         if (trim((string)$row->subject) === '') {
             $problems[] = 'The campaign has no subject.';
         }
-        if (!JMailHelper::isEmailAddress((string)$sender->email)) {
+        if (!MailHelper::isEmailAddress((string)$sender->email)) {
             $problems[] = 'There is no valid sender address (the campaign\'s or Settings > Sending).';
         }
         if (!array_filter((array)$model->getNewsletterTopics())) {
             $problems[] = 'The campaign has no topics.';
         }
-        if (trim((string)JFactory::getConfig()->get('live_site')) === '') {
+        if (trim((string)OttomoCompat::config('live_site')) === '') {
             $problems[] = 'The site\'s address is unknown, so the emails\' links would be wrong: set $live_site in configuration.php or pass --live-site.';
         }
         if ($problems) {
@@ -171,8 +203,8 @@ class OttomoCampaignSendCommand extends OttomoCommand
             return self::SUCCESS;
         }
 
-        $limit = $batch !== null ? (int)$batch : max(1, (int)JComponentHelper::getParams('com_ottomo')->get('limit', 50));
-        $io->text(sprintf('Sending campaign %d "%s" to %d subscribers, from %s (%s), links to %s ...', $row->id, $row->subject, $remaining, $sender->name, $sender->email, JUri::root()));
+        $limit = $batch !== null ? (int)$batch : max(1, (int)ComponentHelper::getParams('com_ottomo')->get('limit', 50));
+        $io->text(sprintf('Sending campaign %d "%s" to %d subscribers, from %s (%s), links to %s ...', $row->id, $row->subject, $remaining, $sender->name, $sender->email, Uri::root()));
         $after = 0;
         $sent = 0;
         $failed = 0;
@@ -214,13 +246,13 @@ class OttomoSubscriberImportCommand extends OttomoCommand
     protected $dryRun = true;
     protected $superUser = true;
 
-    protected function configure()
+    protected function define()
     {
         $this->addArgument('source', self::ARGUMENT_OPTIONAL, 'The source: joomla, acymailing, hikashop, kunena, meela or virtuemart');
         $this->addOption('topic', null, self::OPTION_REQUIRED, 'Topic IDs, comma-separated');
     }
 
-    protected function doExecute(CommandIO $io)
+    protected function handle($io)
     {
         $this->bootstrap();
         $io->title('Import Subscribers');
@@ -249,7 +281,7 @@ class OttomoSubscriberImportCommand extends OttomoCommand
             $io->error('Give the topics to add them to: --topic=1 or --topic=1,2.');
             return self::INVALID;
         }
-        $db = JFactory::getDbo();
+        $db = OttomoCompat::db();
         $found = $db->setQuery($db->getQuery(true)->select($db->quoteName('id'))->from($db->quoteName('#__ottomo_topics'))->where($db->quoteName('id').' IN ('.implode(',', $topics).')'))->loadColumn();
         if (count($found) !== count($topics)) {
             $io->error(sprintf('Topic(s) not found: %s.', implode(', ', array_diff($topics, array_map('intval', $found)))));
@@ -295,7 +327,7 @@ class OttomoSubscriberPurgeCommand extends OttomoCommand
     protected $dryRun = true;
     protected $superUser = true;
 
-    protected function doExecute(CommandIO $io)
+    protected function handle($io)
     {
         $this->bootstrap();
         $io->title('Delete Unsubscribed Addresses');
@@ -331,12 +363,12 @@ class OttomoCheckCommand extends OttomoCommand
         .'Outlook require of bulk senders. With --sender, checks that address\'s domain instead.';
     protected $readOnly = true;
 
-    protected function configure()
+    protected function define()
     {
         $this->addOption('sender', null, self::OPTION_REQUIRED, 'A sender address to check instead of the default one');
     }
 
-    protected function doExecute(CommandIO $io)
+    protected function handle($io)
     {
         $this->bootstrap();
         $io->title('Ottomo Check');

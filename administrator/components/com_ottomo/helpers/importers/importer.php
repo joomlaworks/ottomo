@@ -9,6 +9,8 @@
 
 defined('_JEXEC') or die ;
 
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 /**
  * Base class of the import adapters (one file per source in helpers/importers/, listed by OttomoHelperImport).
  *
@@ -22,7 +24,7 @@ abstract class OttomoImporter
 
     public function __construct()
     {
-        $this->db = JFactory::getDbo();
+        $this->db = OttomoCompat::db();
     }
 
     /** Machine name, also the value of the source's checkbox (e.g. "kunena"). */

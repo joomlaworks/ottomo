@@ -9,9 +9,11 @@
 
 defined('_JEXEC') or die ;
 
-jimport('joomla.form.formfield');
+use Joomla\CMS\Form\FormHelper;
+use Joomla\CMS\HTML\HTMLHelper;
 
-JFormHelper::loadFieldClass('list');
+
+FormHelper::loadFieldClass('list');
 
 class JFormFieldTopics extends JFormFieldList
 {
@@ -27,7 +29,7 @@ class JFormFieldTopics extends JFormFieldList
         $topics = $model->getList();
         $options = array();
         foreach ($topics as $topic) {
-            $options[] = JHtml::_('select.option', $topic->id, $topic->name);
+            $options[] = HTMLHelper::_('select.option', $topic->id, $topic->name);
         }
         $options = array_merge(parent::getOptions(), $options);
         return $options;

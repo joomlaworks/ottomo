@@ -9,6 +9,11 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Application\ApplicationHelper;
+use Joomla\CMS\Component\ComponentHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoHelperK2
 {
     public static function getItemRoute($id, $catid = 0)
@@ -46,8 +51,8 @@ class OttomoHelperK2
     public static function getUserRoute($userID)
     {
         $needles = array('user' => (int)$userID);
-        $user = JFactory::getUser($userID);
-        $alias = JApplicationHelper::stringURLSafe($user->name);
+        $user = OttomoCompat::user($userID);
+        $alias = ApplicationHelper::stringURLSafe($user->name);
         $link = 'index.php?option=com_k2&view=itemlist&task=user&id='.$userID.':'.$alias;
         if ($item = self::_findItem($needles)) {
             $link .= '&Itemid='.$item->id;
@@ -59,8 +64,8 @@ class OttomoHelperK2
 
     protected static function _findItem($needles)
     {
-        $component = JComponentHelper::getComponent('com_k2');
-        $application = JApplicationCms::getInstance('site');
+        $component = ComponentHelper::getComponent('com_k2');
+        $application = \Joomla\CMS\Application\CMSApplication::getInstance('site');
         $menus = $application->getMenu('site');
         $items = $menus->getItems('component_id', $component->id);
         $match = null;

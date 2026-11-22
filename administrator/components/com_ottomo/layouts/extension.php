@@ -7,7 +7,10 @@
  * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 
-defined('_JEXEC') or die ; ?>
+defined('_JEXEC') or die ;
+
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text; ?>
 
 <div class="otm-subheader">
     <h3 class="otm-title">
@@ -30,7 +33,7 @@ defined('_JEXEC') or die ; ?>
             </div>
             <?php endforeach; ?>
             <?php if ($this->filtersActive()): ?>
-            <a class="otm-filters__reset" href="<?php echo $this->resetLink(); ?>" data-role="reset-filters"><?php echo OttomoHelperHTML::icon('x-lg'); ?><span><?php echo JText::_('COM_OTTOMO_RESET_FILTERS'); ?></span></a>
+            <a class="otm-filters__reset" href="<?php echo $this->resetLink(); ?>" data-role="reset-filters"><?php echo OttomoHelperHTML::icon('x-lg'); ?><span><?php echo Text::_('COM_OTTOMO_RESET_FILTERS'); ?></span></a>
             <?php endif; ?>
         </div>
     </div>
@@ -63,10 +66,10 @@ defined('_JEXEC') or die ; ?>
         
          <?php if ($this->view == 'templates'): ?>
         <fieldset>
-            <legend><?php echo JText::_('COM_OTTOMO_UPLOAD_PACKAGE_FILE'); ?></legend>
-            <label><?php echo JText::_('COM_OTTOMO_PACKAGE_FILE'); ?>:</label>
+            <legend><?php echo Text::_('COM_OTTOMO_UPLOAD_PACKAGE_FILE'); ?></legend>
+            <label><?php echo Text::_('COM_OTTOMO_PACKAGE_FILE'); ?>:</label>
             <input name="package" type="file" size="60" />
-            <input type="button" value="<?php echo JText::_('COM_OTTOMO_UPLOAD_FILE_AND_INSTALL'); ?>" onclick="Joomla.submitbutton('templates.install'); return false;" />
+            <input type="button" value="<?php echo Text::_('COM_OTTOMO_UPLOAD_FILE_AND_INSTALL'); ?>" onclick="Joomla.submitbutton('templates.install'); return false;" />
         </fieldset>
         <?php endif; ?>
         
@@ -88,6 +91,6 @@ defined('_JEXEC') or die ; ?>
         <input type="hidden" name="boxchecked" value="0" />
         <input type="hidden" name="format" value="<?php echo $this->format; ?>" />
         <input type="hidden" name="total" value="<?php echo $this->total; ?>" />
-        <?php echo JHTML::_('form.token'); ?>
+        <?php echo HTMLHelper::_('form.token'); ?>
     </form>
 </div>

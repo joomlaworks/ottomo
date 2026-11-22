@@ -9,14 +9,24 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Application\ApplicationHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Filter\OutputFilter;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Session\Session;
+use Joomla\CMS\Uri\Uri;
+use Joomla\Utilities\ArrayHelper;
+
 JLoader::register('OttomoHelperHTML', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/html.php');
 
 class OttomoHelperData
 {
     public static function prepare(&$rows, $view = null, $task = null)
     {
-        $mainframe = JFactory::getApplication();
-        if ($mainframe->isAdmin()) {
+        $mainframe = Factory::getApplication();
+        if ($mainframe->isClient('administrator')) {
             self::prepareAdminRows($rows, $view, $task);
         } else {
             self::prepareSiteRows($rows, $view, $task);
@@ -26,15 +36,15 @@ class OttomoHelperData
     private static function prepareAdminRows(&$rows, $view = null, $task = null)
     {
         foreach ($rows as $key => $row) {
-            JFilterOutput::objectHTMLSafe($row, ENT_QUOTES, array('manifest'));
+            OutputFilter::objectHTMLSafe($row, ENT_QUOTES, array('manifest'));
             $row->parity = ($key + 1) % 2;
             $rawPublished = property_exists($row, 'published') ? (int)$row->published : null;
             $rawStatus = property_exists($row, 'status') ? (int)$row->status : null;
             if (property_exists($row, 'published')) {
-                $row->published = JHtml::_('jgrid.published', $row->published, $key);
+                $row->published = HTMLHelper::_('jgrid.published', $row->published, $key);
             }
             if (property_exists($row, 'state')) {
-                $row->state = JHtml::_('jgrid.published', $row->state, $key);
+                $row->state = HTMLHelper::_('jgrid.published', $row->state, $key);
             }
             if (property_exists($row, 'status')) {
                 // Status pills; active and pending toggle with a click, unsubscribed never does (the subscriber's opt-out)
@@ -45,9 +55,9 @@ class OttomoHelperData
                 );
                 $pill = isset($pills[$rawStatus]) ? $pills[$rawStatus] : $pills[0];
                 if ($pill[2] !== '') {
-                    $row->status = '<button type="button" class="otm-pill otm-pill--'.$pill[1].' otm-pill--toggle" data-status="'.(int)$rawStatus.'" onclick="return listItemTask(\'cb'.(int)$key.'\',\''.$pill[2].'\')" title="'.htmlspecialchars(JText::_($pill[3]), ENT_QUOTES, 'UTF-8').'">'.htmlspecialchars(JText::_($pill[0]), ENT_QUOTES, 'UTF-8').'</button>';
+                    $row->status = '<button type="button" class="otm-pill otm-pill--'.$pill[1].' otm-pill--toggle" data-status="'.(int)$rawStatus.'" onclick="return listItemTask(\'cb'.(int)$key.'\',\''.$pill[2].'\')" title="'.htmlspecialchars(Text::_($pill[3]), ENT_QUOTES, 'UTF-8').'">'.htmlspecialchars(Text::_($pill[0]), ENT_QUOTES, 'UTF-8').'</button>';
                 } else {
-                    $row->status = OttomoHelperHTML::pill(JText::_($pill[0]), $pill[1], 'data-status="'.(int)$rawStatus.'" title="'.htmlspecialchars(JText::_('COM_OTTOMO_UNSUBSCRIBED_DESC'), ENT_QUOTES, 'UTF-8').'"');
+                    $row->status = OttomoHelperHTML::pill(Text::_($pill[0]), $pill[1], 'data-status="'.(int)$rawStatus.'" title="'.htmlspecialchars(Text::_('COM_OTTOMO_UNSUBSCRIBED_DESC'), ENT_QUOTES, 'UTF-8').'"');
                 }
             }
             if (!property_exists($row, 'title') && property_exists($row, 'name')) {
@@ -56,7 +66,7 @@ class OttomoHelperData
             if (property_exists($row, 'topics')) {
                 $model = OttomoModel::getInstance('Topics');
                 $ids = $row->topics ? explode(',', (string)$row->topics) : array();
-                JArrayHelper::toInteger($ids);
+                ArrayHelper::toInteger($ids);
                 $topics = array();
                 foreach ($ids as $id) {
                     $model->setState('id', $id);
@@ -65,38 +75,38 @@ class OttomoHelperData
                 }
                 $row->topics = implode(', ', $topics);
                 if (!$row->topics) {
-                    $row->topics = JText::_('COM_OTTOMO_NONE');
+                    $row->topics = Text::_('COM_OTTOMO_NONE');
                 }
             }
             switch ($view) {
                 case 'newsletters':
-                    $row->link = JHTML::link(JRoute::_('index.php?option=com_ottomo&view=newsletters&task=edit&id='.$row->id), $row->subject);
+                    $row->link = HTMLHelper::link(Route::_('index.php?option=com_ottomo&view=newsletters&task=edit&id='.$row->id), $row->subject);
                     $sent = $rawPublished === 1;
                     JLoader::register('OttomoHelperTemplate', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/template.php');
                     $stat = isset($row->stats) && is_object($row->stats) ? $row->stats : (object)array('recipients' => 0, 'opens' => 0, 'clicks' => 0, 'openRate' => 0, 'clickRate' => 0);
                     $none = OttomoHelperHTML::date('');
-                    $row->statusPill = $sent ? OttomoHelperHTML::pill(JText::_('COM_OTTOMO_STATUS_SENT'), 'success') : OttomoHelperHTML::pill(JText::_('COM_OTTOMO_STATUS_DRAFT'), 'neutral');
+                    $row->statusPill = $sent ? OttomoHelperHTML::pill(Text::_('COM_OTTOMO_STATUS_SENT'), 'success') : OttomoHelperHTML::pill(Text::_('COM_OTTOMO_STATUS_DRAFT'), 'neutral');
                     $row->sentDate = $sent && isset($row->sent) ? OttomoHelperHTML::date($row->sent) : $none;
                     $row->recipients = $stat->recipients ? '<span class="otm-num">'.number_format($stat->recipients).'</span>' : $none;
                     $row->openRate = $stat->recipients ? OttomoHelperHTML::rate($stat->openRate, $stat->opens) : $none;
                     $row->clickRate = $stat->recipients ? OttomoHelperHTML::rate($stat->clickRate, $stat->clicks) : $none;
-                    $preview = JText::_('COM_OTTOMO_PREVIEW');
-                    $duplicate = JText::_('COM_OTTOMO_DUPLICATE');
+                    $preview = Text::_('COM_OTTOMO_PREVIEW');
+                    $duplicate = Text::_('COM_OTTOMO_DUPLICATE');
                     $row->actions = '<span class="otm-row-actions">'
-                        .'<a href="'.JRoute::_('index.php?option=com_ottomo&task=newsletters.preview&id='.(int)$row->id).'" class="otm-icon-btn otm-preview-link" data-role="preview-button" data-id="'.(int)$row->id.'"'.($sent ? ' data-public-url="'.OttomoHelperTemplate::publicLink($row->id).'"' : '').' title="'.$preview.'">'.OttomoHelperHTML::icon('eye').'<span class="visually-hidden">'.$preview.'</span></a>'
-                        .'<a href="'.JRoute::_('index.php?option=com_ottomo&task=newsletters.duplicate&id='.(int)$row->id.'&'.JSession::getFormToken().'=1').'" class="otm-icon-btn" data-role="duplicate" title="'.$duplicate.'">'.OttomoHelperHTML::icon('files').'<span class="visually-hidden">'.$duplicate.'</span></a>'
+                        .'<a href="'.Route::_('index.php?option=com_ottomo&task=newsletters.preview&id='.(int)$row->id).'" class="otm-icon-btn otm-preview-link" data-role="preview-button" data-id="'.(int)$row->id.'"'.($sent ? ' data-public-url="'.OttomoHelperTemplate::publicLink($row->id).'"' : '').' title="'.$preview.'">'.OttomoHelperHTML::icon('eye').'<span class="visually-hidden">'.$preview.'</span></a>'
+                        .'<a href="'.Route::_('index.php?option=com_ottomo&task=newsletters.duplicate&id='.(int)$row->id.'&'.Session::getFormToken().'=1').'" class="otm-icon-btn" data-role="duplicate" title="'.$duplicate.'">'.OttomoHelperHTML::icon('files').'<span class="visually-hidden">'.$duplicate.'</span></a>'
                         .'</span>';
                     break;
                 case 'topics':
-                    $row->link = JHTML::link(JRoute::_('index.php?option=com_ottomo&view=topics&task=edit&id='.$row->id), $row->name);
+                    $row->link = HTMLHelper::link(Route::_('index.php?option=com_ottomo&view=topics&task=edit&id='.$row->id), $row->name);
                     if (isset($row->subscribers)) {
                         // The active subscribers of this topic: the Subscribers list, filtered
-                        $row->subscribersLink = '<a class="otm-count-link" data-role="topic-subscribers" href="'.JRoute::_('index.php?option=com_ottomo&view=subscribers&topic='.(int)$row->id.'&status=1&search=&limitstart=0').'" title="'.htmlspecialchars(JText::_('COM_OTTOMO_VIEW_ACTIVE_SUBSCRIBERS'), ENT_QUOTES, 'UTF-8').'">'
+                        $row->subscribersLink = '<a class="otm-count-link" data-role="topic-subscribers" href="'.Route::_('index.php?option=com_ottomo&view=subscribers&topic='.(int)$row->id.'&status=1&search=&limitstart=0').'" title="'.htmlspecialchars(Text::_('COM_OTTOMO_VIEW_ACTIVE_SUBSCRIBERS'), ENT_QUOTES, 'UTF-8').'">'
                             .'<span class="otm-num">'.number_format((int)$row->subscribers).'</span>'.OttomoHelperHTML::icon('people').'</a>';
                     }
                     break;
                 case 'subscribers':
-                    $row->link = JHTML::link(JRoute::_('index.php?option=com_ottomo&view=subscribers&task=edit&id='.$row->id), $row->name);
+                    $row->link = HTMLHelper::link(Route::_('index.php?option=com_ottomo&view=subscribers&task=edit&id='.$row->id), $row->name);
                     $row->createdDate = OttomoHelperHTML::date(isset($row->created) ? $row->created : '');
                     break;
                 case 'templates':
@@ -106,10 +116,10 @@ class OttomoHelperData
                     // No preview image: the template itself, with its sample content
                     $preview = OttomoHelperTemplate::image($location, 'preview');
                     $thumbnail = OttomoHelperTemplate::image($location, 'thumbnail');
-                    $row->preview = $preview !== '' ? JURI::root(true).'/'.$preview : JRoute::_('index.php?option=com_ottomo&view=designer&format=raw&id=0&template='.(int)$row->id);
-                    $row->thumbnail = $thumbnail !== '' ? JURI::root(true).'/'.$thumbnail : '';
+                    $row->preview = $preview !== '' ? Uri::root(true).'/'.$preview : Route::_('index.php?option=com_ottomo&view=designer&format=raw&id=0&template='.(int)$row->id);
+                    $row->thumbnail = $thumbnail !== '' ? Uri::root(true).'/'.$thumbnail : '';
                     // Templates page cards are tall: the full-height preview image (sharp, top-aligned), else the thumbnail
-                    $row->cardImage = $preview !== '' ? JURI::root(true).'/'.$preview : $row->thumbnail;
+                    $row->cardImage = $preview !== '' ? Uri::root(true).'/'.$preview : $row->thumbnail;
                     $row->cardImageFull = $preview !== ''; // false: a thumbnail, filling the card
                     $row->manifest = json_decode($row->manifest);
                     // The manifest is not escaped with the row: its values are, here
@@ -122,14 +132,14 @@ class OttomoHelperData
                     $row->shortDate = $e(self::shortDate($date));
                     $row->author = isset($row->manifest->author) ? $e($row->manifest->author) : '';
                     $row->layout = self::templateLayout($row);
-                    $row->layoutLabel = $row->layout !== '' ? JText::_('COM_OTTOMO_TEMPLATE_LAYOUT_'.strtoupper($row->layout)) : '';
-                    $row->downloadLink = JRoute::_('index.php?option=com_ottomo&task=templates.download&id='.(int)$row->id.'&'.JSession::getFormToken().'=1');
-                    $row->editLink = JRoute::_('index.php?option=com_ottomo&view=templates&task=edit&id='.$row->id);
+                    $row->layoutLabel = $row->layout !== '' ? Text::_('COM_OTTOMO_TEMPLATE_LAYOUT_'.strtoupper($row->layout)) : '';
+                    $row->downloadLink = Route::_('index.php?option=com_ottomo&task=templates.download&id='.(int)$row->id.'&'.Session::getFormToken().'=1');
+                    $row->editLink = Route::_('index.php?option=com_ottomo&view=templates&task=edit&id='.$row->id);
                     break;
                 case 'extension':
                     $row->title .= '<br/>';
-                    $row->title .= JHTML::link($row->id, OttomoHelperHTML::icon('file-earmark-text').JText::_('COM_OTTOMO_INSERT_CONTENT'), 'class="otm-row-title--inline otm-insert-content-button"');
-                    $row->title .= JHTML::link($row->id, OttomoHelperHTML::icon('link-45deg').JText::_('COM_OTTOMO_INSERT_LINK'), 'class="otm-row-title--inline otm-insert-link-button"');
+                    $row->title .= HTMLHelper::link($row->id, OttomoHelperHTML::icon('file-earmark-text').Text::_('COM_OTTOMO_INSERT_CONTENT'), 'class="otm-row-title--inline otm-insert-content-button"');
+                    $row->title .= HTMLHelper::link($row->id, OttomoHelperHTML::icon('link-45deg').Text::_('COM_OTTOMO_INSERT_LINK'), 'class="otm-row-title--inline otm-insert-link-button"');
                     if (isset($row->published)) {
                         $row->published = strip_tags($row->published, '<i>');
                     }
@@ -144,10 +154,10 @@ class OttomoHelperData
     private static function prepareSiteRows(&$rows, $view = null, $task = null)
     {
         foreach ($rows as $key => $row) {
-            JFilterOutput::objectHTMLSafe($row);
+            OutputFilter::objectHTMLSafe($row);
             switch ($view) {
                 case 'archive':
-                    $row->link = JRoute::_('index.php?option=com_ottomo&view=newsletters&id='.$row->id);
+                    $row->link = Route::_('index.php?option=com_ottomo&view=newsletters&id='.$row->id);
                     break;
             }
         }
@@ -195,7 +205,7 @@ class OttomoHelperData
                 $parsed = DateTime::createFromFormat('!'.$format, $clean, new DateTimeZone('UTC'));
                 $errors = DateTime::getLastErrors();
                 if ($parsed && (!$errors || (!$errors['warning_count'] && !$errors['error_count']))) {
-                    return JFactory::getDate($parsed->format('Y-m-d'), 'UTC')->format($pattern[2], false, true);
+                    return Factory::getDate($parsed->format('Y-m-d'), 'UTC')->format($pattern[2], false, true);
                 }
             }
         }
@@ -220,12 +230,12 @@ class OttomoHelperData
     /** Signature of an external link wrapped for click tracking (keeps newsletters.track from being an open redirect) */
     public static function linkSignature($url)
     {
-        return substr(JApplicationHelper::getHash('ottomo-link:'.$url), 0, 20);
+        return substr(ApplicationHelper::getHash('ottomo-link:'.$url), 0, 20);
     }
 
     public static function getHash($newslsetterID, $subscriberID, $subscriberEmail)
     {
-        return JApplicationHelper::getHash($newslsetterID.$subscriberID.$subscriberEmail);
+        return ApplicationHelper::getHash($newslsetterID.$subscriberID.$subscriberEmail);
     }
 
 
@@ -291,7 +301,7 @@ class OttomoHelperData
     {
         $hash = isset($recipient->hash) ? $recipient->hash : self::getHash($newsletterId, $recipient->id, $recipient->email);
         $path = 'index.php?option=com_ottomo&task=subscribers.oneclick&newsletter='.(int)$newsletterId.'&id='.(int)$recipient->id.'&hash='.$hash;
-        return rtrim(JURI::root(), '/').'/'.$path;
+        return rtrim(Uri::root(), '/').'/'.$path;
     }
 
     /**
@@ -301,7 +311,7 @@ class OttomoHelperData
     public static function feedbackId($newsletterId, $topics = array())
     {
         $topics = array_values(array_filter(array_map('intval', (array)$topics)));
-        $site = preg_replace('/[^a-z0-9.-]/', '', strtolower((string)JUri::getInstance(JUri::root())->getHost()));
+        $site = preg_replace('/[^a-z0-9.-]/', '', strtolower((string)Uri::getInstance(Uri::root())->getHost()));
         return (int)$newsletterId.':'.($topics ? $topics[0] : 0).':newsletter:'.($site !== '' ? $site : 'ottomo');
     }
 

@@ -9,19 +9,31 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Table\Table;
+use Joomla\CMS\Uri\Uri;
+use Joomla\String\StringHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 #[\AllowDynamicProperties]
-class plgOttomocontentK2 extends JPlugin
+class plgOttomocontentK2 extends CMSPlugin
 {
     public function __construct(&$subject, $config)
     {
         parent::__construct($subject, $config);
-        JFactory::getLanguage()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo'); // Ottomo's backend language file
+        OttomoCompat::language()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo'); // Ottomo's backend language file
         $this->isInstalled = $this->isInstalled();
-        $settings = JComponentHelper::getParams('com_ottomo');
+        $settings = ComponentHelper::getParams('com_ottomo');
         $this->params->merge($settings);
     }
 
-    public function ottomoExtensionView(&$view)
+    public function onOttomoExtensionView($view)
     {
         if (!$this->allowed()) {
             $view->rows = array();
@@ -30,17 +42,17 @@ class plgOttomocontentK2 extends JPlugin
         }
 
         // Assign extension specific variables
-        $mainframe = JFactory::getApplication();
+        $mainframe = Factory::getApplication();
         $view->catid = $mainframe->getUserStateFromRequest($view->prefix.'.catid', 'catid', 0, 'int');
         $view->featured = $mainframe->getUserStateFromRequest($view->prefix.'.featured', 'featured', -1, 'int');
         $view->trash = $mainframe->getUserStateFromRequest($view->prefix.'.trash', 'trash', -1, 'int');
         $view->search = $mainframe->getUserStateFromRequest($view->prefix.'.search', 'search', '', 'string');
         $view->filterDefaults = array('catid' => 0, 'featured' => -1, 'trash' => -1);
-        $view->search = JString::strtolower($view->search);
+        $view->search = StringHelper::strtolower($view->search);
 
         // Get rows
-        JModelLegacy::addIncludePath(dirname(__FILE__).'/models');
-        $model = JModelLegacy::getInstance('K2', 'OttomoModel');
+        BaseDatabaseModel::addIncludePath(dirname(__FILE__).'/models');
+        $model = BaseDatabaseModel::getInstance('K2', 'OttomoModel');
         $model->setState('limit', $view->limit);
         $model->setState('limitstart', $view->limitstart);
         $model->setState('ordering', $view->ordering);
@@ -51,11 +63,11 @@ class plgOttomocontentK2 extends JPlugin
         $model->setState('catid', $view->catid);
         $model->setState('search', $view->search);
         $rows = $model->getList();
-        $view->assignRef('rows', $rows);
+        $view->rows = $rows;
 
         // Get total
         $total = $model->getListCount();
-        $view->assignRef('total', $total);
+        $view->total = $total;
 
         // Add columns
         $view->addColumn('COM_OTTOMO_TITLE', 'title', 'i.title');
@@ -70,40 +82,40 @@ class plgOttomocontentK2 extends JPlugin
         $view->addFilter($searchFilter);
 
         $stateFilter = OttomoHelperHTML::state($view->published);
-        $view->addFilter($stateFilter, JText::_('COM_OTTOMO_STATE'));
+        $view->addFilter($stateFilter, Text::_('COM_OTTOMO_STATE'));
 
         $categories = $model->getCategories();
-        $option = JHTML::_('select.option', 0, JText::_('COM_OTTOMO_ANY'));
+        $option = HTMLHelper::_('select.option', 0, Text::_('COM_OTTOMO_ANY'));
         array_unshift($categories, $option);
-        $categoryFilter = JHTML::_('select.genericlist', $categories, 'catid', '', 'value', 'text', $view->catid);
-        $view->addFilter($categoryFilter, JText::_('COM_OTTOMO_CATEGORY'));
+        $categoryFilter = HTMLHelper::_('select.genericlist', $categories, 'catid', '', 'value', 'text', $view->catid);
+        $view->addFilter($categoryFilter, Text::_('COM_OTTOMO_CATEGORY'));
 
         $options = array();
-        $options[] = JHTML::_('select.option', '-1', JText::_('COM_OTTOMO_ANY'));
-        $options[] = JHTML::_('select.option', '1', JText::_('COM_OTTOMO_FEATURED'));
-        $options[] = JHTML::_('select.option', '0', JText::_('COM_OTTOMO_NOT_FEATURED'));
-        $featuredFilter = JHTML::_('select.genericlist', $options, 'featured', '', 'value', 'text', $view->featured);
-        $view->addFilter($featuredFilter, JText::_('COM_OTTOMO_FEATURED_STATE'));
+        $options[] = HTMLHelper::_('select.option', '-1', Text::_('COM_OTTOMO_ANY'));
+        $options[] = HTMLHelper::_('select.option', '1', Text::_('COM_OTTOMO_FEATURED'));
+        $options[] = HTMLHelper::_('select.option', '0', Text::_('COM_OTTOMO_NOT_FEATURED'));
+        $featuredFilter = HTMLHelper::_('select.genericlist', $options, 'featured', '', 'value', 'text', $view->featured);
+        $view->addFilter($featuredFilter, Text::_('COM_OTTOMO_FEATURED_STATE'));
 
         $options = array();
-        $options[] = JHTML::_('select.option', '0', JText::_('COM_OTTOMO_CURRENT'));
-        $options[] = JHTML::_('select.option', '1', JText::_('COM_OTTOMO_TRASHED'));
-        $trashFilter = JHTML::_('select.genericlist', $options, 'trash', '', 'value', 'text', $view->trash);
-        $view->addFilter($trashFilter, JText::_('COM_OTTOMO_STATUS'));
+        $options[] = HTMLHelper::_('select.option', '0', Text::_('COM_OTTOMO_CURRENT'));
+        $options[] = HTMLHelper::_('select.option', '1', Text::_('COM_OTTOMO_TRASHED'));
+        $trashFilter = HTMLHelper::_('select.genericlist', $options, 'trash', '', 'value', 'text', $view->trash);
+        $view->addFilter($trashFilter, Text::_('COM_OTTOMO_STATUS'));
 
     }
 
-    public function ottomoExtensionRowContent($id)
+    public function onOttomoExtensionRowContent($id)
     {
         if (!$this->allowed()) {
             return null;
         }
-        JModelLegacy::addIncludePath(dirname(__FILE__).'/models');
-        $model = JModelLegacy::getInstance('K2', 'OttomoModel');
-        JTable::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_k2/tables');
-        $item = JTable::getInstance('K2Item', 'Table');
+        BaseDatabaseModel::addIncludePath(dirname(__FILE__).'/models');
+        $model = BaseDatabaseModel::getInstance('K2', 'OttomoModel');
+        Table::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_k2/tables');
+        $item = Table::getInstance('K2Item', 'Table');
         $item->load($id);
-        if (!$item->id || !in_array((int)$item->access, JFactory::getUser()->getAuthorisedViewLevels())) {
+        if (!$item->id || !in_array((int)$item->access, OttomoCompat::user()->getAuthorisedViewLevels())) {
             return null;
         }
         $item->image = null;
@@ -114,8 +126,8 @@ class plgOttomocontentK2 extends JPlugin
         $item->date = null;
         $item->tags = array();
         $item->extra_fields = array();
-        if ($this->params->get('k2Image') && $this->params->get('k2ImageSize') && JFile::exists(JPATH_SITE.'/media/k2/items/cache/'.md5("Image".$item->id).'_'.$this->params->get('k2ImageSize').'.jpg')) {
-            $item->image = JURI::root().'media/k2/items/cache/'.md5("Image".$item->id).'_'.$this->params->get('k2ImageSize').'.jpg';
+        if ($this->params->get('k2Image') && $this->params->get('k2ImageSize') && is_file(JPATH_SITE.'/media/k2/items/cache/'.md5("Image".$item->id).'_'.$this->params->get('k2ImageSize').'.jpg')) {
+            $item->image = Uri::root().'media/k2/items/cache/'.md5("Image".$item->id).'_'.$this->params->get('k2ImageSize').'.jpg';
         }
         if (!$this->params->get('k2Title')) {
             $item->title = null;
@@ -152,19 +164,19 @@ class plgOttomocontentK2 extends JPlugin
         return $item;
     }
 
-    public function ottomoExtensionRowLink($id)
+    public function onOttomoExtensionRowLink($id)
     {
         if (!$this->allowed()) {
             return '';
         }
-        JTable::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_k2/tables');
+        Table::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_k2/tables');
         JLoader::register('K2HelperRoute', JPATH_SITE.'/components/com_k2/helpers/route.php');
-        $item = JTable::getInstance('K2Item', 'Table');
+        $item = Table::getInstance('K2Item', 'Table');
         $item->load($id);
-        if (!$item->id || !in_array((int)$item->access, JFactory::getUser()->getAuthorisedViewLevels())) {
+        if (!$item->id || !in_array((int)$item->access, OttomoCompat::user()->getAuthorisedViewLevels())) {
             return '';
         }
-        $db = JFactory::getDBO();
+        $db = OttomoCompat::db();
         $db->setQuery("SELECT alias FROM #__k2_categories WHERE id = ".(int)$item->catid);
         $alias = $db->loadResult();
         JLoader::register('OttomoHelperK2', dirname(__FILE__).'/helpers/helper.php');
@@ -172,26 +184,26 @@ class plgOttomocontentK2 extends JPlugin
         return '<a href="'.htmlspecialchars($link, ENT_QUOTES, 'UTF-8').'">'.htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8').'</a>';
     }
 
-    public function ottomoExtensionEditorButton()
+    public function onOttomoExtensionEditorButton()
     {
         if (!$this->isInstalled || !$this->allowed()) {
             return false;
         }
         $button = new stdClass();
         $button->extension = $this->_name;
-        $button->label = JText::_('PLG_OTTOMO_CONTENT_K2_LABEL');
+        $button->label = Text::_('PLG_OTTOMO_CONTENT_K2_LABEL');
         return $button;
     }
 
     protected function isInstalled()
     {
-        return JFile::exists(JPATH_SITE.'/components/com_k2/k2.php');
+        return is_file(JPATH_SITE.'/components/com_k2/k2.php');
     }
 
     /** K2 items are picked by those who manage them (com_k2's "Access Administration Interface") */
     protected function allowed()
     {
-        return (bool)JFactory::getUser()->authorise('core.manage', 'com_k2');
+        return (bool)OttomoCompat::user()->authorise('core.manage', 'com_k2');
     }
 
 }

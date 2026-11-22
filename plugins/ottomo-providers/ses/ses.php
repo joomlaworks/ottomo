@@ -9,18 +9,25 @@
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\CMSPlugin;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 #[\AllowDynamicProperties]
-class plgOttomoprovidersSES extends JPlugin
+class plgOttomoprovidersSES extends CMSPlugin
 {
     public function __construct(&$subject, $config)
     {
         parent::__construct($subject, $config);
-        JFactory::getLanguage()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo'); // Ottomo's backend language file
-        $settings = JComponentHelper::getParams('com_ottomo');
+        OttomoCompat::language()->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo'); // Ottomo's backend language file
+        $settings = ComponentHelper::getParams('com_ottomo');
         $this->params->merge($settings);
     }
 
-    public function send(&$mailer, $recipients, $params, $topics, $newsletterId = 0)
+    public function onOttomoSend($mailer, $recipients, $params, $topics, $newsletterId = 0)
     {
         JLoader::register('OttomoHelperData', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/data.php');
         $from = $mailer->FromName
@@ -98,7 +105,7 @@ class plgOttomoprovidersSES extends JPlugin
     }
 
     /** At most what SES accepts in about 20 seconds at the account's rate, so a batch ends within PHP's time limit. */
-    public function batchSize($limit)
+    public function onOttomoBatchSize($limit)
     {
         return max(1, min((int)$limit, (int)floor($this->maxSendRate() * 20)));
     }
@@ -139,7 +146,7 @@ class plgOttomoprovidersSES extends JPlugin
         return $rate;
     }
 
-    public function verify()
+    public function onOttomoVerify()
     {
         $accessKey = trim((string)$this->params->get('sesAccessKey'));
         $secretKey = trim((string)$this->params->get('sesSecretKey'));
@@ -155,14 +162,14 @@ class plgOttomoprovidersSES extends JPlugin
         }
     }
 
-    public function statistics($startDate, $endDate, $topicId)
+    public function onOttomoStatistics($startDate, $endDate, $topicId)
     {
         $columns = array(
-            JText::_('COM_OTTOMO_DATE'),
-            JText::_('COM_OTTOMO_REQUESTS'),
-            JText::_('COM_OTTOMO_BOUNCES'),
-            JText::_('COM_OTTOMO_REJECTS'),
-            JText::_('COM_OTTOMO_SPAM_REPORTS'),
+            Text::_('COM_OTTOMO_DATE'),
+            Text::_('COM_OTTOMO_REQUESTS'),
+            Text::_('COM_OTTOMO_BOUNCES'),
+            Text::_('COM_OTTOMO_REJECTS'),
+            Text::_('COM_OTTOMO_SPAM_REPORTS'),
         );
         $properties = array('DeliveryAttempts', 'Bounces', 'Rejects', 'Complaints');
         $colors = array('#b8b8b8', '#e87e04', '#c74484', '#e74b3c');
@@ -194,7 +201,7 @@ class plgOttomoprovidersSES extends JPlugin
         }
 
         foreach ($xml->GetSendStatisticsResult->SendDataPoints->member as $entry) {
-            $date = JFactory::getDate((string)$entry->Timestamp)->toSql();
+            $date = Factory::getDate((string)$entry->Timestamp)->toSql();
             $row = array($date);
             foreach ($properties as $property) {
                 $value = (int)$entry->$property;

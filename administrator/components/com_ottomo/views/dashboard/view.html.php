@@ -9,6 +9,14 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
+use Joomla\Utilities\ArrayHelper;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/views/view.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/models/model.php';
 
@@ -17,7 +25,7 @@ class OttomoViewDashboard extends OttomoView
     public function display($tpl = null)
     {
         // Get component params
-        $params = JComponentHelper::getParams('com_ottomo');
+        $params = ComponentHelper::getParams('com_ottomo');
 
         // Chart
         $this->chart('component', $params);
@@ -41,7 +49,7 @@ class OttomoViewDashboard extends OttomoView
         foreach ($this->latestSubscribers as $row) {
             $model = OttomoModel::getInstance('Topics');
             $ids = $row->topics ? explode(',', (string)$row->topics) : array();
-            JArrayHelper::toInteger($ids);
+            ArrayHelper::toInteger($ids);
             $topics = array();
             foreach ($ids as $id) {
                 $model->setState('id', $id);
@@ -79,15 +87,15 @@ class OttomoViewDashboard extends OttomoView
         parent::display($tpl);
     }
 
-    public function chart($mode = 'component', $params)
+    public function chart($mode, $params)
     {
-        $language = JFactory::getLanguage();
+        $language = OttomoCompat::language();
         $language->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo');
 
-        $document = JFactory::getDocument();
+        $document = OttomoCompat::document();
         JLoader::register('OttomoHelperHTML', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/html.php');
-        $document->addStyleSheet(OttomoHelperHTML::asset(JURI::base(true).'/components/com_ottomo/static/css/ottomo-graphs.css'));
-        $document->addScript(OttomoHelperHTML::asset(JURI::base(true).'/components/com_ottomo/static/js/ottomo.js'));
+        $document->addStyleSheet(OttomoHelperHTML::asset(Uri::base(true).'/components/com_ottomo/static/css/ottomo-graphs.css'));
+        $document->addScript(OttomoHelperHTML::asset(Uri::base(true).'/components/com_ottomo/static/js/ottomo.js'));
 
         $model = OttomoModel::getInstance('Topics');
         $model->setState('limit', 100);
@@ -97,15 +105,15 @@ class OttomoViewDashboard extends OttomoView
         $model->setState('published', 1);
         $topics = $model->getList();
         $options = array();
-        $options[] = JHtml::_('select.option', 0, JText::_('COM_OTTOMO_SELECT_TOPIC'), 'id', 'name');
+        $options[] = HTMLHelper::_('select.option', 0, Text::_('COM_OTTOMO_SELECT_TOPIC'), 'id', 'name');
         foreach ($topics as $topic) {
-            $options[] = JHtml::_('select.option', $topic->id, $topic->name, 'id', 'name');
+            $options[] = HTMLHelper::_('select.option', $topic->id, $topic->name, 'id', 'name');
         }
-        $this->topicsFilter = JHtml::_('select.genericlist', $options, 'topicId', '', 'id', 'name');
+        $this->topicsFilter = HTMLHelper::_('select.genericlist', $options, 'topicId', '', 'id', 'name');
 
         if ($mode == 'module') {
             if (!$params->get('source')) {
-                $componentParams = JComponentHelper::getParams('com_ottomo');
+                $componentParams = ComponentHelper::getParams('com_ottomo');
                 if (in_array($componentParams->get('mailer', 'mail'), array('brevo', 'mailgun', 'mailjet', 'sendgrid', 'sendpulse', 'ses'))) {
                     $params->set('source', $componentParams->get('mailer', 'mail'));
                 } else {

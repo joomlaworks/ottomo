@@ -7,7 +7,9 @@
  * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 
-defined('_JEXEC') or die ; ?>
+defined('_JEXEC') or die ;
+
+use Joomla\CMS\Language\Text; ?>
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -73,7 +75,7 @@ defined('_JEXEC') or die ; ?>
 			<table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0">
 				<tr>
 					<td class="dm-muted" align="right" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 12px; line-height: 18px; color: #71717a;">
-						<a href="{{view_in_browser}}" style="color: #71717a; text-decoration: underline;"><?php echo JText::_('COM_OTTOMO_TMPL_VIEW_IN_BROWSER'); ?></a>
+						<a href="{{view_in_browser}}" style="color: #71717a; text-decoration: underline;"><?php echo Text::_('COM_OTTOMO_TMPL_VIEW_IN_BROWSER'); ?></a>
 					</td>
 				</tr>
 			</table>
@@ -120,13 +122,13 @@ defined('_JEXEC') or die ; ?>
 					<td align="center" class="px dm-muted" style="padding: 0 40px 36px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 12px; line-height: 19px; color: #71717a;">
 						<p style="margin: 0 0 10px;">{{why}}</p>
 						<p style="margin: 0 0 10px;">
-							<a href="{{preferences}}" style="color: #71717a; text-decoration: underline;"><?php echo JText::_('COM_OTTOMO_TMPL_UPDATE_YOUR_PREFERENCES'); ?></a>
+							<a href="{{preferences}}" style="color: #71717a; text-decoration: underline;"><?php echo Text::_('COM_OTTOMO_TMPL_UPDATE_YOUR_PREFERENCES'); ?></a>
 							&nbsp;&middot;&nbsp;
-							<a href="{{unsubscribe}}" style="color: #71717a; text-decoration: underline;"><?php echo JText::_('COM_OTTOMO_TMPL_UNSUBSCRIBE'); ?></a>
+							<a href="{{unsubscribe}}" style="color: #71717a; text-decoration: underline;"><?php echo Text::_('COM_OTTOMO_TMPL_UNSUBSCRIBE'); ?></a>
 							&nbsp;&middot;&nbsp;
-							<a href="{{view_in_browser}}" style="color: #71717a; text-decoration: underline;"><?php echo JText::_('COM_OTTOMO_TMPL_VIEW_IN_BROWSER'); ?></a>
+							<a href="{{view_in_browser}}" style="color: #71717a; text-decoration: underline;"><?php echo Text::_('COM_OTTOMO_TMPL_VIEW_IN_BROWSER'); ?></a>
 						</p>
-						<p style="margin: 0;"><?php echo JText::_('COM_OTTOMO_TMPL_FORWARDED'); ?> <a href="{{subscribe}}" style="color: #18181b; font-weight: 600; text-decoration: underline;"><?php echo JText::_('COM_OTTOMO_TMPL_SUBSCRIBE'); ?></a></p>
+						<p style="margin: 0;"><?php echo Text::_('COM_OTTOMO_TMPL_FORWARDED'); ?> <a href="{{subscribe}}" style="color: #18181b; font-weight: 600; text-decoration: underline;"><?php echo Text::_('COM_OTTOMO_TMPL_SUBSCRIBE'); ?></a></p>
 					</td>
 				</tr>
 			</table>

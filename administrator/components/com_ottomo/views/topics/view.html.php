@@ -9,6 +9,11 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoViewTopics extends OttomoView
 {
     /** Alphabetical */
@@ -41,7 +46,7 @@ class OttomoViewTopics extends OttomoView
         $this->addFilter($searchFilter);
 
         $stateFilter = OttomoHelperHTML::state($this->published);
-        $this->addFilter($stateFilter, JText::_('COM_OTTOMO_STATE'));
+        $this->addFilter($stateFilter, Text::_('COM_OTTOMO_STATE'));
 
         // Display
         parent::display($tpl);
@@ -52,12 +57,12 @@ class OttomoViewTopics extends OttomoView
     {
         // Get row
         $model = OttomoModel::getInstance('Topics');
-        $model->setState('id', JFactory::getApplication()->input->getInt('id'));
+        $model->setState('id', OttomoCompat::input()->getInt('id'));
         $this->row = $model->getRow();
         $this->summary = $this->row->id ? $model->getSummary($this->row->id) : null;
 
         // Published field
-        $this->published = JHTML::_('select.booleanlist', 'published', '', $this->row->published);
+        $this->published = HTMLHelper::_('select.booleanlist', 'published', '', $this->row->published);
 
         // Set layout
         $this->setLayout('topic');

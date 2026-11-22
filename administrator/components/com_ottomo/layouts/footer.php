@@ -8,22 +8,24 @@
  */
 
 defined('_JEXEC') or die ;
+
+use Joomla\CMS\Language\Text;
 ?>
 <?php if (isset($this->pagination)): ?>
 
 <div class="otm-pagination">
 	
 	<div class="otm-limit">
-		<label><?php echo JText::_('COM_OTTOMO_DISPLAY'); ?></label>
+		<label><?php echo Text::_('COM_OTTOMO_DISPLAY'); ?></label>
 		<?php echo $this->pagination->getLimitBox(); ?>
 	</div>
 	
 	<?php if ($this->pagination->pagesTotal > 1): ?>
 	<ul>
-		<li class="otm-showvsmall"><a href="#" onclick="document.adminForm.limitstart.value = 0; Joomla.submitform(); return false;"><?php echo JText::_('COM_OTTOMO_START'); ?></a></li>
+		<li class="otm-showvsmall"><a href="#" onclick="document.adminForm.limitstart.value = 0; Joomla.submitform(); return false;"><?php echo Text::_('COM_OTTOMO_START'); ?></a></li>
 		
 		<?php if (($this->pagination->pagesCurrent - 1) > 0) : ?>
-		<li class="otm-showvsmall"><a href="#" onclick="document.adminForm.limitstart.value = <?php echo((($this->pagination->pagesCurrent - 1) * $this->pagination->limit) - $this->pagination->limit); ?>; Joomla.submitform(); return false;"><?php echo JText::_('COM_OTTOMO_PREVIOUS'); ?></a></li>
+		<li class="otm-showvsmall"><a href="#" onclick="document.adminForm.limitstart.value = <?php echo((($this->pagination->pagesCurrent - 1) * $this->pagination->limit) - $this->pagination->limit); ?>; Joomla.submitform(); return false;"><?php echo Text::_('COM_OTTOMO_PREVIOUS'); ?></a></li>
 		<?php endif; ?>
 		
 		<?php for ($i = $this->pagination->pagesStart; $i <= $this->pagination->pagesStop; $i++) : ?>
@@ -31,20 +33,20 @@ defined('_JEXEC') or die ;
 		<?php endfor; ?>
 		
 		<?php if (($this->pagination->pagesCurrent + 1) <= $this->pagination->pagesTotal) : ?>
-		<li class="otm-showvsmall"><a href="#" onclick="document.adminForm.limitstart.value = <?php echo($this->pagination->pagesCurrent  * $this->pagination->limit); ?>; Joomla.submitform(); return false;"><?php echo JText::_('COM_OTTOMO_NEXT'); ?></a></li>
+		<li class="otm-showvsmall"><a href="#" onclick="document.adminForm.limitstart.value = <?php echo($this->pagination->pagesCurrent  * $this->pagination->limit); ?>; Joomla.submitform(); return false;"><?php echo Text::_('COM_OTTOMO_NEXT'); ?></a></li>
 		<?php endif; ?>
 		
-		<li class="otm-showvsmall"><a href="#" onclick="document.adminForm.limitstart.value = <?php echo ($this->pagination->pagesTotal  * $this->pagination->limit) - $this->pagination->limit; ?>; Joomla.submitform(); return false;"><?php echo JText::_('COM_OTTOMO_END'); ?></a></li>
+		<li class="otm-showvsmall"><a href="#" onclick="document.adminForm.limitstart.value = <?php echo ($this->pagination->pagesTotal  * $this->pagination->limit) - $this->pagination->limit; ?>; Joomla.submitform(); return false;"><?php echo Text::_('COM_OTTOMO_END'); ?></a></li>
 	</ul>
 	<?php endif; ?>
 	
 	<div class="otm-total">
 		<?php if ($this->pagination->pagesTotal): ?>
 		<span class="otm-total-block">
-			<?php echo JText::_('COM_OTTOMO_PAGE'); ?> <b><?php echo $this->pagination->pagesCurrent; ?></b>
+			<?php echo Text::_('COM_OTTOMO_PAGE'); ?> <b><?php echo $this->pagination->pagesCurrent; ?></b>
 		</span>
 		<span class="otm-total-block">
-			<?php echo JText::_('COM_OTTOMO_OF'); ?> <b><?php echo $this->pagination->pagesTotal; ?></b>
+			<?php echo Text::_('COM_OTTOMO_OF'); ?> <b><?php echo $this->pagination->pagesTotal; ?></b>
 		</span>
 		<?php endif; ?>
 		<?php if (isset($this->total)): ?>
@@ -54,7 +56,7 @@ defined('_JEXEC') or die ;
 		<?php endif; ?>
 	</div>
 
-	<input type="hidden" name="limitstart" value="<?php echo $this->pagination->get('limitstart'); ?>" />
+	<input type="hidden" name="limitstart" value="<?php echo (int)$this->pagination->limitstart; ?>" />
 
 </div>
 <?php endif; ?>

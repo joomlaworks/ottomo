@@ -9,18 +9,21 @@
 
 defined('_JEXEC') or die ;
 
-jimport('joomla.form.formfield');
+use Joomla\CMS\Form\FormField;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Session\Session;
+
 
 /** "Test connection" button (js/ottomo.js -> setupConnectionTest). Tests the saved settings. */
-class JFormFieldConnectionTest extends JFormField
+class JFormFieldConnectionTest extends FormField
 {
     public $type = 'connectiontest';
 
     public function getInput()
     {
-        return '<div class="otm-connection-test" data-connection-test data-token="'.JSession::getFormToken().'">'
-            .'<button type="button" class="otm-btn otm-btn--generic" data-action="test-connection">'.JText::_('COM_OTTOMO_CONNECTION_TEST_BUTTON').'</button>'
-            .'<span class="otm-connection-test__hint">'.JText::_('COM_OTTOMO_CONNECTION_TEST_HINT').'</span>'
+        return '<div class="otm-connection-test" data-connection-test data-token="'.Session::getFormToken().'">'
+            .'<button type="button" class="otm-btn otm-btn--generic" data-action="test-connection">'.Text::_('COM_OTTOMO_CONNECTION_TEST_BUTTON').'</button>'
+            .'<span class="otm-connection-test__hint">'.Text::_('COM_OTTOMO_CONNECTION_TEST_HINT').'</span>'
             .'<div class="otm-status" data-role="result" role="status" aria-live="polite" hidden></div>'
             .'</div>';
     }

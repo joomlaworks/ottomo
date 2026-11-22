@@ -9,6 +9,11 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Session\Session;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoControllerExport extends OttomoController
 {
     /**
@@ -16,15 +21,15 @@ class OttomoControllerExport extends OttomoController
      */
     public function run()
     {
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+        Session::checkToken() or jexit(Text::_('JINVALID_TOKEN'));
         $file = self::file();
         if (!$file) {
-            jexit(JText::_('JINVALID_TOKEN'));
+            jexit(Text::_('JINVALID_TOKEN'));
         }
         $limitstart = $this->input->getInt('limitstart');
         JLoader::register('OttomoHelperExport', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/export.php');
         $model = OttomoModel::getInstance('Subscribers');
-        OttomoHelperExport::apply($model, (array)JFactory::getSession()->get('export.scope', array('mode' => 'all'), 'com_ottomo'));
+        OttomoHelperExport::apply($model, (array)OttomoCompat::session()->get('com_ottomo.export.scope', array('mode' => 'all')));
         $model->setState('ordering', 'subscriber.id');
         $model->setState('orderingDir', 'asc');
         $model->setState('limit', max(1, $this->input->getInt('batch', 100)));
@@ -82,7 +87,7 @@ class OttomoControllerExport extends OttomoController
      */
     public static function file()
     {
-        $name = (string)JFactory::getSession()->get('export.file', '', 'com_ottomo');
+        $name = (string)OttomoCompat::session()->get('com_ottomo.export.file', '');
         if (!preg_match('/^ottomo-export-[a-f0-9]{32}\.csv$/', $name)) {
             return null;
         }

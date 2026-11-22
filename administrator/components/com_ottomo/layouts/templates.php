@@ -7,11 +7,15 @@
  * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 
-defined('_JEXEC') or die ; ?>
+defined('_JEXEC') or die ;
+
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route; ?>
 
 <div id="otm-admin-container" class="otm-admin-list otm-admin-view-<?php echo $this->view; ?>">
 
-<form action="index.php" method="post" id="adminForm" name="adminForm" enctype="multipart/form-data" data-otm-confirm-task="templates.remove" data-otm-confirm-message="<?php echo htmlspecialchars(JText::_('COM_OTTOMO_CONFIRM_DELETE_TEMPLATES'), ENT_QUOTES, 'UTF-8'); ?>">
+<form action="index.php" method="post" id="adminForm" name="adminForm" enctype="multipart/form-data" data-otm-confirm-task="templates.remove" data-otm-confirm-message="<?php echo htmlspecialchars(Text::_('COM_OTTOMO_CONFIRM_DELETE_TEMPLATES'), ENT_QUOTES, 'UTF-8'); ?>">
     <div class="otm-subheader">
        
         <h3 class="otm-title">
@@ -23,9 +27,9 @@ defined('_JEXEC') or die ; ?>
             <input class="visually-hidden" name="package" id="otm-template-package" type="file" accept=".zip,application/zip" data-role="template-package" />
             <label class="otm-btn otm-btn--save otm-btn--icon" for="otm-template-package" tabindex="0" role="button">
                 <?php echo OttomoHelperHTML::icon('upload'); ?>
-                <span><?php echo JText::_('COM_OTTOMO_UPLOAD_PACKAGE_FILE'); ?></span>
+                <span><?php echo Text::_('COM_OTTOMO_UPLOAD_PACKAGE_FILE'); ?></span>
             </label>
-            <span class="otm-upload__hint" data-role="template-package-name"><?php echo JText::_('COM_OTTOMO_UPLOAD_PACKAGE_HINT'); ?></span>
+            <span class="otm-upload__hint" data-role="template-package-name"><?php echo Text::_('COM_OTTOMO_UPLOAD_PACKAGE_HINT'); ?></span>
         </div>
         <?php endif; ?>
     </div>
@@ -42,14 +46,14 @@ defined('_JEXEC') or die ; ?>
                             <div class="otm-grid-item-bg otm-grid-item-bg--empty"></div>
                             <?php endif; ?>
                             <?php if ($row->custom): ?>
-                            <span class="otm-template-card__source" title="<?php echo htmlspecialchars(JText::_('COM_OTTOMO_TEMPLATE_SITE_TEMPLATE_DESC'), ENT_QUOTES, 'UTF-8'); ?>"><?php echo OttomoHelperHTML::icon('folder'); ?><?php echo JText::_('COM_OTTOMO_TEMPLATE_SITE_TEMPLATE'); ?></span>
+                            <span class="otm-template-card__source" title="<?php echo htmlspecialchars(Text::_('COM_OTTOMO_TEMPLATE_SITE_TEMPLATE_DESC'), ENT_QUOTES, 'UTF-8'); ?>"><?php echo OttomoHelperHTML::icon('folder'); ?><?php echo Text::_('COM_OTTOMO_TEMPLATE_SITE_TEMPLATE'); ?></span>
                             <?php endif; ?>
                             <div class="otm-template-card__overlay">
                                 <a class="otm-template-card__action template-preview-image" href="<?php echo htmlspecialchars($row->preview, ENT_QUOTES, 'UTF-8'); ?>" title="<?php echo $row->name; ?>">
-                                    <?php echo OttomoHelperHTML::icon('eye'); ?><span><?php echo JText::_('COM_OTTOMO_PREVIEW'); ?></span>
+                                    <?php echo OttomoHelperHTML::icon('eye'); ?><span><?php echo Text::_('COM_OTTOMO_PREVIEW'); ?></span>
                                 </a>
-                                <a class="otm-template-card__action otm-template-card__action--primary" data-role="use-template" href="<?php echo JRoute::_('index.php?option=com_ottomo&view=newsletters&task=edit&template='.(int)$row->id); ?>">
-                                    <?php echo OttomoHelperHTML::icon('send'); ?><span><?php echo JText::_('COM_OTTOMO_USE_TEMPLATE'); ?></span>
+                                <a class="otm-template-card__action otm-template-card__action--primary" data-role="use-template" href="<?php echo Route::_('index.php?option=com_ottomo&view=newsletters&task=edit&template='.(int)$row->id); ?>">
+                                    <?php echo OttomoHelperHTML::icon('send'); ?><span><?php echo Text::_('COM_OTTOMO_USE_TEMPLATE'); ?></span>
                                 </a>
                             </div>
                         </div>
@@ -61,11 +65,11 @@ defined('_JEXEC') or die ; ?>
                             <span class="otm-template-card__meta" title="<?php echo $row->date; ?>"><?php echo implode(' · ', array_filter(array($row->version ? 'v'.$row->version : '', $row->shortDate, $row->author))); ?></span>
                             <?php if (OttomoHelperHTML::canManageTemplates()): ?>
                             <div class="otm-template-card__tools">
-                                <a class="otm-icon-btn" href="<?php echo $row->editLink; ?>"><?php echo OttomoHelperHTML::icon('pencil'); ?><span><?php echo JText::_('COM_OTTOMO_EDIT'); ?></span></a>
-                                <a class="otm-icon-btn" href="<?php echo $row->downloadLink; ?>"><?php echo OttomoHelperHTML::icon('download'); ?><span><?php echo JText::_('COM_OTTOMO_DOWNLOAD'); ?></span></a>
-                                <button type="button" class="otm-icon-btn" data-template-task="templates.copy" data-id="<?php echo (int)$row->id; ?>"><?php echo OttomoHelperHTML::icon('files'); ?><span><?php echo JText::_('COM_OTTOMO_DUPLICATE'); ?></span></button>
+                                <a class="otm-icon-btn" href="<?php echo $row->editLink; ?>"><?php echo OttomoHelperHTML::icon('pencil'); ?><span><?php echo Text::_('COM_OTTOMO_EDIT'); ?></span></a>
+                                <a class="otm-icon-btn" href="<?php echo $row->downloadLink; ?>"><?php echo OttomoHelperHTML::icon('download'); ?><span><?php echo Text::_('COM_OTTOMO_DOWNLOAD'); ?></span></a>
+                                <button type="button" class="otm-icon-btn" data-template-task="templates.copy" data-id="<?php echo (int)$row->id; ?>"><?php echo OttomoHelperHTML::icon('files'); ?><span><?php echo Text::_('COM_OTTOMO_DUPLICATE'); ?></span></button>
                                 <?php if (!$row->custom): ?>
-                                <button type="button" class="otm-icon-btn otm-template-card__delete" data-template-task="templates.remove" data-id="<?php echo (int)$row->id; ?>"><?php echo OttomoHelperHTML::icon('trash'); ?><span><?php echo JText::_('COM_OTTOMO_DELETE'); ?></span></button>
+                                <button type="button" class="otm-icon-btn otm-template-card__delete" data-template-task="templates.remove" data-id="<?php echo (int)$row->id; ?>"><?php echo OttomoHelperHTML::icon('trash'); ?><span><?php echo Text::_('COM_OTTOMO_DELETE'); ?></span></button>
                                 <?php endif; ?>
                             </div>
                             <?php endif; ?>
@@ -91,6 +95,6 @@ defined('_JEXEC') or die ; ?>
         <input type="hidden" name="cid[]" value="" data-role="template-id" disabled />
         <input type="hidden" name="format" value="<?php echo $this->format; ?>" />
         <input type="hidden" name="total" value="<?php echo $this->total; ?>" />
-        <?php echo JHTML::_('form.token'); ?>
+        <?php echo HTMLHelper::_('form.token'); ?>
     </form>
 </div>

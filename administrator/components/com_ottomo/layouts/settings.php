@@ -7,7 +7,13 @@
  * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 
-defined('_JEXEC') or die ; ?>
+defined('_JEXEC') or die ;
+
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php'; ?>
 <?php
 // Section icons (Bootstrap Icons), menu and headings
 $sectionIcons = array('general' => 'send', 'services' => 'cloud', 'compliance' => 'shield-check', 'signup' => 'person-plus', 'campaigns' => 'envelope', 'dashboard' => 'speedometer2', 'layout' => 'file-earmark-text', 'permissions' => 'people');
@@ -15,14 +21,14 @@ $sectionIcon = function ($name) use ($sectionIcons) {
     return OttomoHelperHTML::icon(isset($sectionIcons[$name]) ? $sectionIcons[$name] : 'gear');
 };
 ?>
-<form action="<?php echo JRoute::_('index.php'); ?>" method="post" name="adminForm" id="adminForm">
+<form action="<?php echo Route::_('index.php'); ?>" method="post" name="adminForm" id="adminForm">
 	
-	<nav class="otm-settings__nav" aria-label="<?php echo htmlspecialchars(JText::_('COM_OTTOMO_SETTINGS'), ENT_QUOTES, 'UTF-8'); ?>">
-		<h2 class="otm-settings__title"><?php echo OttomoHelperHTML::icon('gear'); ?><?php echo JText::_('COM_OTTOMO_SETTINGS'); ?></h2>
+	<nav class="otm-settings__nav" aria-label="<?php echo htmlspecialchars(Text::_('COM_OTTOMO_SETTINGS'), ENT_QUOTES, 'UTF-8'); ?>">
+		<h2 class="otm-settings__title"><?php echo OttomoHelperHTML::icon('gear'); ?><?php echo Text::_('COM_OTTOMO_SETTINGS'); ?></h2>
 		<ul class="otm-settings__menu">
 			<?php foreach ($this->form->getFieldsets() as $name => $fieldset): ?>
 			<li>
-				<a class="otm-settings__link otm-settings__link--primary" href="#<?php echo $name; ?>"><?php echo $sectionIcon($name); ?><?php echo JText::_($fieldset->label); ?></a>
+				<a class="otm-settings__link otm-settings__link--primary" href="#<?php echo $name; ?>"><?php echo $sectionIcon($name); ?><?php echo Text::_($fieldset->label); ?></a>
 				<?php $i = 0;
 			    foreach ($this->form->getFieldset($name) as $field): ?>
 				<?php if ($field->type == 'Header'): ?>
@@ -31,7 +37,7 @@ $sectionIcon = function ($name) use ($sectionIcons) {
 				<?php $i++; endforeach; ?>
 			</li>
 			<?php endforeach; ?>
-			<li><a class="otm-settings__link otm-settings__link--primary" href="#third-party"><?php echo OttomoHelperHTML::icon('info-circle'); ?><?php echo JText::_('COM_OTTOMO_THIRD_PARTY'); ?></a></li>
+			<li><a class="otm-settings__link otm-settings__link--primary" href="#third-party"><?php echo OttomoHelperHTML::icon('info-circle'); ?><?php echo Text::_('COM_OTTOMO_THIRD_PARTY'); ?></a></li>
 		</ul>
 	</nav>
 
@@ -39,10 +45,10 @@ $sectionIcon = function ($name) use ($sectionIcons) {
 	<?php foreach ($this->form->getFieldsets() as $name => $fieldset): ?>
 	<div class="otm-settings otm-settings--global">
 		<div class="otm-setting-field">
-			<h3 id="<?php echo $name; ?>" class="otm-settings__heading"><?php echo $sectionIcon($name); ?><?php echo JText::_($fieldset->label); ?></h3>
+			<h3 id="<?php echo $name; ?>" class="otm-settings__heading"><?php echo $sectionIcon($name); ?><?php echo Text::_($fieldset->label); ?></h3>
 			
 			<?php if (isset($fieldset->description) && !empty($fieldset->description)) : ?>
-			<p><?php echo JText::_($fieldset->description); ?></p>
+			<p><?php echo Text::_($fieldset->description); ?></p>
 			<?php endif; ?>
 		
 			<?php $i = 0;
@@ -74,13 +80,13 @@ $sectionIcon = function ($name) use ($sectionIcons) {
 	?>
 	<div class="otm-settings otm-settings--global">
 		<div class="otm-setting-field">
-			<h3 id="third-party" class="otm-settings__heading"><?php echo OttomoHelperHTML::icon('info-circle'); ?><?php echo JText::_('COM_OTTOMO_THIRD_PARTY'); ?></h3>
-			<p><?php echo JText::_('COM_OTTOMO_THIRD_PARTY_DESC'); ?></p>
+			<h3 id="third-party" class="otm-settings__heading"><?php echo OttomoHelperHTML::icon('info-circle'); ?><?php echo Text::_('COM_OTTOMO_THIRD_PARTY'); ?></h3>
+			<p><?php echo Text::_('COM_OTTOMO_THIRD_PARTY_DESC'); ?></p>
 			<ul class="otm-third-party">
 				<?php foreach ($thirdParty as $item): list($name, $version, $url, $use, $license, $licenseUrl) = $item; ?>
 				<li>
 					<span class="otm-third-party__name"><a href="<?php echo $url; ?>" target="_blank" rel="noopener"><?php echo $name; ?></a><?php if ($version): ?> <span class="otm-third-party__version"><?php echo $version; ?></span><?php endif; ?></span>
-					<span class="otm-third-party__use"><?php echo JText::_($use); ?></span>
+					<span class="otm-third-party__use"><?php echo Text::_($use); ?></span>
 					<a class="otm-third-party__license" href="<?php echo $licenseUrl; ?>" target="_blank" rel="noopener"><?php echo $license; ?></a>
 				</li>
 				<?php endforeach; ?>
@@ -94,6 +100,6 @@ $sectionIcon = function ($name) use ($sectionIcons) {
 	<input type="hidden" name="option" value="com_ottomo" />
 	<input type="hidden" name="view" value="settings" />
 	<input type="hidden" id="task" name="task" value="" />
-	<input type="hidden" name="return" value="<?php echo JFactory::getApplication()->input->get('return', '', 'base64'); ?>" />
-	<?php echo JHTML::_('form.token'); ?>
+	<input type="hidden" name="return" value="<?php echo OttomoCompat::input()->get('return', '', 'base64'); ?>" />
+	<?php echo HTMLHelper::_('form.token'); ?>
 </form>

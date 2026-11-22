@@ -7,7 +7,9 @@
  * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 
-defined('_JEXEC') or die ; ?>
+defined('_JEXEC') or die ;
+
+use Joomla\CMS\Language\Text; ?>
 <?php
 /*
  * TEMPLATE STARTER (for developers)
@@ -16,7 +18,7 @@ defined('_JEXEC') or die ; ?>
  * Keep the email-safe basics: tables for layout, inline styles, a 600px wide container, images with width/height.
  *
  * Files
- *   default.php           this layout (rendered by Joomla's document renderer: JText and PHP work here)
+ *   default.php           this layout (rendered by Joomla's document renderer: Text and PHP work here)
  *   manifest.xml          name, description, <layout> (1col, 2col or sections) and the list of files to install
  *   sampleData.ini        content shown in the designer for empty positions (key = position name, single line,
  *                         double-quoted, HTML with single quotes; {{base}} is this template's URL)
@@ -125,7 +127,7 @@ defined('_JEXEC') or die ; ?>
 				<!-- Top: view in browser -->
 				<tr>
 					<td class="dm-muted" align="right" style="padding: 0 0 16px; font-size: 12px; line-height: 18px; color: #666666;">
-						<a href="{{view_in_browser}}" style="color: #666666;"><?php echo JText::_('COM_OTTOMO_TMPL_VIEW_IN_BROWSER'); ?></a>
+						<a href="{{view_in_browser}}" style="color: #666666;"><?php echo Text::_('COM_OTTOMO_TMPL_VIEW_IN_BROWSER'); ?></a>
 					</td>
 				</tr>
 
@@ -168,13 +170,13 @@ defined('_JEXEC') or die ; ?>
 				<tr>
 					<td class="dm-muted" style="padding: 16px 0; border-top: 1px solid #dddddd; font-size: 12px; line-height: 18px; color: #666666;">
 						<p style="margin: 0 0 8px;">{{position:footer:text}}</p>
-						<p style="margin: 0 0 8px;">{{why}} <?php echo JText::sprintf('COM_OTTOMO_TMPL_SENT_TO', '{{email}}'); ?></p>
+						<p style="margin: 0 0 8px;">{{why}} <?php echo Text::sprintf('COM_OTTOMO_TMPL_SENT_TO', '{{email}}'); ?></p>
 						<p style="margin: 0 0 8px;">
-							<a href="{{preferences}}" style="color: #666666;"><?php echo JText::_('COM_OTTOMO_TMPL_UPDATE_YOUR_PREFERENCES'); ?></a> |
-							<a href="{{unsubscribe}}" style="color: #666666;"><?php echo JText::_('COM_OTTOMO_TMPL_UNSUBSCRIBE'); ?></a> |
-							<a href="{{view_in_browser}}" style="color: #666666;"><?php echo JText::_('COM_OTTOMO_TMPL_VIEW_IN_BROWSER'); ?></a>
+							<a href="{{preferences}}" style="color: #666666;"><?php echo Text::_('COM_OTTOMO_TMPL_UPDATE_YOUR_PREFERENCES'); ?></a> |
+							<a href="{{unsubscribe}}" style="color: #666666;"><?php echo Text::_('COM_OTTOMO_TMPL_UNSUBSCRIBE'); ?></a> |
+							<a href="{{view_in_browser}}" style="color: #666666;"><?php echo Text::_('COM_OTTOMO_TMPL_VIEW_IN_BROWSER'); ?></a>
 						</p>
-						<p style="margin: 0;"><?php echo JText::_('COM_OTTOMO_TMPL_FORWARDED'); ?> <a href="{{subscribe}}" style="color: #000000;"><?php echo JText::_('COM_OTTOMO_TMPL_SUBSCRIBE'); ?></a></p>
+						<p style="margin: 0;"><?php echo Text::_('COM_OTTOMO_TMPL_FORWARDED'); ?> <a href="{{subscribe}}" style="color: #000000;"><?php echo Text::_('COM_OTTOMO_TMPL_SUBSCRIBE'); ?></a></p>
 					</td>
 				</tr>
 

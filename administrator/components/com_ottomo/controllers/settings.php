@@ -9,6 +9,13 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Session\Session;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoControllerSettings extends OttomoController
 {
     public function apply()
@@ -31,14 +38,14 @@ class OttomoControllerSettings extends OttomoController
     protected function saveSettings()
     {
 
-        $application = JFactory::getApplication();
-        $user = JFactory::getUser();
-        if (!JSession::checkToken()) {
-            $application->enqueueMessage(JText::_('JINVALID_TOKEN'));
+        $application = Factory::getApplication();
+        $user = OttomoCompat::user();
+        if (!Session::checkToken()) {
+            $application->enqueueMessage(Text::_('JINVALID_TOKEN'));
             $application->redirect('index.php');
         }
         if (!$user->authorise('core.admin', 'com_ottomo')) {
-            $application->enqueueMessage(JText::_('JERROR_ALERTNOAUTHOR'));
+            $application->enqueueMessage(Text::_('JERROR_ALERTNOAUTHOR'));
             $application->redirect('index.php');
         }
 
@@ -52,8 +59,8 @@ class OttomoControllerSettings extends OttomoController
         $form = $model->getForm();
 
         // Validate the form
-        JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_config/models');
-        $model = JModelLegacy::getInstance('Component', 'ConfigModel');
+        BaseDatabaseModel::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_config/models');
+        $model = BaseDatabaseModel::getInstance('Component', 'ConfigModel');
         $params = $model->validate($form, $data);
         if ($params === false) {
             $errors = $model->getErrors();
@@ -76,7 +83,7 @@ class OttomoControllerSettings extends OttomoController
 
         $response = new stdClass();
         if ($model->save()) {
-            $response->message = JText::_('COM_OTTOMO_SETTINGS_SAVED');
+            $response->message = Text::_('COM_OTTOMO_SETTINGS_SAVED');
             $response->type = 'message';
         } else {
             $response->message = htmlspecialchars((string)$model->getError(), ENT_QUOTES, 'UTF-8');

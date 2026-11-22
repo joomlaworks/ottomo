@@ -9,6 +9,10 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Language\Text;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
 class OttomoViewSubscribers extends OttomoView
 {
     public function display($tpl = null)
@@ -23,11 +27,11 @@ class OttomoViewSubscribers extends OttomoView
         $model->setState('status', $this->status);
         $model->setState('search', $this->search);
         $rows = $model->getList();
-        $this->assignRef('rows', $rows);
+        $this->rows = $rows;
 
         // Get total
         $total = $model->getListCount();
-        $this->assignRef('total', $total);
+        $this->total = $total;
 
         // Unsubscribed addresses, for "Delete All Unsubscribed" (its confirmation says how many)
         $this->unsubscribedCount = $model->countByStatus(OttomoModelSubscribers::STATUS_UNSUBSCRIBED);
@@ -44,14 +48,14 @@ class OttomoViewSubscribers extends OttomoView
         $this->addFilter($searchFilter);
 
         $statusFilter = OttomoHelperHTML::state($this->status, 'status', '', true, 'COM_OTTOMO_ACTIVE', 'COM_OTTOMO_PENDING', array(2 => 'COM_OTTOMO_UNSUBSCRIBED'));
-        $this->addFilter($statusFilter, JText::_('COM_OTTOMO_STATUS'));
+        $this->addFilter($statusFilter, Text::_('COM_OTTOMO_STATUS'));
 
         $topicFilter = OttomoHelperHTML::topics('list', $this->topic);
-        $this->addFilter($topicFilter, JText::_('COM_OTTOMO_TOPIC'));
+        $this->addFilter($topicFilter, Text::_('COM_OTTOMO_TOPIC'));
 
         // Add batch operations fields
         $batchTopics = OttomoHelperHTML::topics('list', null, 'topics[]', 'multiple="multiple" size="10"', false);
-        $this->assignRef('batchTopics', $batchTopics);
+        $this->batchTopics = $batchTopics;
 
         // Display
         parent::display($tpl);
@@ -61,14 +65,14 @@ class OttomoViewSubscribers extends OttomoView
     {
         // Get row
         $model = OttomoModel::getInstance('Subscribers');
-        $model->setState('id', JFactory::getApplication()->input->getInt('id'));
+        $model->setState('id', OttomoCompat::input()->getInt('id'));
         $row = $model->getRow();
         $row->topics = $model->getSubscriberTopics();
-        $this->assignRef('row', $row);
+        $this->row = $row;
 
         // Get topics field
         $topics = OttomoHelperHTML::topics('checkboxes', $row->topics, 'topics[]', '', false);
-        $this->assignRef('topics', $topics);
+        $this->topics = $topics;
 
         // Set layout
         $this->setLayout('subscriber');

@@ -9,15 +9,17 @@
 
 defined('_JEXEC') or die ;
 
-jimport('joomla.form.formfield');
+use Joomla\CMS\Form\FormField;
+use Joomla\CMS\Language\Text;
 
-class JFormFieldHeader extends JFormField
+
+class JFormFieldHeader extends FormField
 {
     public $type = 'Header';
 
     public function getInput()
     {
-        return '<h4>'.JText::_($this->value).'</h4>';
+        return '<h4>'.Text::_($this->value).'</h4>';
     }
 
     public function getLabel()

@@ -8,6 +8,8 @@
  */
 
 defined('_JEXEC') or die ;
+
+use Joomla\CMS\Language\Text;
 ?>
 <div id="otm-container" class="otm-view-<?php echo $this->view; ?> <?php echo $this->params->get('pageclass_sfx'); ?>">
     
@@ -25,8 +27,8 @@ defined('_JEXEC') or die ;
                 
                 <?php if (count($this->rows)): ?>
                 <thead>
-                    <th><?php echo JText::_('COM_OTTOMO_SENT'); ?></th>
-                    <th><?php echo JText::_('COM_OTTOMO_SUBJECT'); ?></th>
+                    <th><?php echo Text::_('COM_OTTOMO_SENT'); ?></th>
+                    <th><?php echo Text::_('COM_OTTOMO_SUBJECT'); ?></th>
                 </thead>
 
                 <tbody>

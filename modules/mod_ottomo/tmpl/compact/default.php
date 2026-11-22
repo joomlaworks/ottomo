@@ -8,9 +8,12 @@
  */
 
 defined('_JEXEC') or die ;
+
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
 ?>
 <div id="otm-module-<?php echo (int)$module->id; ?>" class="otm-module otm-module--compact<?php echo $moduleclass_sfx ? ' '.$moduleclass_sfx : ''; ?>">
-	<form class="otm-module__form" action="<?php echo JRoute::_('index.php'); ?>" method="post" data-error="<?php echo htmlspecialchars(JText::_('MOD_OTTOMO_ERROR'), ENT_QUOTES, 'UTF-8'); ?>" data-topics-error="<?php echo htmlspecialchars(JText::_('MOD_OTTOMO_CHOOSE_AT_LEAST_ONE_TOPIC'), ENT_QUOTES, 'UTF-8'); ?>">
+	<form class="otm-module__form" action="<?php echo Route::_('index.php'); ?>" method="post" data-error="<?php echo htmlspecialchars(Text::_('MOD_OTTOMO_ERROR'), ENT_QUOTES, 'UTF-8'); ?>" data-topics-error="<?php echo htmlspecialchars(Text::_('MOD_OTTOMO_CHOOSE_AT_LEAST_ONE_TOPIC'), ENT_QUOTES, 'UTF-8'); ?>">
 		<?php if ($pretext !== ''): ?>
 		<div class="otm-module__pretext"><?php echo $pretext; ?></div>
 		<?php endif; ?>
@@ -24,7 +27,7 @@ defined('_JEXEC') or die ;
 
 		<?php if ($topics->mode): ?>
 		<fieldset class="otm-module__topics">
-			<legend><?php echo JText::_($topics->mode === 'single' ? 'MOD_OTTOMO_CHOOSE_A_TOPIC' : 'MOD_OTTOMO_CHOOSE_TOPICS'); ?></legend>
+			<legend><?php echo Text::_($topics->mode === 'single' ? 'MOD_OTTOMO_CHOOSE_A_TOPIC' : 'MOD_OTTOMO_CHOOSE_TOPICS'); ?></legend>
 			<?php echo modOttomoHelper::topicChoices($topics, $module, 'otm-module__topic'); ?>
 		</fieldset>
 		<?php else: ?>
@@ -37,7 +40,7 @@ defined('_JEXEC') or die ;
 		<?php endif; ?>
 
 		<div class="otm-module__actions">
-			<button class="otm-module__submit btn btn-primary" type="submit"><?php echo JText::_('MOD_OTTOMO_SUBSCRIBE'); ?></button>
+			<button class="otm-module__submit btn btn-primary" type="submit"><?php echo Text::_('MOD_OTTOMO_SUBSCRIBE'); ?></button>
 		</div>
 		<div class="otm-module__message" role="status" aria-live="polite"></div>
 

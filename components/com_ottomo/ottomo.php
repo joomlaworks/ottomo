@@ -9,13 +9,18 @@
 
 defined('_JEXEC') or die ;
 
-JTable::addIncludePath(JPATH_COMPONENT_ADMINISTRATOR.'/tables');
+use Joomla\CMS\MVC\Controller\BaseController;
+use Joomla\CMS\Table\Table;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
+Table::addIncludePath(JPATH_COMPONENT_ADMINISTRATOR.'/tables');
 
 JLoader::register('OttomoController', JPATH_COMPONENT.'/controller.php');
 JLoader::register('OttomoModel', JPATH_COMPONENT_ADMINISTRATOR.'/models/model.php');
 JLoader::register('OttomoView', JPATH_COMPONENT_ADMINISTRATOR.'/views/view.php');
 JLoader::register('OttomoHelperData', JPATH_COMPONENT_ADMINISTRATOR.'/helpers/data.php');
 
-$controller = JControllerLegacy::getInstance('Ottomo');
-$controller->execute(JFactory::getApplication()->input->get('task'));
+$controller = BaseController::getInstance('Ottomo');
+$controller->execute(OttomoCompat::input()->get('task'));
 $controller->redirect();

@@ -10,7 +10,13 @@
 // no direct access
 defined('_JEXEC') or die ;
 
-class OttomoController extends JControllerLegacy
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\Controller\BaseController;
+
+require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
+
+class OttomoController extends BaseController
 {
     /**
      * Method to display a view.
@@ -24,21 +30,21 @@ class OttomoController extends JControllerLegacy
     public function display($cachable = false, $urlparams = false)
     {
 
-        $application = JFactory::getApplication();
-        $user = JFactory::getUser();
-        $view = $application->input->getCmd('view');
+        $application = Factory::getApplication();
+        $user = OttomoCompat::user();
+        $view = OttomoCompat::input()->getCmd('view');
 
         if ($view == 'subscribers') {
-            $newsletterId = $application->input->getInt('newsletter');
-            $subscriberId = $application->input->getInt('id');
-            $hash = $application->input->getVar('hash');
+            $newsletterId = OttomoCompat::input()->getInt('newsletter');
+            $subscriberId = OttomoCompat::input()->getInt('id');
+            $hash = OttomoCompat::input()->getString('hash');
             if (!OttomoHelperData::checkHash($newsletterId, $subscriberId, $hash)) {
-                $application->enqueueMessage(JText::_('COM_OTTOMO_NOT_FOUND'), 'error');
+                $application->enqueueMessage(Text::_('COM_OTTOMO_NOT_FOUND'), 'error');
                 return;
             }
         }
 
-        if ($user->guest && $application->input->getMethod() == 'GET') {
+        if ($user->guest && OttomoCompat::input()->getMethod() == 'GET') {
             $cachable = true;
         }
 
