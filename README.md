@@ -1,3 +1,5 @@
+<p align="center"><img src="administrator/components/com_ottomo/static/images/logo/ottomo-logo-light.svg" alt="Ottomo" width="320"></p>
+
 # Ottomo for Joomla
 
 **Ottomo** is a free, open source email newsletter and campaign manager for **Joomla 3.x UTD**, by [JoomlaWorks](https://www.joomlaworks.net), the makers of K2.
