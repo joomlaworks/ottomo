@@ -1044,6 +1044,13 @@
       $$('.otm-listed-items .btn.btn-micro, .otm-listed-items .tbody-icon').forEach(function(button) {
         button.classList.remove('btn', 'btn-micro', 'tbody-icon', 'active');
         button.classList.add('otm-state-toggler');
+        // Joomla 4+: the link's task (data-item-id/-task) is run by Joomla's multiselect script, which Ottomo doesn't load
+        if (button.hasAttribute('data-item-task')) {
+          button.addEventListener('click', function(event) {
+            event.preventDefault();
+            Joomla.listItemTask(button.getAttribute('data-item-id'), button.getAttribute('data-item-task'));
+          });
+        }
         $$('.icon-unpublish', button).forEach(function(icon) {
           icon.outerHTML = Ottomo.icons.xCircleFill.replace('otm-icon', 'otm-icon otm-unpublished');
         });
@@ -1124,8 +1131,8 @@
         if (!container) {
           return;
         }
-        var alerts = $$('.alert', container).filter(function(alert) {
-          return !alert.matches('.alert-error, .alert-danger, .alert-warning');
+        var alerts = $$('.alert, joomla-alert', container).filter(function(alert) {
+          return !alert.matches('.alert-error, .alert-danger, .alert-warning, joomla-alert[type="danger"], joomla-alert[type="error"], joomla-alert[type="warning"]') && !alert.closest('noscript');
         });
         alerts.forEach(function(alert) {
           var hide = function() {

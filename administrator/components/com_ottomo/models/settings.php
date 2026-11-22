@@ -42,7 +42,7 @@ class OttomoModelSettings extends OttomoModel
 
         // Save the rules.
         if (isset($params['rules'])) {
-            $rules = new JAccessRules((array)$params['rules']);
+            $rules = new \Joomla\CMS\Access\Rules((array)$params['rules']);
             $asset = Table::getInstance('asset');
 
             if (!$asset->loadByName($option)) {

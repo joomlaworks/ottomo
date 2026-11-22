@@ -40,6 +40,7 @@ class OttomoHelperData
             $row->parity = ($key + 1) % 2;
             $rawPublished = property_exists($row, 'published') ? (int)$row->published : null;
             $rawStatus = property_exists($row, 'status') ? (int)$row->status : null;
+            $rawState = property_exists($row, 'state') ? (int)$row->state : null;
             if (property_exists($row, 'published')) {
                 $row->published = HTMLHelper::_('jgrid.published', $row->published, $key);
             }
@@ -55,7 +56,7 @@ class OttomoHelperData
                 );
                 $pill = isset($pills[$rawStatus]) ? $pills[$rawStatus] : $pills[0];
                 if ($pill[2] !== '') {
-                    $row->status = '<button type="button" class="otm-pill otm-pill--'.$pill[1].' otm-pill--toggle" data-status="'.(int)$rawStatus.'" onclick="return listItemTask(\'cb'.(int)$key.'\',\''.$pill[2].'\')" title="'.htmlspecialchars(Text::_($pill[3]), ENT_QUOTES, 'UTF-8').'">'.htmlspecialchars(Text::_($pill[0]), ENT_QUOTES, 'UTF-8').'</button>';
+                    $row->status = '<button type="button" class="otm-pill otm-pill--'.$pill[1].' otm-pill--toggle" data-status="'.(int)$rawStatus.'" onclick="return Joomla.listItemTask(\'cb'.(int)$key.'\',\''.$pill[2].'\')" title="'.htmlspecialchars(Text::_($pill[3]), ENT_QUOTES, 'UTF-8').'">'.htmlspecialchars(Text::_($pill[0]), ENT_QUOTES, 'UTF-8').'</button>';
                 } else {
                     $row->status = OttomoHelperHTML::pill(Text::_($pill[0]), $pill[1], 'data-status="'.(int)$rawStatus.'" title="'.htmlspecialchars(Text::_('COM_OTTOMO_UNSUBSCRIBED_DESC'), ENT_QUOTES, 'UTF-8').'"');
                 }
@@ -140,11 +141,12 @@ class OttomoHelperData
                     $row->title .= '<br/>';
                     $row->title .= HTMLHelper::link($row->id, OttomoHelperHTML::icon('file-earmark-text').Text::_('COM_OTTOMO_INSERT_CONTENT'), 'class="otm-row-title--inline otm-insert-content-button"');
                     $row->title .= HTMLHelper::link($row->id, OttomoHelperHTML::icon('link-45deg').Text::_('COM_OTTOMO_INSERT_LINK'), 'class="otm-row-title--inline otm-insert-link-button"');
-                    if (isset($row->published)) {
-                        $row->published = strip_tags($row->published, '<i>');
-                    }
-                    if (isset($row->state)) {
-                        $row->state = strip_tags($row->state, '<i>');
+                    // The item's state, shown (not a toggle: items are published where they are managed)
+                    foreach (array('published' => $rawPublished, 'state' => $rawState) as $property => $value) {
+                        if ($value !== null && isset($row->$property)) {
+                            $row->$property = '<span class="otm-state-toggler" title="'.htmlspecialchars(Text::_($value === 1 ? 'COM_OTTOMO_PUBLISHED' : 'COM_OTTOMO_UNPUBLISHED'), ENT_QUOTES, 'UTF-8').'">'
+                                .str_replace('otm-icon', 'otm-icon '.($value === 1 ? 'otm-published' : 'otm-unpublished'), OttomoHelperHTML::icon($value === 1 ? 'check-circle-fill' : 'x-circle-fill')).'</span>';
+                        }
                     }
                     break;
             }

@@ -105,6 +105,30 @@ if (!class_exists('OttomoCompat', false)) {
             return is_array($results) ? $results : array();
         }
 
+        /**
+         * A model of another component (e.g. com_content's Articles), its request ignored: Joomla 4+ through the component's
+         * MVC factory ($client: Administrator or Site), Joomla 3 through the legacy loader ($prefix: e.g. ContentModel).
+         */
+        public static function componentModel($component, $name, $client, $prefix)
+        {
+            $app = Factory::getApplication();
+            if (method_exists($app, 'bootComponent')) {
+                return $app->bootComponent($component)->getMVCFactory()->createModel($name, $client, array('ignore_request' => true));
+            }
+            \Joomla\CMS\MVC\Model\BaseDatabaseModel::addIncludePath(($client === 'Site' ? JPATH_SITE : JPATH_ADMINISTRATOR).'/components/'.$component.'/models');
+            return \Joomla\CMS\MVC\Model\BaseDatabaseModel::getInstance($name, $prefix, array('ignore_request' => true));
+        }
+
+        /** com_content's route helper: Joomla 4+ RouteHelper, Joomla 3 ContentHelperRoute (both: getArticleRoute(), getCategoryRoute()). */
+        public static function contentRoute()
+        {
+            if (class_exists('Joomla\\Component\\Content\\Site\\Helper\\RouteHelper')) {
+                return 'Joomla\\Component\\Content\\Site\\Helper\\RouteHelper';
+            }
+            JLoader::register('ContentHelperRoute', JPATH_SITE.'/components/com_content/helpers/route.php');
+            return 'ContentHelperRoute';
+        }
+
         /** The site's router (to build frontend links from the backend or the command line). */
         public static function siteRouter()
         {

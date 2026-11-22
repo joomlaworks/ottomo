@@ -11,7 +11,6 @@ defined('_JEXEC') or die ;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Session\Session;
 
 require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
@@ -51,21 +50,15 @@ class OttomoControllerSettings extends OttomoController
 
         $data = $this->input->get('jform', array(), 'array');
 
-        require_once JPATH_SITE.'/components/com_config/model/cms.php';
-        require_once JPATH_SITE.'/components/com_config/model/form.php';
-
-        // Get form
+        // Validate against Ottomo's settings form (config.xml): filtered, then checked
         $model = OttomoModel::getInstance('Settings');
         $form = $model->getForm();
-
-        // Validate the form
-        BaseDatabaseModel::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_config/models');
-        $model = BaseDatabaseModel::getInstance('Component', 'ConfigModel');
-        $params = $model->validate($form, $data);
-        if ($params === false) {
-            $errors = $model->getErrors();
+        $params = $form->filter($data);
+        if ($form->validate($params) !== true) {
+            $errors = $form->getErrors();
+            $error = count($errors) ? $errors[0] : Text::_('COM_OTTOMO_AN_ERROR_OCCURED');
             $response = new stdClass();
-            $response->message = $errors[0] instanceof Exception ? $errors[0]->getMessage() : $errors[0];
+            $response->message = $error instanceof Exception ? $error->getMessage() : (string)$error;
             $response->type = 'warning';
             return $response;
         }
@@ -76,10 +69,6 @@ class OttomoControllerSettings extends OttomoController
         $model = OttomoModel::getInstance('Settings', 'OttomoModel');
         $model->setState('option', 'com_ottomo');
         $model->setState('data', $data);
-
-        $options = array('defaultgroup' => '_system', 'cachebase' => JPATH_ADMINISTRATOR.'/cache');
-        $cache = JCache::getInstance('callback', $options);
-        $cache->clean();
 
         $response = new stdClass();
         if ($model->save()) {

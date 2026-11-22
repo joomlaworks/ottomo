@@ -59,7 +59,7 @@ class OttomoControllerTemplates extends OttomoController
                 // Built under an unguessable name and deleted as soon as it is read
                 $filename = $table->folder.'.zip';
                 $target = JPATH_SITE.'/tmp/ottomo-template-'.bin2hex(random_bytes(16)).'.zip';
-                $adapter = JArchive::getAdapter('zip');
+                $adapter = new \Joomla\Archive\Zip(); // the framework's archive package (Joomla 3.x UTD and 4+)
                 if ($adapter->isSupported()) {
                     $files = Folder::files($source, '.', true, true);
                     $data = array();

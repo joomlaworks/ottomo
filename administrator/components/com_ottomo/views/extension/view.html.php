@@ -32,7 +32,7 @@ class OttomoViewExtension extends OttomoView
 
     protected function addTitle()
     {
-        $this->title = Text::_('COM_OTTOMO_'.strtoupper($this->view).'_'.strtoupper($this->extension));
+        $this->title = Text::_('PLG_OTTOMO_CONTENT_'.strtoupper($this->extension).'_LABEL'); // the content plugin's name, e.g. Joomla Articles
         ToolbarHelper::title($this->title, 'ottomo');
     }
 

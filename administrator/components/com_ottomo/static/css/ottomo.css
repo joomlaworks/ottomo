@@ -661,17 +661,20 @@ body:has(#otm.otm-app--atum) #content > .row > [class*="col-"] {min-width:0;}
 #otm .otm-reset {margin-left:auto;color:var(--otm-accent);font-size:0.8125rem;font-weight:700;}
 
 /* Toasts: Joomla's system messages, fixed top right; success fades out (js/script.js), the rest stays until closed */
-body:has(#otm) #system-message-container:has(.alert) {position:fixed;top:calc(var(--otm-navbar, 2.75rem) + 0.75rem);right:1rem;z-index:1050;display:flex;flex-direction:column;gap:0.5rem;width:min(24rem, calc(100vw - 2rem));max-height:calc(100vh - 5rem);margin:0;padding:0;overflow-y:auto;pointer-events:none;}
+body:has(#otm) #system-message-container:has(.alert, joomla-alert) {position:fixed;top:calc(var(--otm-navbar, 2.75rem) + 0.75rem);right:1rem;z-index:1050;display:flex;flex-direction:column;gap:0.5rem;width:min(24rem, calc(100vw - 2rem));max-height:calc(100vh - 5rem);margin:0;padding:0;overflow-y:auto;pointer-events:none;}
 body:has(#otm) #system-message-container :is(#system-message, div:has(> .alert)):not(.alert) {display:contents;}
-body:has(#otm) #system-message-container .alert {--toast:var(--c-accent, #2563eb);position:relative;margin:0;padding:0.75rem 2.25rem 0.75rem 1rem;background:var(--c-popover, var(--c-card, #ffffff));border:1px solid var(--c-border, #e4e4e7);border-left:4px solid var(--toast);border-radius:var(--c-radius, 0.5rem);box-shadow:0 10px 30px rgba(9, 9, 11, 0.16), 0 2px 6px rgba(9, 9, 11, 0.08);color:var(--c-fg, #09090b);font-size:0.875rem;line-height:1.45;text-shadow:none;pointer-events:auto;animation:otm-toast-in 0.25s ease-out both;}
-body:has(#otm) #system-message-container .alert .alert-heading {margin:0 0 0.125rem;color:var(--toast);font-size:0.875rem;font-weight:600;}
-body:has(#otm) #system-message-container .alert :is(p, div) {margin:0;color:inherit;}
-body:has(#otm) #system-message-container :is(.alert-error, .alert-danger) {--toast:var(--c-danger, #dc2626);}
-body:has(#otm) #system-message-container .alert-warning {--toast:#d97706;}
-body:has(#otm) #system-message-container :is(.alert-success, .alert-message) {--toast:var(--c-success, #16a34a);}
-body:has(#otm) #system-message-container :is(.alert-info, .alert-notice) {--toast:var(--c-accent, #2563eb);}
-body:has(#otm) #system-message-container .alert .close {position:absolute;top:0.5rem;right:0.625rem;margin:0;padding:0.125rem 0.25rem;background:transparent;border:0;font-size:1.125rem;line-height:1;opacity:0.6;cursor:pointer;}
-body:has(#otm) #system-message-container .alert .close:is(:hover, :focus-visible) {opacity:1;}
+body:has(#otm) #system-message-container :is(.alert, joomla-alert) {--toast:var(--c-accent, #2563eb);position:relative;margin:0;padding:0.75rem 2.25rem 0.75rem 1rem;background:var(--c-popover, var(--c-card, #ffffff));border:1px solid var(--c-border, #e4e4e7);border-left:4px solid var(--toast);border-radius:var(--c-radius, 0.5rem);box-shadow:0 10px 30px rgba(9, 9, 11, 0.16), 0 2px 6px rgba(9, 9, 11, 0.08);color:var(--c-fg, #09090b);font-size:0.875rem;line-height:1.45;text-shadow:none;pointer-events:auto;animation:otm-toast-in 0.25s ease-out both;}
+body:has(#otm) #system-message-container :is(.alert, joomla-alert) .alert-heading {margin:0 0 0.125rem;color:var(--toast);font-size:0.875rem;font-weight:600;}
+body:has(#otm) #system-message-container :is(.alert, joomla-alert) :is(p, div) {margin:0;color:inherit;}
+body:has(#otm) #system-message-container joomla-alert {display:block;animation:otm-toast-in 0.25s ease-out both;} /* Joomla 4+ messages: the heading is the type in words, as on Joomla 3 */
+body:has(#otm) #system-message-container joomla-alert .alert-heading .visually-hidden {position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto;white-space:normal;}
+body:has(#otm) #system-message-container joomla-alert .alert-heading > span:not(.visually-hidden) {display:none;}
+body:has(#otm) #system-message-container :is(.alert-error, .alert-danger, joomla-alert[type="danger"], joomla-alert[type="error"]) {--toast:var(--c-danger, #dc2626);}
+body:has(#otm) #system-message-container :is(.alert-warning, joomla-alert[type="warning"]) {--toast:#d97706;}
+body:has(#otm) #system-message-container :is(.alert-success, .alert-message, joomla-alert[type="success"], joomla-alert[type="message"]) {--toast:var(--c-success, #16a34a);}
+body:has(#otm) #system-message-container :is(.alert-info, .alert-notice, joomla-alert[type="info"], joomla-alert[type="notice"]) {--toast:var(--c-accent, #2563eb);}
+body:has(#otm) #system-message-container :is(.alert .close, .joomla-alert--close) {position:absolute;top:0.5rem;right:0.625rem;margin:0;padding:0.125rem 0.25rem;background:transparent;border:0;font-size:1.125rem;line-height:1;opacity:0.6;cursor:pointer;}
+body:has(#otm) #system-message-container :is(.alert .close, .joomla-alert--close):is(:hover, :focus-visible) {opacity:1;}
 body:has(#otm.otm-app--frame) #system-message-container:has(.alert) {top:0.75rem;}
 @keyframes otm-toast-in {from {opacity:0;transform:translateY(-0.5rem);} to {opacity:1;transform:none;}}
 

@@ -49,8 +49,7 @@ class plgOttomocontentArticles extends CMSPlugin
         $view->search = strtolower($view->search);
 
         // Get rows
-        BaseDatabaseModel::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_content/models');
-        $model = BaseDatabaseModel::getInstance('Articles', 'ContentModel', array('ignore_request' => true));
+        $model = OttomoCompat::componentModel('com_content', 'Articles', 'Administrator', 'ContentModel');
         $model->setState('list.limit', $view->limit);
         $model->setState('list.start', $view->limitstart);
         $model->setState('list.ordering', $view->ordering);
@@ -97,10 +96,9 @@ class plgOttomocontentArticles extends CMSPlugin
         if (!$this->allowed()) {
             return null;
         }
-        BaseDatabaseModel::addIncludePath(JPATH_SITE.'/components/com_content/models');
-        JLoader::register('ContentHelperRoute', JPATH_SITE.'/components/com_content/helpers/route.php');
         $params = ComponentHelper::getParams('com_content');
-        $model = BaseDatabaseModel::getInstance('Article', 'ContentModel', array('ignore_request' => true));
+        $model = OttomoCompat::componentModel('com_content', 'Article', 'Site', 'ContentModel');
+        $route = OttomoCompat::contentRoute();
         $model->setState('article.id', $id);
         $model->setState('params', $params);
         $article = $model->getItem();
@@ -114,10 +112,10 @@ class plgOttomocontentArticles extends CMSPlugin
         $article->slug = $article->alias ? ($article->id.':'.$article->alias) : $article->id;
         $article->catslug = $article->category_alias ? ($article->catid.':'.$article->category_alias) : $article->catid;
         $article->parent_slug = $article->category_alias ? ($article->parent_id.':'.$article->parent_alias) : $article->parent_id;
-        $article->link = ContentHelperRoute::getArticleRoute($article->slug, $article->catslug);
+        $article->link = $route::getArticleRoute($article->slug, $article->catslug);
         $article->category = new stdClass();
         $article->category->name = $article->category_title;
-        $article->category->link = ContentHelperRoute::getCategoryRoute($article->catslug);
+        $article->category->link = $route::getCategoryRoute($article->catslug);
         $article->date = null;
         $article->images = json_decode($article->images);
         $article->introImage = null;
