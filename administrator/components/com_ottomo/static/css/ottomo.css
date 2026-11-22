@@ -501,6 +501,16 @@ body:has(#otm:not(.otm-app--atum)) header.header {display:none;} /* Joomla 3 tem
 #otm.otm-app--atum .otm-header.is-open {visibility:visible;transform:none;box-shadow:0 0 40px rgba(9, 9, 11, 0.25);transition:transform 0.2s ease;}
 #otm.otm-app--atum .otm-main-navigation {position:sticky;top:0;max-height:100vh;overflow-y:auto;} /* the menu stays in view on a long page */
 #otm.otm-app--atum:has(.otm-header.is-open)::after {content:"";position:absolute;inset:0;z-index:1059;background:rgba(9, 9, 11, 0.4);} /* Ottomo's page dimmed: a click closes the menu */
+/* ...and wide (Ottomo's room over 1100px, like Joomla 3's Tablet breakpoint: a wide screen, or Atum's menu collapsed): the
+   sidebar as on Joomla 3.x UTD, sticky next to the page. A container query: Atum's menu takes a varying share of the window */
+body:has(#otm.otm-app--atum) #content {container:otm-room / inline-size;}
+@container otm-room (min-width:1101px) {
+    #otm.otm-app--atum.otm-app--page {display:grid;grid-template-columns:var(--otm-sidebar) minmax(0, 1fr);overflow-x:visible;}
+    #otm.otm-app--atum :is(.otm-menubar, .otm-navclose) {display:none;}
+    #otm.otm-app--atum .otm-header {position:sticky;top:0;bottom:auto;z-index:20;align-self:start;height:100vh;visibility:visible;transform:none;box-shadow:none;overflow-y:auto;transition:none;}
+    #otm.otm-app--atum .otm-main-navigation {position:static;max-height:none;overflow:visible;}
+    #otm.otm-app--atum::after {display:none;}
+}
 body:has(#otm.otm-app--atum) #subhead-container {display:none;} /* Atum's toolbar row: Ottomo's buttons are in its page header */
 body:has(#otm.otm-app--atum) #content {padding:0;}
 body:has(#otm.otm-app--atum) #content > .row {margin:0;}
