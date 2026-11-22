@@ -49,7 +49,7 @@ class OttomoControllerExport extends OttomoController
         $output = fopen($file, $limitstart === 0 ? 'w' : 'a');
         if ($limitstart === 0) {
             fwrite($output, "\xEF\xBB\xBF"); // UTF-8 BOM: spreadsheet apps read the accents right
-            fputcsv($output, $columns);
+            fputcsv($output, $columns, ',', '"', '\\');
         }
         foreach ($rows as $row) {
             $line = array();
@@ -73,7 +73,7 @@ class OttomoControllerExport extends OttomoController
                         $line[] = preg_match('/^[=+\-@\t\r]/', $value) ? "'".$value : $value;
                 }
             }
-            fputcsv($output, $line);
+            fputcsv($output, $line, ',', '"', '\\');
         }
         fclose($output);
         $response = new stdClass();

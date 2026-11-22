@@ -26,7 +26,7 @@
     font-size:       0.875rem;
     line-height:     1.45;
 }
-:root[data-scheme="dark"] :is(.otm-stats, .otm-stats-module) {--os-primary:#27272a;--os-on-primary:#fafafa;}
+:root:is([data-scheme="dark"], [data-color-scheme="dark"]) :is(.otm-stats, .otm-stats-module) {--os-primary:#27272a;--os-on-primary:#fafafa;}
 .otm-stats *,
 .otm-stats-module * {box-sizing:border-box;}
 .otm-stats [hidden],
@@ -107,8 +107,8 @@
 .otm-stats-module__brand {display:flex;align-items:center;gap:0.875rem;min-width:0;color:inherit;text-decoration:none;}
 .otm-stats-module__brand img {display:block;width:auto;height:2.5rem;}
 .otm-stats-module__brand .otm-stats-module__logo--dark {display:none;}
-:root[data-scheme="dark"] .otm-stats-module__logo--light {display:none !important;}
-:root[data-scheme="dark"] .otm-stats-module__logo--dark {display:block !important;}
+:root:is([data-scheme="dark"], [data-color-scheme="dark"]) .otm-stats-module__logo--light {display:none !important;}
+:root:is([data-scheme="dark"], [data-color-scheme="dark"]) .otm-stats-module__logo--dark {display:block !important;}
 @media (prefers-color-scheme:dark) {
     :root[data-scheme="auto"] :is(.otm-stats, .otm-stats-module) {--os-primary:#27272a;--os-on-primary:#fafafa;}
     :root[data-scheme="auto"] .otm-stats-module__logo--light {display:none !important;}

@@ -8,7 +8,7 @@
  */
 
 defined('_JEXEC') or die ; ?>
-<div class="otm-app otm-app--<?php echo ($this->tmpl == 'component') ? 'frame' : 'page'; ?> view-<?php echo $this->view; ?>" id="otm">
+<div class="otm-app otm-app--<?php echo ($this->tmpl == 'component') ? 'frame' : 'page'; ?><?php echo OttomoCompat::isModern() ? ' otm-app--atum' : ''; ?> view-<?php echo $this->view; ?>" id="otm">
 
 	<?php if ($this->regions->header): ?>
 		
