@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.3" type="ottomotemplate" method="upgrade" folder="studio">
+	<name>Studio</name>
+	<creationDate>November 22nd, 2026</creationDate>
+	<author>JoomlaWorks</author>
+	<authorEmail>please-use-the-contact-form@joomlaworks.net</authorEmail>
+	<authorUrl>https://www.joomlaworks.net</authorUrl>
+	<copyright>Copyright (c) 2006 - 2026 JoomlaWorks Ltd. All rights reserved.</copyright>
+	<license>GNU/GPL license: https://www.gnu.org/copyleft/gpl.html</license>
+	<layout>sections</layout>
+	<version>1.0.0</version>
+	<description>Editorial, in neutral tones: logo and links, a full-width image, a serif headline with a button, an uneven image-and-text row, a large quote, three cards and a dark closing band.</description>
+	<files>
+		<folder>extensions</folder>
+		<folder>images</folder>
+		<filename>default.php</filename>
+		<filename>manifest.xml</filename>
+		<filename>sampleData.ini</filename>
+		<filename>preview.webp</filename>
+		<filename>thumbnail.webp</filename>
+	</files>
+</extension>

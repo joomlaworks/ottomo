@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.3" type="ottomotemplate" method="upgrade" folder="minimal-2col">
+	<name>Minimal - 2 Columns</name>
+	<creationDate>November 22nd, 2026</creationDate>
+	<author>JoomlaWorks</author>
+	<authorEmail>please-use-the-contact-form@joomlaworks.net</authorEmail>
+	<authorUrl>https://www.joomlaworks.net</authorUrl>
+	<copyright>Copyright (c) 2006 - 2026 JoomlaWorks Ltd. All rights reserved.</copyright>
+	<license>GNU/GPL license: https://www.gnu.org/copyleft/gpl.html</license>
+	<layout>2col</layout>
+	<version>1.0.0</version>
+	<description>Two columns: logo, hero image and title, then the main content next to a sidebar (in brief, links, events) that moves under it on phones.</description>
+	<files>
+		<folder>extensions</folder>
+		<folder>images</folder>
+		<filename>default.php</filename>
+		<filename>manifest.xml</filename>
+		<filename>sampleData.ini</filename>
+		<filename>preview.webp</filename>
+		<filename>thumbnail.webp</filename>
+	</files>
+</extension>

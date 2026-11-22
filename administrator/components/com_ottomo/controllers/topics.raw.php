@@ -1,0 +1,24 @@
+<?php
+/**
+ * @version    1.x
+ * @package    Ottomo
+ * @author     JoomlaWorks - https://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2026 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ */
+
+defined('_JEXEC') or die ;
+
+class OttomoControllerTopics extends OttomoController
+{
+    public function countUniqueSubscribers()
+    {
+        $data = $this->input->getArray();
+        $topics = isset($data['topics']) ? $data['topics'] : array();
+        $model = OttomoModel::getInstance('Topics');
+        $counter = $model->countUniqueSubscribers($topics);
+        echo $counter;
+        return $this;
+    }
+
+}

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" version="3.4" method="upgrade">
+	<name>com_ottomo</name>
+	<creationDate>November 20th, 2026</creationDate>
+	<author>JoomlaWorks</author>
+	<authorEmail>please-use-the-contact-form@joomlaworks.net</authorEmail>
+	<authorUrl>https://www.joomlaworks.net</authorUrl>
+	<copyright>Copyright (c) 2006 - 2026 JoomlaWorks Ltd. All rights reserved.</copyright>
+	<license>GNU/GPL license: https://www.gnu.org/copyleft/gpl.html</license>
+	<version>1.0</version>
+	<description></description>
+	<scriptfile>script.ottomo.php</scriptfile>
+	<install>
+		<sql>
+			<file driver="mysql" charset="utf8">install.mysql.sql</file>
+			<file driver="mysqli" charset="utf8">install.mysql.sql</file>
+			<file driver="postgresql" charset="utf8">install.postgresql.sql</file>
+		</sql>
+	</install>
+	<uninstall>
+		<sql>
+			<file driver="mysql" charset="utf8">uninstall.mysql.sql</file>
+			<file driver="mysqli" charset="utf8">uninstall.mysql.sql</file>
+			<file driver="postgresql" charset="utf8">uninstall.postgresql.sql</file>
+		</sql>
+	</uninstall>
+	<files folder="components/com_ottomo">
+		<folder>controllers</folder>
+		<folder>language</folder>
+		<folder>layouts</folder>
+		<folder>static</folder>
+		<folder>templates</folder>
+		<folder>views</folder>
+		<filename>controller.php</filename>
+		<filename>metadata.xml</filename>
+		<filename>ottomo.php</filename>
+		<filename>router.php</filename>
+	</files>
+	<administration>
+		<menu img="components/com_ottomo/static/images/logo/ottomo-icon-light.svg" view="dashboard" link="option=com_ottomo&amp;view=dashboard">COM_OTTOMO</menu>
+		<submenu>
+			<menu view="dashboard" link="option=com_ottomo&amp;view=dashboard">COM_OTTOMO_DASHBOARD</menu>
+			<menu view="newsletters" link="option=com_ottomo&amp;view=newsletters">COM_OTTOMO_NEWSLETTERS</menu>
+			<menu view="topics" link="option=com_ottomo&amp;view=topics">COM_OTTOMO_TOPICS</menu>
+			<menu view="subscribers" link="option=com_ottomo&amp;view=subscribers">COM_OTTOMO_SUBSCRIBERS</menu>
+			<menu view="templates" link="option=com_ottomo&amp;view=templates">COM_OTTOMO_TEMPLATES</menu>
+		</submenu>
+		<files folder="administrator/components/com_ottomo">
+			<folder>controllers</folder>
+			<folder>helpers</folder>
+			<folder>language</folder>
+			<folder>layouts</folder>
+			<folder>models</folder>
+			<folder>static</folder>
+			<folder>tables</folder>
+			<folder>views</folder>
+			<filename>access.xml</filename>
+			<filename>config.xml</filename>
+			<filename>controller.php</filename>
+			<filename>install.mysql.sql</filename>
+			<filename>install.postgresql.sql</filename>
+			<filename>ottomo.php</filename>
+			<filename>uninstall.mysql.sql</filename>
+			<filename>uninstall.postgresql.sql</filename>
+		</files>
+	</administration>
+	<modules>
+		<module module="mod_ottomo" client="site" />
+		<module module="mod_ottomo" client="administrator" />
+	</modules>
+	<plugins>
+		<plugin plugin="brevo" group="ottomo-providers" />
+		<plugin plugin="mailgun" group="ottomo-providers" />
+		<plugin plugin="mailjet" group="ottomo-providers" />
+		<plugin plugin="sendgrid" group="ottomo-providers" />
+		<plugin plugin="sendpulse" group="ottomo-providers" />
+		<plugin plugin="ses" group="ottomo-providers" />
+		<plugin plugin="articles" group="ottomo-content" />
+		<plugin plugin="k2" group="ottomo-content" />
+		<plugin plugin="images" group="ottomo-content" />
+		<plugin plugin="ottomo" group="console" />
+	</plugins>
+</extension>

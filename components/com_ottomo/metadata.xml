@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+    <menu>
+        <options var="view">
+            <option value="archive" name="COM_OTTOMO_ARCHIVE" msg="COM_OTTOMO_DISPLAYS_A_LIST_OF_NEWSLETTERS"></option>
+        </options>
+    </menu>
+</metadata>

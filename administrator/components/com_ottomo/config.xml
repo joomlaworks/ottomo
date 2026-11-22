@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+	<fieldset name="general" label="COM_OTTOMO_SETTINGS_SENDING" addfieldpath="/administrator/components/com_ottomo/helpers/elements/">
+		<field name="mailer" type="providers" default="mail" label="COM_OTTOMO_MAILER" />
+		<field name="connectionTest" type="connectiontest" label="COM_OTTOMO_CONNECTION_TEST" />
+		<field name="senderName" type="text" default="" label="COM_OTTOMO_SENDER_NAME" />
+		<field name="senderEmail" type="text" default="" label="COM_OTTOMO_SENDER_EMAIL" />
+		<field name="replyTo" type="text" default="" label="COM_OTTOMO_REPLY_TO" />
+		<field name="limit" type="text" default="50" label="COM_OTTOMO_LIMIT" description="COM_OTTOMO_LIMIT_DESC" />
+	</fieldset>
+	<fieldset name="services" label="COM_OTTOMO_SETTINGS_MAIL_SERVICES">
+		<field name="" type="header" default="COM_OTTOMO_SES_SETTINGS" label="" />
+		<field name="sesAccessKey" type="text" size="50" label="COM_OTTOMO_SES_ACCESS_KEY" />
+		<field name="sesSecretKey" type="text" size="50" label="COM_OTTOMO_SES_SECRET_KEY" />
+		<field name="sesRegion" type="list" default="us-east-1" label="COM_OTTOMO_SES_REGION">
+			<option value="us-east-1">US East (N. Virginia)</option>
+			<option value="us-east-2">US East (Ohio)</option>
+			<option value="us-west-1">US West (N. California)</option>
+			<option value="us-west-2">US West (Oregon)</option>
+			<option value="eu-west-1">Europe (Ireland)</option>
+			<option value="eu-west-2">Europe (London)</option>
+			<option value="eu-west-3">Europe (Paris)</option>
+			<option value="eu-central-1">Europe (Frankfurt)</option>
+			<option value="eu-north-1">Europe (Stockholm)</option>
+			<option value="ap-south-1">Asia Pacific (Mumbai)</option>
+			<option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
+			<option value="ap-northeast-2">Asia Pacific (Seoul)</option>
+			<option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+			<option value="ap-southeast-2">Asia Pacific (Sydney)</option>
+			<option value="ca-central-1">Canada (Central)</option>
+			<option value="sa-east-1">South America (Sao Paulo)</option>
+		</field>
+		<field name="" type="header" default="COM_OTTOMO_BREVO_SETTINGS" label="" />
+		<field name="brevoApiKey" type="text" size="50" label="COM_OTTOMO_BREVO_API_KEY" filter="raw" />
+		<field name="" type="header" default="COM_OTTOMO_MAILGUN_SETTINGS" label="" />
+		<field name="mailgunApiKey" type="text" size="50" label="COM_OTTOMO_MAILGUN_API_KEY" filter="raw" />
+		<field name="mailgunDomain" type="text" size="50" label="COM_OTTOMO_MAILGUN_DOMAIN" />
+		<field name="mailgunRegion" type="list" default="us" label="COM_OTTOMO_MAILGUN_REGION">
+			<option value="us">US (api.mailgun.net)</option>
+			<option value="eu">EU (api.eu.mailgun.net)</option>
+		</field>
+		<field name="" type="header" default="COM_OTTOMO_MAILJET_SETTINGS" label="" />
+		<field name="mailjetApiKey" type="text" size="50" label="COM_OTTOMO_MAILJET_API_KEY" filter="raw" />
+		<field name="mailjetSecretKey" type="text" size="50" label="COM_OTTOMO_MAILJET_SECRET_KEY" filter="raw" />
+		<field name="" type="header" default="COM_OTTOMO_SENDGRID_SETTINGS" label="" />
+		<field name="sendgridApiKey" type="text" size="50" label="COM_OTTOMO_SENDGRID_API_KEY" filter="raw" />
+		<field name="" type="header" default="COM_OTTOMO_SENDPULSE_SETTINGS" label="" />
+		<field name="sendpulseClientId" type="text" size="50" label="COM_OTTOMO_SENDPULSE_CLIENT_ID" />
+		<field name="sendpulseClientSecret" type="text" size="50" label="COM_OTTOMO_SENDPULSE_CLIENT_SECRET" filter="raw" />
+		<field name="" type="header" default="COM_OTTOMO_SMTP" label="" />
+		<field name="smtpauth" type="radio" class="btn-group btn-group-yesno" default="0" label="COM_OTTOMO_SMTP_AUTHENTICATION" filter="integer">
+			<option value="1">COM_OTTOMO_YES</option>
+			<option value="0">COM_OTTOMO_NO</option>
+		</field>
+		<field name="smtpsecure" type="list" default="none" label="COM_OTTOMO_SMTP_SECURITY" filter="word">
+			<option value="none">COM_OTTOMO_NONE</option>
+			<option value="ssl">COM_OTTOMO_SSL</option>
+			<option value="tls">COM_OTTOMO_TLS</option>
+		</field>
+		<field name="smtpport" type="text" default="25" label="COM_OTTOMO_SMTP_PORT" filter="string" size="6" />
+		<field name="smtpuser" type="text" label="COM_OTTOMO_SMTP_USERNAME" filter="string" size="30" />
+		<field name="smtppass" type="password" label="COM_OTTOMO_SMTP_PASSWORD" filter="raw" size="30" />
+		<field name="smtphost" type="text" default="localhost" label="COM_OTTOMO_SMTP_HOST" filter="string" size="30" />
+		<field name="" type="header" default="COM_OTTOMO_SENDMAIL" label="" />
+		<field name="sendmail" type="text" default="" label="COM_OTTOMO_SENDMAIL_PATH" />
+	</fieldset>
+	<fieldset name="compliance" label="COM_OTTOMO_SETTINGS_COMPLIANCE" description="COM_OTTOMO_SETTINGS_COMPLIANCE_DESC">
+		<field name="oneClickUnsubscribe" type="radio" default="1" class="btn-group btn-group-yesno" label="COM_OTTOMO_ONE_CLICK_UNSUBSCRIBE" description="COM_OTTOMO_ONE_CLICK_UNSUBSCRIBE_DESC" filter="integer">
+			<option value="1">COM_OTTOMO_YES</option>
+			<option value="0">COM_OTTOMO_NO</option>
+		</field>
+		<field name="complianceFooter" type="radio" default="1" class="btn-group btn-group-yesno" label="COM_OTTOMO_COMPLIANCE_FOOTER" description="COM_OTTOMO_COMPLIANCE_FOOTER_DESC" filter="integer">
+			<option value="1">COM_OTTOMO_YES</option>
+			<option value="0">COM_OTTOMO_NO</option>
+		</field>
+		<field name="companyAddress" type="textarea" rows="3" default="" filter="string" label="COM_OTTOMO_COMPANY_ADDRESS" description="COM_OTTOMO_COMPANY_ADDRESS_DESC" />
+		<field name="siteName" type="text" default="" filter="string" label="COM_OTTOMO_SITE_NAME" description="COM_OTTOMO_SITE_NAME_DESC" />
+		<field name="whyMessage" type="textarea" rows="3" default="" filter="string" label="COM_OTTOMO_WHY_MESSAGE" description="COM_OTTOMO_WHY_MESSAGE_DESC" hint="COM_OTTOMO_WHY_MESSAGE_HINT" />
+	</fieldset>
+	<fieldset name="signup" label="COM_OTTOMO_SETTINGS_SIGNUP" description="COM_OTTOMO_SETTINGS_SIGNUP_DESC">
+		<field name="captcha" type="plugins" folder="captcha" default="" filter="cmd" useglobal="true" label="COM_OTTOMO_CAPTCHA" description="COM_OTTOMO_CAPTCHA_DESC">
+			<option value="0">JOPTION_DO_NOT_USE</option>
+		</field>
+		<field name="honeypot" type="radio" default="1" class="btn-group btn-group-yesno" label="COM_OTTOMO_HONEYPOT" description="COM_OTTOMO_HONEYPOT_DESC" filter="integer">
+			<option value="1">COM_OTTOMO_YES</option>
+			<option value="0">COM_OTTOMO_NO</option>
+		</field>
+		<field name="subscribePage" type="url" default="" filter="url" size="50" label="COM_OTTOMO_SUBSCRIBE_PAGE" description="COM_OTTOMO_SUBSCRIBE_PAGE_DESC" hint="https://" />
+	</fieldset>
+	<fieldset name="campaigns" label="COM_OTTOMO_SETTINGS_CAMPAIGNS">
+		<field name="preflightRequired" type="radio" default="1" class="btn-group btn-group-yesno" label="COM_OTTOMO_PREFLIGHT_REQUIRED" description="COM_OTTOMO_PREFLIGHT_REQUIRED_DESC" filter="integer">
+			<option value="1">COM_OTTOMO_YES</option>
+			<option value="0">COM_OTTOMO_NO</option>
+		</field>
+	</fieldset>
+	<fieldset name="dashboard" label="COM_OTTOMO_DASHBOARD">
+		<field name="dashboardHealth" type="radio" default="1" class="btn-group btn-group-yesno" label="COM_OTTOMO_DASHBOARD_HEALTH" description="COM_OTTOMO_DASHBOARD_HEALTH_DESC" filter="integer">
+			<option value="1">COM_OTTOMO_YES</option>
+			<option value="0">COM_OTTOMO_NO</option>
+		</field>
+		<field name="dashboardNewslettersLimit" type="text" default="5" label="COM_OTTOMO_DASHBOARD_LATEST_NEWSLETTERS_LIMIT" />
+		<field name="dashboardSubscribersLimit" type="text" default="5" label="COM_OTTOMO_DASHBOARD_LATEST_SUBSCRIBERS_LIMIT" />
+	</fieldset>
+	<fieldset name="layout" label="COM_OTTOMO_CONTENT_RETRIEVAL">
+		<field name="" type="header" default="COM_OTTOMOEXT_CONTENT_SETTINGS" label="" />
+		<field name="contentTitle" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_CONTENT_TITLE">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="contentCategory" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_CONTENT_CATEGORY">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="contentDate" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_CONTENT_DATE">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="contentAuthor" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_CONTENT_AUTHOR">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="contentIntrotext" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_CONTENT_INTROTEXT">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="contentFulltext" type="radio" class="btn-group btn-group-yesno" default="0" label="COM_OTTOMOEXT_CONTENT_FULLTEXT">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="contentIntroImage" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_CONTENT_INTRO_IMAGE">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="contentIntroImageCaption" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_CONTENT_INTRO_IMAGE_CAPTION" description="">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="contentFullImage" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_CONTENT_FULL_IMAGE">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="contentFullImageCaption" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_CONTENT_FULL_IMAGE_CAPTION" description="">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="" type="header" default="COM_OTTOMOEXT_K2_SETTINGS" label="" />
+		<field name="k2Title" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_K2_TITLE">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="k2Category" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_K2_CATEGORY">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="k2Date" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_K2_DATE">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="k2Author" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_K2_AUTHOR">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="k2Introtext" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_K2_INTROTEXT">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="k2Fulltext" type="radio" class="btn-group btn-group-yesno" default="0" label="COM_OTTOMOEXT_K2_FULLTEXT">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="k2Image" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_K2_IMAGE">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="k2ImageSize" type="list" default="M" label="COM_OTTOMOEXT_K2_IMAGE_SIZE">
+			<option value="XS">COM_OTTOMOEXT_K2_XSMALL</option>
+			<option value="S">COM_OTTOMOEXT_K2_SMALL</option>
+			<option value="M">COM_OTTOMOEXT_K2_MEDIUM</option>
+			<option value="L">COM_OTTOMOEXT_K2_LARGE</option>
+			<option value="XL">COM_OTTOMOEXT_K2_XLARGE</option>
+		</field>
+		<field name="k2ImageCaption" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_K2_IMAGE_CAPTION" description="">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="k2ImageCredits" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_K2_IMAGE_CREDITS" description="">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="k2Tags" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_K2_TAGS">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+		<field name="k2ExtraFields" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_OTTOMOEXT_K2_EXTRA_FIELDS">
+			<option value="1">COM_OTTOMO_SHOW</option>
+			<option value="0">COM_OTTOMO_HIDE</option>
+		</field>
+	</fieldset>
+	<fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL" description="COM_OTTOMO_SETTINGS_PERMISSIONS_DESC">
+		<field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" filter="rules" validate="rules" component="com_ottomo" section="component" />
+	</fieldset>
+</config>

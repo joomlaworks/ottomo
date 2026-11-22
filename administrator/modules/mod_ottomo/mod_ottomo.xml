@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="module" version="3.4" method="upgrade" client="administrator">
+    <name>Ottomo - Statistics</name>
+    <author>JoomlaWorks</author>
+    <creationDate>November 20th, 2026</creationDate>
+    <copyright>Copyright (c) 2006 - 2026 JoomlaWorks Ltd. All rights reserved.</copyright>
+    <authorEmail>please-use-the-contact-form@joomlaworks.net</authorEmail>
+    <authorUrl>https://www.joomlaworks.net</authorUrl>
+    <version>1.0</version>
+    <license>GNU/GPL license: https://www.gnu.org/copyleft/gpl.html</license>
+    <description>Ottomo at a glance on the control panel: campaigns, subscribers, the last sent campaign and the sending, open and click statistics.</description>
+    <files>
+        <filename module="mod_ottomo">mod_ottomo.php</filename>
+        <folder>tmpl</folder>
+    </files>
+    <config>
+        <fields name="params">
+        	<fieldset name="basic" addfieldpath="/administrator/components/com_ottomo/helpers/elements/">
+        		<field name="ottomolanguage" type="ottomolanguage" />
+        		<field name="source" type="list" default="" label="MOD_OTTOMO_SOURCE">
+        			<option value="">MOD_OTTOMO_COMPONENT_SETTING</option>
+        			<option value="core">MOD_OTTOMO_CORE</option>
+        			<option value="brevo">Brevo</option>
+        			<option value="mailgun">Mailgun</option>
+        			<option value="mailjet">Mailjet</option>
+        			<option value="sendgrid">SendGrid</option>
+        			<option value="sendpulse">SendPulse</option>
+        			<option value="ses">Amazon SES</option>
+        		</field>
+        	</fieldset>
+            <fieldset name="advanced">
+                <field name="cache" type="list" default="1" label="COM_MODULES_FIELD_CACHING_LABEL" description="COM_MODULES_FIELD_CACHING_DESC">
+                    <option value="1">JGLOBAL_USE_GLOBAL</option>
+                    <option value="0">COM_MODULES_FIELD_VALUE_NOCACHING</option>
+                </field>
+                <field name="cache_time" type="text" default="900" label="COM_MODULES_FIELD_CACHE_TIME_LABEL" description="COM_MODULES_FIELD_CACHE_TIME_DESC" />
+            </fieldset>
+        </fields>
+    </config>
+</extension>

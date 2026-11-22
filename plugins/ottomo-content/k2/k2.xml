@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.4" type="plugin" group="ottomo-content" method="upgrade">
+    <name>Ottomo Content - K2 Items</name>
+    <author>JoomlaWorks</author>
+    <creationDate>November 20th, 2026</creationDate>
+    <copyright>Copyright (c) 2006 - 2026 JoomlaWorks Ltd. All rights reserved.</copyright>
+    <authorEmail>please-use-the-contact-form@joomlaworks.net</authorEmail>
+    <authorUrl>https://www.joomlaworks.net</authorUrl>
+    <version>1.0</version>
+    <license>GNU/GPL license: https://www.gnu.org/copyleft/gpl.html</license>
+    <description></description>
+    <files>
+        <filename plugin="k2">k2.php</filename>
+        <filename>icon.svg</filename>
+        <folder>helpers</folder>
+        <folder>models</folder>
+    </files>
+    <config></config>
+</extension>

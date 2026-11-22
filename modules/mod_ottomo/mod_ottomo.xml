@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="module" version="3.4" client="site" method="upgrade">
+	<name>Ottomo - Subscribe</name>
+	<author>JoomlaWorks</author>
+	<creationDate>November 20th, 2026</creationDate>
+	<copyright>Copyright (c) 2006 - 2026 JoomlaWorks Ltd. All rights reserved.</copyright>
+	<authorEmail>please-use-the-contact-form@joomlaworks.net</authorEmail>
+	<authorUrl>https://www.joomlaworks.net</authorUrl>
+	<version>1.0</version>
+	<license>GNU/GPL license: https://www.gnu.org/copyleft/gpl.html</license>
+	<description>A newsletter signup form: compact (sidebars) or section (a full-width band) layout.</description>
+	<files>
+		<filename module="mod_ottomo">mod_ottomo.php</filename>
+		<filename>helper.php</filename>
+		<folder>includes</folder>
+		<folder>tmpl</folder>
+	</files>
+	<config>
+		<fields name="params">
+			<fieldset name="basic" addfieldpath="/administrator/components/com_ottomo/helpers/elements/">
+				<field name="ottomolanguage" type="ottomolanguage" />
+				<field name="moduleclass_sfx" type="text" label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL" description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" />
+				<field name="template" type="template" default="compact" label="MOD_OTTOMO_TEMPLATE" description="MOD_OTTOMO_TEMPLATE_DESC" />
+				<field name="topics" type="topics" label="MOD_OTTOMO_TOPICS" multiple="true" size="10"/>
+				<field name="userSelect" type="list" default="" label="MOD_OTTOMO_LET_USER_SELECT" description="">
+					<option value="">MOD_OTTOMO_NO</option>
+					<option value="single">MOD_OTTOMO_YES_SINGLE_TOPIC</option>
+					<option value="multiple">MOD_OTTOMO_YES_MULTIPLE_TOPICS</option>
+				</field>
+				<field name="pretext" type="editor" filter="JComponentHelper::filterText" buttons="false" height="180" label="MOD_OTTOMO_PRETEXT" description="MOD_OTTOMO_PRETEXT_DESC" />
+				<field name="subscriberName" type="list" default="0" label="MOD_OTTOMO_NAME" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberBirthday" type="list" default="0" label="MOD_OTTOMO_DATE_OF_BIRTH" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberAddress" type="list" default="0" label="MOD_OTTOMO_ADDRESS" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberCity" type="list" default="0" label="MOD_OTTOMO_CITY" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberState" type="list" default="0" label="MOD_OTTOMO_STATE_PROVINCE" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberZip" type="list" default="0" label="MOD_OTTOMO_ZIP_CODE" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberCountry" type="list" default="0" label="MOD_OTTOMO_COUNTRY" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberPhone" type="list" default="0" label="MOD_OTTOMO_TELEPHONE_FIXED" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberMobile" type="list" default="0" label="MOD_OTTOMO_TELEPHONE_MOBILE" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberFax" type="list" default="0" label="MOD_OTTOMO_FAX" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberVat" type="list" default="0" label="MOD_OTTOMO_VAT_NO" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberTax" type="list" default="0" label="MOD_OTTOMO_TAX_AUTHORITY" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberCompany" type="list" default="0" label="MOD_OTTOMO_COMPANY_NAME" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+				<field name="subscriberPosition" type="list" default="0" label="MOD_OTTOMO_POSITION_IN_COMPANY" description="">
+					<option value="0">MOD_OTTOMO_DISABLED</option>
+					<option value="1">MOD_OTTOMO_ENABLED</option>
+					<option value="2">MOD_OTTOMO_ENABLED_REQUIRED</option>
+				</field>
+			</fieldset>
+			<fieldset name="advanced">
+				<!-- The form carries a CSRF token and a captcha: it must never be cached -->
+				<field name="cache" type="hidden" default="0" />
+			</fieldset>
+		</fields>
+	</config>
+</extension>

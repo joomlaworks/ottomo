@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS `#__ottomo_email_campaigns`;
+DROP TABLE IF EXISTS `#__ottomo_email_campaigns_data`;
+DROP TABLE IF EXISTS `#__ottomo_email_campaigns_xref`;
+DROP TABLE IF EXISTS `#__ottomo_statistics`;
+DROP TABLE IF EXISTS `#__ottomo_statistics_types`;
+DROP TABLE IF EXISTS `#__ottomo_subscribers`;
+DROP TABLE IF EXISTS `#__ottomo_subscribers_xref`;
+DROP TABLE IF EXISTS `#__ottomo_templates`;
+DROP TABLE IF EXISTS `#__ottomo_topics`;

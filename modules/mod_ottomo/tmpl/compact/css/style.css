@@ -1,0 +1,71 @@
+/**
+ * @version    1.x
+ * @package    Ottomo
+ * @author     JoomlaWorks - https://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2026 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ */
+
+/* Common (both layouts)
+-------------------------------------------------- */
+:where(.otm-module) {
+    --otm-accent:      CanvasText;
+    --otm-accent-text: Canvas;
+    --otm-radius:      0.5rem;
+    --otm-gap:         0.75rem;
+    --otm-border:      color-mix(in srgb, currentColor 22%, transparent);
+    --otm-muted:       color-mix(in srgb, currentColor 68%, transparent);
+    --otm-success:     #15803d;
+    --otm-error:       #b91c1c;
+    box-sizing:        border-box;
+}
+:where(.otm-module) *,
+:where(.otm-module) *::before,
+:where(.otm-module) *::after {box-sizing:inherit;}
+
+:where(.otm-module__form) {display:flex;flex-direction:column;gap:var(--otm-gap);margin:0;}
+:where(.otm-module__pretext) > :first-child {margin-top:0;}
+:where(.otm-module__pretext) > :last-child {margin-bottom:0;}
+:where(.otm-module__pretext) a {color:inherit;text-decoration:underline;text-underline-offset:0.15em;}
+
+:where(.otm-module__field) {display:flex;flex-direction:column;gap:0.3rem;min-width:0;}
+:where(.otm-module__field) label,
+:where(.otm-module__topics) legend {margin:0;padding:0;font-size:0.875em;font-weight:600;line-height:1.3;}
+:where(.otm-module__required) {color:var(--otm-error);}
+:where(.otm-module__field) :where(input, textarea, select) {width:100%;max-width:none;min-height:2.6em;margin:0;padding:0.5em 0.75em;border:1px solid var(--otm-border);border-radius:var(--otm-radius);font:inherit;line-height:1.4;}
+:where(.otm-module__field) textarea {min-height:5em;resize:vertical;}
+:where(.otm-module__field) :where(input, textarea):focus-visible {outline:2px solid var(--otm-accent);outline-offset:1px;}
+
+:where(.otm-module__topics) {display:flex;flex-direction:column;gap:0.4rem;min-width:0;}
+/* Many templates give fieldsets, legends and form controls margins or borders: neutralise those only */
+.otm-module .otm-module__topics {margin:0;padding:0;border:0;}
+.otm-module .otm-module__field > :is(input, textarea),
+.otm-module .otm-module__topic > input,
+.otm-module .otm-module__submit {margin:0;}
+.otm-module .otm-module__topics > legend {float:none;width:auto;margin:0 0 0.4rem;padding:0;border:0;color:inherit;}
+:where(.otm-module__topic) {display:inline-flex;align-items:center;gap:0.5em;margin:0;cursor:pointer;font-weight:normal;line-height:1.3;}
+:where(.otm-module__topic) input {flex:none;width:1.05em;height:1.05em;margin:0;accent-color:var(--otm-accent);}
+
+:where(.otm-module__captcha) {min-width:0;max-width:100%;}
+:where(.otm-module__captcha) > * {max-width:100%;}
+
+:where(.otm-module__submit) {display:inline-flex;align-items:center;justify-content:center;gap:0.5em;min-height:2.6em;margin:0;padding:0.5em 1.25em;border:1px solid transparent;border-radius:var(--otm-radius);background:var(--otm-accent);color:var(--otm-accent-text);font:inherit;font-weight:600;line-height:1.2;white-space:nowrap;cursor:pointer;}
+:where(.otm-module__submit):disabled {opacity:0.7;cursor:progress;}
+:where(.otm-module__submit)[aria-busy="true"]::after {content:"";width:1em;height:1em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:otm-module-spin 0.7s linear infinite;}
+@keyframes otm-module-spin {to {transform:rotate(360deg);}}
+
+:where(.otm-module__message):empty {display:none;}
+:where(.otm-module__message) {padding:0.6em 0.85em;border-radius:var(--otm-radius);border-left:3px solid currentColor;background:color-mix(in srgb, currentColor 8%, transparent);font-size:0.925em;line-height:1.4;}
+:where(.otm-module__message).is-success {color:var(--otm-success);}
+:where(.otm-module__message).is-error {color:var(--otm-error);}
+:where(.otm-module.is-subscribed) :where(.otm-module__form) > :not(.otm-module__pretext, .otm-module__message) {display:none;}
+
+@media (prefers-reduced-motion:reduce) {
+    :where(.otm-module__submit)[aria-busy="true"]::after {animation-duration:2s;}
+}
+
+
+
+/* Compact: one column, full-width button
+-------------------------------------------------- */
+:where(.otm-module--compact) :where(.otm-module__submit) {width:100%;}

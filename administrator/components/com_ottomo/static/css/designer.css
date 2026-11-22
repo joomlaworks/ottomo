@@ -1,0 +1,101 @@
+/**
+ * @version    1.x
+ * @package    Ottomo
+ * @author     JoomlaWorks - https://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2026 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ */
+
+/* Designer (edit mode) only: editor controls inside the email template. The template's own fonts are untouched. */
+
+.otm-icon {display:inline-block;width:1em;height:1em;vertical-align:-0.125em;}
+
+.text-left {text-align:left;}
+.text-right {text-align:right;}
+.otm-position {position:relative;}
+textarea {width:100%;}
+.visually-hidden {position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;}
+
+/* Editor UI typography (never inherits the email's fonts) */
+ul.otm-extension-menu,
+.otm-nsl-btn {font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;}
+
+
+
+/* Add (+) and its menu
+-------------------------------------------------- */
+ul.otm-extension-menu {display:block;margin:0 0 4px;padding:0;text-align:left;z-index:100;font-weight:400;line-height:1.3;}
+ul.otm-extension-menu > li {position:relative;display:inline-block;margin:0;padding:0;list-style:none;}
+ul.otm-extension-menu a {text-decoration:none;}
+ul.otm-extension-menu > li > .otm-nsl-btn {display:inline-grid;place-items:center;width:28px;height:28px;margin:0;padding:0;border:0;border-radius:50%;background:linear-gradient(135deg, #e2337c, #6e1e8f);color:#fff;font-size:15px;box-shadow:0 2px 6px rgba(110, 30, 143, .35);cursor:pointer;}
+ul.otm-extension-menu > li > .otm-nsl-btn a {display:inline-grid;place-items:center;width:100%;height:100%;color:#fff !important;}
+
+ul.otm-extension-menu ul {display:none;position:absolute;top:34px;left:0;z-index:9999;width:max-content;max-width:90vw;margin:0;padding:6px;list-style:none;background:#fff;border:1px solid #e4e4e7;border-radius:10px;box-shadow:0 12px 32px rgba(9, 9, 11, .18);text-align:center;white-space:nowrap;}
+ul.otm-extension-menu ul::before {content:"";position:absolute;top:-12px;left:0;right:0;height:12px;} /* hover bridge */
+ul.otm-extension-menu > li:hover ul,
+ul.otm-extension-menu > li:focus-within ul {display:block;}
+ul.otm-extension-menu ul li {display:inline-block;width:auto;margin:0;padding:0;border:0;vertical-align:top;font-size:12px;}
+ul.otm-extension-menu ul li a {display:flex;flex-direction:column;align-items:center;gap:6px;min-width:84px;padding:10px 8px;border-radius:8px;color:#18181b;}
+ul.otm-extension-menu ul li a:hover,
+ul.otm-extension-menu ul li a:focus-visible {background:#f4f4f5;outline:none;}
+ul.otm-extension-menu ul li img {display:block;width:32px;height:32px;margin:0;object-fit:contain;}
+ul.otm-extension-menu ul li .link {display:block;padding:0;border:0;color:inherit;font-weight:600;font-size:12px;line-height:1.2;}
+
+
+
+/* Blocks and their move/remove controls
+-------------------------------------------------- */
+.otm-text-data,
+.otm-extensions-data {border:1px dashed #d4d4d8;border-radius:4px;}
+.otm-extensions-data:empty {min-height:28px;padding:10px;}
+.otm-sortable {position:relative;}
+.otm-sortable-item {position:relative;min-height:28px;margin:4px;padding:6px;overflow:visible;border:1px dashed #d4d4d8;border-radius:6px;transition:border-color .15s ease;}
+.otm-sortable-item:hover,
+.otm-sortable-item:focus-within {border-color:#a855f7;}
+
+.otm-nsl-btn {letter-spacing:0;}
+button.otm-nsl-btn {font-size:13px;line-height:1;cursor:pointer;-webkit-appearance:none;appearance:none;}
+.otm-sortable-item > .otm-nsl-btn {position:absolute;top:-11px;z-index:99;display:inline-grid;place-items:center;width:24px;height:24px;margin:0;padding:0;border:0;border-radius:6px;color:#fff;font-size:13px;box-shadow:0 1px 3px rgba(9, 9, 11, .3);opacity:0;transition:opacity .15s ease;}
+.otm-sortable-item > .otm-nsl-btn--move {right:34px;background:#18181b;cursor:grab;}
+.otm-sortable-item > .otm-nsl-btn--remove {right:6px;background:#dc2626;}
+.otm-sortable-item:hover > .otm-nsl-btn,
+.otm-sortable-item:focus-within > .otm-nsl-btn,
+.otm-sortable-item > .otm-nsl-btn:focus-visible {opacity:1;}
+@media (hover:none) {
+    .otm-sortable-item > .otm-nsl-btn {opacity:1;}
+}
+button.otm-nsl-btn:focus-visible {outline:2px solid #7c3aed;outline-offset:2px;}
+/* the block being edited hides its controls */
+.otm-position .otm-editing ~ .otm-nsl-btn {display:none;}
+
+/* Drag-and-drop (js/designer.js) */
+.otm-sortable-item.is-dragging {opacity:.35;}
+.otm-sortable-placeholder {box-sizing:border-box;min-height:2rem;margin:4px 0;border:2px dashed #7c3aed;border-radius:6px;background:rgba(124, 58, 237, .06);}
+
+/* Editable text */
+[contenteditable="true"]:focus {outline:2px solid rgba(124, 58, 237, .45);outline-offset:2px;}
+[contenteditable="true"]:empty::before {content:"\2026";color:#999;}
+
+
+
+/* Positions still showing the template's sample content
+-------------------------------------------------- */
+.otm-sample-data {position:relative;min-width:130px;}
+.otm-sample-data .otm-text-data,
+.otm-sample-data .otm-extensions-data {border:0;}
+.otm-sample-data .otm-sortable-item {min-height:60px;margin:0;padding:6px;border-style:dotted;}
+.otm-sample-data .otm-position-content {filter:grayscale(1);opacity:.7;transition:filter .3s ease, opacity .3s ease;}
+.otm-sample-data:hover .otm-position-content,
+.otm-sample-data:focus-within .otm-position-content {filter:none;opacity:1;}
+/* "+" sits on the top edge, centred: it no longer covers the content */
+.otm-sample-data > ul.otm-extension-menu {position:absolute;top:-14px;left:50%;z-index:9998;margin:0;transform:translateX(-50%);}
+.otm-sample-data > ul.otm-extension-menu > li:hover {z-index:9999;}
+.otm-sample-data > ul.otm-extension-menu ul {left:50%;transform:translateX(-50%);} /* centred "+": centred menu */
+/* hide the add button while a block is edited */
+.otm-editing ul.otm-extension-menu {display:none;}
+
+@media (prefers-reduced-motion:reduce) {
+    .otm-sortable-item,
+    .otm-sortable-item > .otm-nsl-btn,
+    .otm-sample-data .otm-position-content {transition:none;}
+}
