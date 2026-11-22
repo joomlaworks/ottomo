@@ -216,7 +216,7 @@ class OttomoView extends HtmlView
             return false;
         }
         $title = 'COM_OTTOMO_'.StringHelper::strtoupper($this->view);
-        if ($this->task == 'edit') {
+        if ($this->task == 'edit' && isset($this->row)) {
             $title .= $this->row->id ? '_EDIT' : '_ADD';
         }
         $this->title = Text::_($title);
