@@ -63,7 +63,7 @@ use Joomla\CMS\Router\Route;
         <div class="controls">
             <div class="input-prepend">
                 <label class="lbltitle" for="otm-email"><?php echo Text::_('COM_OTTOMO_EMAIL'); ?></label>
-                <input type="text" name="email" id="otm-email" value="" />
+                <input type="email" name="email" id="otm-email" class="form-control" value="" autocomplete="email" />
             </div>
         </div>
 

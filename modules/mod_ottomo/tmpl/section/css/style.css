@@ -43,6 +43,7 @@
 .otm-module .otm-module__topic > input,
 .otm-module .otm-module__submit {margin:0;}
 .otm-module .otm-module__topics > legend {float:none;width:auto;margin:0 0 0.4rem;padding:0;border:0;color:inherit;}
+.otm-module .otm-module__topic {display:inline-flex;align-items:center;gap:0.5em;} /* the box and its name apart, whatever the template does to labels */
 :where(.otm-module__topic) {display:inline-flex;align-items:center;gap:0.5em;margin:0;cursor:pointer;font-weight:normal;line-height:1.3;}
 :where(.otm-module__topic) input {flex:none;width:1.05em;height:1.05em;margin:0;accent-color:var(--otm-accent);}
 

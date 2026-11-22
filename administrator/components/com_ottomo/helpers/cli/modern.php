@@ -212,6 +212,7 @@ class OttomoCommandIO
         }
         $document['data'] = (object)$this->data;
         $document['messages'] = $this->messages;
-        $this->output->writeln(json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE));
+        $flags = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
+        $this->output->writeln(json_encode($document, defined('JSON_INVALID_UTF8_SUBSTITUTE') ? $flags | constant('JSON_INVALID_UTF8_SUBSTITUTE') : $flags));
     }
 }

@@ -18,7 +18,7 @@ use Joomla\CMS\Language\Text; ?>
  * Keep the email-safe basics: tables for layout, inline styles, a 600px wide container, images with width/height.
  *
  * Files
- *   default.php           this layout (rendered by Joomla's document renderer: Text and PHP work here)
+ *   default.php           this layout (plain PHP, included by Ottomo; strings with Text::_(), see the use line above)
  *   manifest.xml          name, description, <layout> (1col, 2col or sections) and the list of files to install
  *   sampleData.ini        content shown in the designer for empty positions (key = position name, single line,
  *                         double-quoted, HTML with single quotes; {{base}} is this template's URL)

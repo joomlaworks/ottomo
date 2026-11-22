@@ -45,7 +45,8 @@ class OttomoViewArchive extends OttomoView
         $document = OttomoCompat::document();
         $menu = $application->getMenu();
         $active = $menu->getActive();
-        if ($active) {
+        // The menu item's title only when it is the archive's own (without one, Joomla 4+ makes the home page active)
+        if ($active && isset($active->query['option'], $active->query['view']) && $active->query['option'] === 'com_ottomo' && $active->query['view'] === 'archive') {
             $this->params->def('page_heading', $this->params->get('page_title', $active->title));
         } else {
             $this->params->def('page_heading', Text::_('COM_OTTOMO_ARCHIVE'));

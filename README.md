@@ -2,7 +2,7 @@
 
 # Ottomo for Joomla
 
-**Ottomo** is a free, open source email newsletter and campaign manager for **Joomla 3.x UTD**, by [JoomlaWorks](https://www.joomlaworks.net), the makers of K2.
+**Ottomo** is a free, open source email newsletter and campaign manager for **Joomla 3.x UTD, 4, 5 and 6** (one package for all), by [JoomlaWorks](https://www.joomlaworks.net), the makers of K2.
 
 Design a campaign visually, pick who gets it by topic, send it through your own server or a mail service, and see who opened and clicked: all inside your Joomla administrator, with your subscribers' data on your own site.
 
@@ -27,6 +27,7 @@ Design a campaign visually, pick who gets it by topic, send it through your own 
 - **One-click imports** from Joomla, AcyMailing, Kunena, Meela, VirtueMart and HikaShop, and CSV.
 - **Command line** for cron jobs and large lists: send or resume a campaign, import subscribers, purge unsubscribed addresses, check the sending settings.
 - **51 languages**, light and dark schemes, tablet and phone layouts.
+- **Joomla 3.x UTD, 4, 5 and 6** from one package, the same look in every administrator template (Prothero and Atum).
 
 ---
 
@@ -148,20 +149,21 @@ Import the people already on your site, in batches that keep any site within PHP
 
 ### Integrations
 
-- **Joomla articles** and **K2 items** in the designer, with the fields you choose (title, category, date, author, intro and full text, images and captions), respecting view access levels.
+- **Joomla articles** and **K2 items** (Joomla 3.x UTD) in the designer, with the fields you choose (title, category, date, author, intro and full text, images and captions), respecting view access levels.
 - **Joomla's Media Manager** for images, **Joomla's captcha plugins** for signup forms, **Joomla's ACL** for permissions, and **Joomla's mailer** for PHP mail, Sendmail and SMTP.
-- **Meela** (the continuation of Kunena 5.2 for Joomla 3.x UTD) and **Kunena**, **AcyMailing**, **VirtueMart** and **HikaShop** as import sources.
+- **Meela** (the continuation of Kunena 5.2 for Joomla 3.x UTD) and **Kunena**, **AcyMailing**, **VirtueMart** and **HikaShop** as import sources (each where it runs).
 
 ### For developers
 
-- **Command line** (Joomla 3.x UTD, `php cli/joomla.php list ottomo`): `ottomo:campaign:list`, `ottomo:campaign:send <id>` (sends or resumes a campaign in batches: ideal for cron jobs and large lists), `ottomo:subscriber:import <source> --topic=<ids>`, `ottomo:subscriber:purge-unsubscribed` and `ottomo:check` (sending settings and the sender's SPF, DKIM and DMARC). All support `--format=json`; those that change something support `--dry-run`. They're offered to AI assistants by Joomla 3.x UTD's MCP server too.
+- **Command line** (`php cli/joomla.php list ottomo`, on Joomla 3.x UTD, 4, 5 and 6): `ottomo:campaign:list`, `ottomo:campaign:send <id>` (sends or resumes a campaign in batches: ideal for cron jobs and large lists), `ottomo:subscriber:import <source> --topic=<ids>`, `ottomo:subscriber:purge-unsubscribed` and `ottomo:check` (sending settings and the sender's SPF, DKIM and DMARC). All support `--format=json`; those that change something support `--dry-run`. On Joomla 3.x UTD they're offered to AI assistants by its MCP server too.
 - **No build step**: plain PHP, CSS and vanilla JavaScript; no jQuery, MooTools or Bootstrap JS; CSS Grid/Flexbox; Bootstrap Icons as inline SVGs; [SuperModal.js](https://fevangelou.github.io/supermodal.js/) for dialogs.
-- **Email templates**: a folder with `manifest.xml`, `default.php`, `sampleData.ini`, renderers for articles and K2 items, and preview images (WebP, AVIF, JPEG or PNG); installable as packages through a custom installer adapter (`ottomotemplate`). See [TEMPLATE-GUIDE.md](TEMPLATE-GUIDE.md).
-- **Content plugins** (`ottomo-content`): add your own content source to the designer's "+" menu through the `ottomoExtension…` events.
-- **Mail service plugins** (`ottomo-providers`): implement `send()`, `verify()` and `statistics()`, and optionally `batchSize()`; `send()` returns the recipients that failed.
+- **Email templates**: a folder with `manifest.xml`, `default.php`, `sampleData.ini`, renderers for articles and K2 items, and preview images (WebP, AVIF, JPEG or PNG); installable as packages (`type="ottomotemplate"`) from the Templates page. See [TEMPLATE-GUIDE.md](TEMPLATE-GUIDE.md).
+- **Content plugins** (`ottomo-content`): add your own content source to the designer's "+" menu through the `onOttomoExtensionEditorButton`, `onOttomoExtensionView`, `onOttomoExtensionRowContent` and `onOttomoExtensionRowLink` events.
+- **Mail service plugins** (`ottomo-providers`): implement `onOttomoSend()`, `onOttomoVerify()` and `onOttomoStatistics()`, and optionally `onOttomoBatchSize()`; `onOttomoSend()` returns the recipients that failed.
 - **Admin JavaScript**: one vanilla script (`static/js/ottomo.js`), one request helper (`Ottomo.request`) for every server call, and simple forms declare their toolbar rules with `data-otm-*` attributes instead of inline scripts.
 - **Import adapters**: one small class per source (`helpers/importers/`), with keyset paging; add a source by adding a file.
 - **Overrides**: email templates and signup module layouts from your site template.
+- **One codebase for Joomla 3.x UTD, 4, 5 and 6**: namespaced core classes, one small compatibility class for what differs, classic (non-namespaced) extension classes everywhere.
 - **Databases**: MySQL/MariaDB, PostgreSQL, and SQLite through Joomla 3.x UTD's driver.
 - **Security**: CSRF tokens on every action, a central permission check for every controller route, escaped output, signed click tracking, hashed subscriber links.
 
@@ -169,9 +171,10 @@ Import the people already on your site, in batches that keep any site within PHP
 
 ## Requirements
 
-- **Joomla 3.x UTD** (https://github.com/joomlaworks/joomla-3.x)
-- **PHP** 7.1 – 8.5
+- **Joomla 3.x UTD** (https://github.com/joomlaworks/joomla-3.x), **Joomla 4**, **Joomla 5** or **Joomla 6** (tested on 3.18, 4.4, 5.4 and 6.2)
+- **PHP** 7.1 – 8.5 (within what your Joomla version supports: 7.2.5+ on Joomla 4, 8.1+ on Joomla 5, 8.3+ on Joomla 6)
 - **Database**: MySQL / MariaDB, PostgreSQL, or SQLite (Joomla 3.x UTD's SQLite driver)
+- **K2** items in the designer and **Meela** imports: Joomla 3.x UTD (where those extensions run)
 
 ## Installation
 

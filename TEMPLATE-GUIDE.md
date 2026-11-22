@@ -71,11 +71,13 @@ The folder name is the template's id in the database: use letters, digits, `-`, 
 
 ### `default.php` (required)
 
-The email itself: a full HTML document rendered by Joomla's document renderer, so PHP and `JText` work.
+The email itself: a full HTML document, included by Ottomo as plain PHP. For strings use `Text::_()` with `use Joomla\CMS\Language\Text;` after the `defined('_JEXEC')` line (it works on Joomla 3.x UTD, 4, 5 and 6; `JText` doesn't exist on Joomla 6). `<jdoc:include type="head" />` is where Ottomo puts the title and base URL.
 
 ```php
 <?php
-defined('_JEXEC') or die; ?>
+defined('_JEXEC') or die;
+
+use Joomla\CMS\Language\Text; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,6 +94,7 @@ defined('_JEXEC') or die; ?>
 	...
 	<td>{{position:content:html}}</td>
 	...
+	<a href="{{unsubscribe}}"><?php echo Text::_('COM_OTTOMO_TMPL_UNSUBSCRIBE'); ?></a>
 </body>
 </html>
 ```
