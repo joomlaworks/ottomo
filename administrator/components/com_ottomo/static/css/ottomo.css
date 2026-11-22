@@ -493,7 +493,8 @@ body:has(#otm.otm-app--atum) #subhead-container {display:none;} /* Atum's toolba
 body:has(#otm.otm-app--atum) #content {padding:0;}
 body:has(#otm.otm-app--atum) #content > .row {margin:0;}
 body:has(#otm.otm-app--atum) #content > .row > [class*="col-"] {padding:0;}
-body:has(#otm.otm-app--atum) .container-main {padding-bottom:0;}
+body:has(#otm.otm-app--atum) .container-main {min-width:0;padding-bottom:0;} /* flex items: no wider than the room next to Atum's menu */
+body:has(#otm.otm-app--atum) #content > .row > [class*="col-"] {min-width:0;}
 #otm .otm-main-navigation {padding:1rem 0.75rem;}
 #otm .otm-navinner {display:flex;flex-direction:column;gap:1rem;}
 #otm .otm-brandbar {display:flex;align-items:center;justify-content:space-between;gap:0.75rem;padding:0.25rem 0.5rem;}
@@ -1070,6 +1071,8 @@ html:has(#otm.view-settings) {scroll-behavior:smooth;}
     /* The sidebar becomes a bar with a menu button */
     #otm.otm-app--page {padding-left:0;}
     #otm .otm-header {position:static;width:auto;border-right:0;border-bottom:1px solid var(--otm-border);}
+    #otm.otm-app--atum.otm-app--page {display:block;}
+    #otm.otm-app--atum .otm-header {height:auto;}
     #otm .otm-main-navigation {padding:0.75rem 1rem;}
     #otm .otm-logo img {width:auto;height:2.25rem;}
     #otm .otm-navtoggle {display:inline-grid;place-items:center;width:2.5rem;height:2.5rem;padding:0;background:var(--otm-surface);border:1px solid var(--otm-border);border-radius:var(--otm-radius-sm);color:var(--otm-text);cursor:pointer;}
