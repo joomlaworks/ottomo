@@ -19,9 +19,17 @@ use Joomla\CMS\Session\Session;
 
         <section class="otm-import__step">
             <h3 class="otm-frame__step"><?php echo Text::_('COM_OTTOMO_STEP_ONE_SELECT_TOPICS'); ?></h3>
+            <?php if ($this->hasTopics): ?>
             <div class="otm-import__topics">
                 <?php echo $this->topics; ?>
             </div>
+            <?php else: ?>
+            <div class="otm-frame__notice otm-frame__notice--error" role="alert">
+                <?php echo Text::_('COM_OTTOMO_IMPORT_NO_TOPICS'); ?>
+                <a href="index.php?option=com_ottomo&amp;view=topics&amp;task=add" target="_top"><?php echo Text::_('COM_OTTOMO_TOPICS_ADD'); ?></a>
+            </div>
+            <?php endif; ?>
+            <div class="otm-frame__notice otm-frame__notice--error" role="alert" data-role="topics-error" hidden></div>
         </section>
 
         <section class="otm-import__step">
@@ -67,7 +75,7 @@ use Joomla\CMS\Session\Session;
             <p class="otm-field__hint"><?php echo Text::_('COM_OTTOMO_IMPORT_NOTES'); ?></p>
             <div class="otm-frame__actions">
                 <button type="button" class="otm-btn otm-btn--generic" data-frame-close><?php echo Text::_('COM_OTTOMO_CLOSE'); ?></button>
-                <button type="submit" class="otm-btn otm-btn--save" id="otm-import-button"><?php echo OttomoHelperHTML::icon('upload'); ?> <span><?php echo Text::_('COM_OTTOMO_IMPORT'); ?></span></button>
+                <button type="submit" class="otm-btn otm-btn--save" id="otm-import-button"<?php echo $this->hasTopics ? '' : ' disabled'; ?>><?php echo OttomoHelperHTML::icon('upload'); ?> <span><?php echo Text::_('COM_OTTOMO_IMPORT'); ?></span></button>
             </div>
         </div>
 

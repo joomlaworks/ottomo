@@ -63,6 +63,13 @@ class OttomoControllerImport extends OttomoController
             return $this->render();
         }
 
+        // Every imported subscriber needs a topic: campaigns are sent to topics
+        if (!count($this->topics)) {
+            $this->response->errors[] = Text::_('COM_OTTOMO_BATCH_SELECT_TOPICS');
+            $this->response->status = 'COMPLETED';
+            return $this->render();
+        }
+
         // The step comes from the client: only the import steps may run
         if (in_array($this->request->task, array('importFromText', 'importFromSources', 'importFromCsv'), true)) {
             call_user_func(array($this, $this->request->task));

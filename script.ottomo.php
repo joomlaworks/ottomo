@@ -159,6 +159,21 @@ class Com_OttomoInstallerScript
             $query->insert($db->quoteName('#__ottomo_statistics_types'))->columns($db->quoteName('id').','.$db->quoteName('type'))->values('3,'.$db->quote('open'));
             $db->setQuery($query);
             $db->execute();
+
+            // A first topic, so that imported subscribers have one to go in (campaigns are sent to topics)
+            $query = $db->getQuery(true);
+            $query->select('COUNT(*)')->from($db->quoteName('#__ottomo_topics'));
+            $db->setQuery($query);
+            if (!(int)$db->loadResult()) {
+                $application = Factory::getApplication();
+                $language = method_exists($application, 'getLanguage') ? $application->getLanguage() : Factory::getLanguage();
+                $language->load('com_ottomo', JPATH_ADMINISTRATOR.'/components/com_ottomo');
+                $name = $language->hasKey('COM_OTTOMO_DEFAULT_TOPIC') ? $language->_('COM_OTTOMO_DEFAULT_TOPIC') : 'Updates';
+                $query = $db->getQuery(true);
+                $query->insert($db->quoteName('#__ottomo_topics'))->columns($db->quoteName('name').','.$db->quoteName('published'))->values($db->quote($name).',1');
+                $db->setQuery($query);
+                $db->execute();
+            }
         }
 
     }

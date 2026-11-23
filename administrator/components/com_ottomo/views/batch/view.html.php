@@ -21,7 +21,11 @@ class OttomoViewBatch extends OttomoView
         $input = OttomoCompat::input();
         $this->type = in_array($input->getCmd('type'), array('newsletters', 'subscribers'), true) ? $input->getCmd('type') : 'subscribers';
         $this->ids = array_values(array_filter(array_map('intval', (array)$input->get('cid', array(), 'array'))));
-        $this->topics = OttomoHelperHTML::topics('checkboxes', array(), 'topics[]', '', false);
+        // A sole topic comes ticked
+        $model = OttomoModel::getInstance('Topics');
+        $model->setState('published', '-1');
+        $list = $model->getList();
+        $this->topics = OttomoHelperHTML::topics('checkboxes', count($list) === 1 ? array((int)$list[0]->id) : array(), 'topics[]', '', false);
         $this->setLayout('batch');
         parent::display($tpl);
     }

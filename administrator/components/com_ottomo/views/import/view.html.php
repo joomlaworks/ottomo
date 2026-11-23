@@ -13,8 +13,13 @@ class OttomoViewImport extends OttomoView
 {
     public function display($tpl = null)
     {
-        // Get topics
-        $this->topics = OttomoHelperHTML::topics('checkboxes', array(), 'topics[]', 'multiple="multiple" size="10"');
+        // Topics: every imported subscriber needs one (campaigns are sent to topics); a sole topic comes ticked
+        $model = OttomoModel::getInstance('Topics');
+        $model->setState('published', '-1');
+        $list = $model->getList();
+        $this->hasTopics = count($list) > 0;
+        $active = count($list) === 1 ? array((int)$list[0]->id) : array();
+        $this->topics = OttomoHelperHTML::topics('checkboxes', $active, 'topics[]');
 
         // The sources (helpers/importers/): every one is shown, those not installed disabled
         JLoader::register('OttomoHelperImport', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/import.php');

@@ -468,8 +468,25 @@
         });
       }
 
+      // Every imported subscriber needs a topic: campaigns are sent to topics
+      var topicsError = root.querySelector('[data-role="topics-error"]');
+      form.addEventListener('change', function(event) {
+        if (event.target.name === 'topics[]' && topicsError) {
+          topicsError.hidden = true;
+        }
+      });
+
       form.addEventListener('submit', function(event) {
         event.preventDefault();
+        if (!form.querySelector('input[name="topics[]"]:checked')) {
+          topicsError.textContent = text('COM_OTTOMO_BATCH_SELECT_TOPICS', 'Select at least one topic.');
+          topicsError.hidden = false;
+          var first = form.querySelector('input[name="topics[]"]');
+          if (first) {
+            first.focus();
+          }
+          return;
+        }
         errors.textContent = '';
         errors.hidden = true;
         button.disabled = true;
