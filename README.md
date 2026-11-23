@@ -141,7 +141,7 @@ Mail services are plugins (`ottomo-providers`): no vendored SDKs, one small HTTP
 
 Import the people already on your site, in batches that keep any site within PHP's time limits (50,000 forum members import in about four minutes). Each source shows how many addresses it holds; sources that aren't installed are shown disabled.
 
-- **AcyMailing** (6 and later, and 5): subscribed users, confirmed when AcyMailing requires confirmation; those who left every list are imported as unsubscribed, so they stay suppressed.
+- **AcyMailing** (version 5 or newer): subscribed users, confirmed when AcyMailing requires confirmation; those who left every list are imported as unsubscribed, so they stay suppressed.
 - **HikaShop**: customers with at least one order, registered or guest, with their billing address, company, phones and VAT number.
 - **Joomla Users**: accounts that are activated and not blocked.
 - **Kunena** (5.x) and **Meela**: forum members who can sign in and aren't banned.
