@@ -44,7 +44,7 @@ The folder name is the template's id in the database: use letters, digits, `-`, 
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="3.3" type="ottomotemplate" method="upgrade" folder="joomlaworks">
 	<name>JoomlaWorks</name>
-	<creationDate>November 22nd, 2026</creationDate>
+	<creationDate>November 23rd, 2026</creationDate>
 	<author>JoomlaWorks</author>
 	<authorEmail>please-use-the-contact-form@joomlaworks.net</authorEmail>
 	<authorUrl>https://www.joomlaworks.net</authorUrl>

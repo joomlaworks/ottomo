@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="component" version="3.4" method="upgrade">
 	<name>com_ottomo</name>
-	<creationDate>November 20th, 2026</creationDate>
+	<creationDate>November 23rd, 2026</creationDate>
 	<author>JoomlaWorks</author>
 	<authorEmail>please-use-the-contact-form@joomlaworks.net</authorEmail>
 	<authorUrl>https://www.joomlaworks.net</authorUrl>

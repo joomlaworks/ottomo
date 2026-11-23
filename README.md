@@ -184,7 +184,7 @@ Install the package in **Extensions > Install**. It installs the component, the 
 
 ## Release
 
-- **v1.0** (November 20th, 2026): first release. [Release notes and download](https://github.com/joomlaworks/ottomo/releases/tag/v1.0); see also [CHANGELOG.md](CHANGELOG.md).
+- **v1.0** (November 23rd, 2026): first release. [Release notes and download](https://github.com/joomlaworks/ottomo/releases/tag/v1.0); see also [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 Ottomo is a Joomla extension developed by JoomlaWorks, released under the GNU General Public License. See [LICENSE.txt](LICENSE.txt).
