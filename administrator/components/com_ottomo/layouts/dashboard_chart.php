@@ -25,10 +25,14 @@ $ranges = array('day' => 'COM_OTTOMO_DAY', 'week' => 'COM_OTTOMO_WEEK', 'month' 
                 <?php echo $this->topicsFilter; ?>
             </div>
             <div class="otm-stats__dates">
-                <label for="startDate"><?php echo Text::_('COM_OTTOMO_DATE_FROM'); ?></label>
-                <input type="date" name="startDate" id="startDate" value="" />
-                <label for="endDate"><?php echo Text::_('COM_OTTOMO_DATE_TO'); ?></label>
-                <input type="date" name="endDate" id="endDate" value="" />
+                <span class="otm-stats__date">
+                    <label for="startDate"><?php echo Text::_('COM_OTTOMO_DATE_FROM'); ?></label>
+                    <input type="date" name="startDate" id="startDate" value="" />
+                </span>
+                <span class="otm-stats__date">
+                    <label for="endDate"><?php echo Text::_('COM_OTTOMO_DATE_TO'); ?></label>
+                    <input type="date" name="endDate" id="endDate" value="" />
+                </span>
                 <button type="button" class="otm-stats__apply" id="otm-statistics-form-apply"><?php echo Text::_('COM_OTTOMO_APPLY'); ?></button>
             </div>
         </div>
