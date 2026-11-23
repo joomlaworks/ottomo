@@ -38,3 +38,5 @@
 .otm-view-subscribers .input-prepend {display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;}
 .otm-view-subscribers label.lbltitle {font-weight:700;}
 .otm-view-subscribers #otm-email {flex:1 1 16rem;width:auto;max-width:28rem;}
+.otm-view-subscribers .otm-actions {display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;margin-top:0.5rem;}
+.otm-view-subscribers .otm-actions .btn {flex:0 0 auto;width:auto;margin:0;}

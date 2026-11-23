@@ -121,6 +121,7 @@
 @media (max-width:39.99rem) {
     :where(.otm-module__row) {display:flex;flex-direction:column;align-items:stretch;gap:var(--otm-gap);}
     :where(.otm-module__row) > :where(.otm-module__field) {display:flex;}
+    :where(.otm-module__row) > :where(.otm-module__field) > :is(label, input, textarea) {align-self:stretch;} /* the row's "end" alignment would push labels to the right in a column */
     :where(.otm-module__row) > :where(.otm-module__actions) {display:block;}
     :where(.otm-module__row) > :where(.otm-module__captcha) {width:auto;margin-top:0;}
     :where(.otm-module--section) :where(.otm-module__submit) {width:100%;}

@@ -80,8 +80,10 @@ use Joomla\CMS\Router\Route;
         </div>
         <?php endforeach; ?>
 
-        <input type="button" class="btn btn-mid btn-primary" name="save" value="<?php echo Text::_('COM_OTTOMO_SAVE')?>" id="otm-save-button" />
-        <input type="button" class="btn btn-mid btn-danger" name="delete" value="<?php echo Text::_('COM_OTTOMO_DELETE_ACCOUNT')?>" id="otm-delete-button" />
+        <div class="otm-actions">
+            <input type="button" class="btn btn-mid btn-primary" name="save" value="<?php echo Text::_('COM_OTTOMO_SAVE')?>" id="otm-save-button" />
+            <input type="button" class="btn btn-mid btn-danger" name="delete" value="<?php echo Text::_('COM_OTTOMO_DELETE_ACCOUNT')?>" id="otm-delete-button" />
+        </div>
         
         <input type="hidden" name="id" value="<?php echo (int)$this->row->id; ?>" />
         <input type="hidden" name="option" value="<?php echo $this->option; ?>" />
