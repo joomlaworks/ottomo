@@ -11,6 +11,7 @@ defined('_JEXEC') or die ;
 
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
 
 require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
 
@@ -54,10 +55,23 @@ class OttomoHelperHTML
         return (bool)OttomoCompat::user()->authorise('ottomo.templates', 'com_ottomo');
     }
 
-    /** URL of one of Ottomo's CSS/JS files with the version as query string (?v=1.0): browsers fetch it again after an update */
+    /**
+     * URL of one of Ottomo's CSS/JS files with the version and the file's modification time as query string
+     * (?v=1.1.1764000000): browsers fetch it again after an update, also when a release is re-issued under the same
+     * version, whatever the server's cache headers.
+     */
     public static function asset($url)
     {
-        return $url.(strpos($url, '?') === false ? '?' : '&').'v='.rawurlencode(self::version());
+        $tag = self::version();
+        $path = (string)parse_url($url, PHP_URL_PATH);
+        $root = rtrim(Uri::root(true), '/');
+        if ($path !== '' && ($root === '' || strpos($path, $root.'/') === 0)) {
+            $file = JPATH_ROOT.substr($path, strlen($root));
+            if (is_file($file)) {
+                $tag .= '.'.filemtime($file);
+            }
+        }
+        return $url.(strpos($url, '?') === false ? '?' : '&').'v='.rawurlencode($tag);
     }
 
     public static function state($active = null, $name = 'published', $attributes = '', $showNull = true, $trueLabel = 'COM_OTTOMO_PUBLISHED', $falseLabel = 'COM_OTTOMO_UNPUBLISHED', $extra = array())
