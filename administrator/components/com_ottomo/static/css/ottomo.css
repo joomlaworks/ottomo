@@ -693,6 +693,10 @@ dialog.otm-dialog--sm {--otm-dialog-w:34rem;}
 dialog.otm-dialog--md {--otm-dialog-w:44rem;}
 dialog.otm-dialog--lg {--otm-dialog-w:64rem;--otm-dialog-h:75vh;}
 dialog.otm-dialog--xl {--otm-dialog-w:80rem;--otm-dialog-h:100vh;}
+dialog.otm-dialog--media {--otm-dialog-w:min(1400px, calc(100vw - 80px));--otm-dialog-h:min(900px, calc(100vh - 140px));} /* media pickers: as large as Joomla 3.x UTD's Image button */
+dialog.otm-dialog .supermodal__btn.otm-media-insert {width:auto;margin-right:0.25rem;padding:0 0.875rem;background:var(--c-fg, #09090b);border-radius:0.5rem;color:var(--c-bg, #ffffff);font-size:0.8125rem;font-weight:600;}
+dialog.otm-dialog .supermodal__btn.otm-media-insert:disabled {opacity:0.4;cursor:not-allowed;}
+dialog.otm-dialog .supermodal__btn.otm-media-insert:not(:disabled):is(:hover, :focus-visible) {background:var(--c-fg, #09090b);color:var(--c-bg, #ffffff);opacity:0.85;}
 dialog.otm-dialog .otm-dialog__card {display:flex;flex-direction:column;width:min(var(--otm-dialog-w), 100%);background:var(--c-card, #ffffff);border:1px solid var(--c-border, #e4e4e7);border-radius:var(--otm-dialog-radius);box-shadow:0 24px 60px rgba(9, 9, 11, 0.28);overflow:hidden;} /* one card: the bar and the stage share its border */
 dialog.otm-dialog .supermodal__bar {flex:0 0 var(--otm-dialog-bar);width:100%;padding:0 0.625rem 0 1.25rem;background:var(--c-card, #ffffff);border:0;border-bottom:1px solid var(--c-border, #e4e4e7);border-radius:0;}
 dialog.otm-dialog .supermodal__frameTitle {color:var(--c-fg, #09090b);font-size:0.9375rem;font-weight:600;}

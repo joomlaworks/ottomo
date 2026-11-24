@@ -199,7 +199,7 @@ class OttomoView extends HtmlView
                 $document->addScript(OttomoHelperHTML::asset(Uri::base(true).'/components/com_ottomo/static/js/vendor/supermodal/supermodal.min.js'));
                 HTMLHelper::_('behavior.core');
                 Text::script('JLIB_HTML_PLEASE_MAKE_A_SELECTION_FROM_THE_LIST');
-                foreach (array('SENT_TO_N', 'SEND_FAILED_N', 'CSV_UPLOADING', 'CSV_READY', 'BATCH_SELECT_TOPICS', 'REQUEST_FAILED', 'EDITOR_DEVICE', 'EDITOR_DESKTOP', 'EDITOR_MOBILE', 'EDITOR_SCHEME', 'EDITOR_LIGHT', 'EDITOR_DARK', 'OPEN_IN_NEW_TAB', 'PREFLIGHT_SIZE_NOW', 'PREFLIGHT_SIZE_OVER', 'PREFLIGHT_CHECKING') as $key) {
+                foreach (array('EDITOR_INSERT_IMAGE', 'SENT_TO_N', 'SEND_FAILED_N', 'CSV_UPLOADING', 'CSV_READY', 'BATCH_SELECT_TOPICS', 'REQUEST_FAILED', 'EDITOR_DEVICE', 'EDITOR_DESKTOP', 'EDITOR_MOBILE', 'EDITOR_SCHEME', 'EDITOR_LIGHT', 'EDITOR_DARK', 'OPEN_IN_NEW_TAB', 'PREFLIGHT_SIZE_NOW', 'PREFLIGHT_SIZE_OVER', 'PREFLIGHT_CHECKING') as $key) {
                     Text::script('COM_OTTOMO_'.$key); // used by the frames and Ottomo.preview() (js/ottomo.js)
                 }
             }

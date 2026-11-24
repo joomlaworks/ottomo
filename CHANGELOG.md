@@ -18,12 +18,14 @@ All notable changes to **Ottomo for Joomla** (`com_ottomo`) are documented in th
 - Sent emails keep every image of the content within its column (`max-width:100%`, `height:auto`), including campaigns edited in the HTML tab.
 - Unpublished topics are retired: hidden on the site as before, and no longer offered for new campaigns, imports or batch changes. Updating from 1.0 turns unpublished topics into published private topics, so they work as before.
 - The administrator toolbars use Ottomo's own language strings.
+- The image picker opens as large as Joomla 3.x UTD's Image button (up to 1400 × 900, fitting the window), on every Joomla.
 - Updates are announced by `update.xml` only (the manifest's update server); updating converts the old `collection.xml` update server of 1.0 sites.
 
 ### Fixed
 - Send test: one click sent the test email more than once. Every dialog (preview, import, send) also loaded its page several times.
 - Subscription preferences: saving them no longer removes the subscriber from topics the page doesn't show (private or unpublished ones).
 - Signup forms only accept public topics, whatever is posted.
+- Campaign designer on Joomla 4, 5 and 6: the Images button opened a missing page (Joomla 3's image picker); it now opens Joomla's media manager, with an Insert button (or a double click) for the file chosen.
 - Campaign designer: selecting the text of a link (e.g. a button) made the designer jump up and down, as the link bar pushed it down; the link and image bars now float over it.
 - Campaign designer: copying and pasting inside the email kept only the text; images, links and formatting are now kept (anything pasted from outside is still plain text).
 

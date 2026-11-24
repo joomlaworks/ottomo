@@ -39,7 +39,11 @@ class plgOttomocontentImages extends CMSPlugin
         $button = new stdClass();
         $button->extension = $this->_name;
         $button->label = Text::_('PLG_OTTOMO_CONTENT_IMAGES_LABEL');
-        $button->link = Uri::base(true).'/index.php?option=com_media&view=images&tmpl=component&asset=com_ottomo&folder=';
+        // Joomla 3: the image picker (its Insert calls jInsertFieldValue()); Joomla 4+: the media manager, whose selection
+        // the designer's frame inserts (see Ottomo.mediaPicker() in static/js/ottomo.js)
+        $button->link = OttomoCompat::isModern()
+            ? Uri::base(true).'/index.php?option=com_media&view=media&tmpl=component&mediatypes=0&asset=com_ottomo&path=local-images:/'
+            : Uri::base(true).'/index.php?option=com_media&view=images&tmpl=component&asset=com_ottomo&folder=';
         return $button;
     }
 

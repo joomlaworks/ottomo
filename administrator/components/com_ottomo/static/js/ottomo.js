@@ -198,6 +198,9 @@
       if (/task=newsletters\.preview/.test(url)) {
         return 'xl';
       }
+      if (/option=com_media/.test(url)) {
+        return 'media';
+      }
       return 'lg';
     }
 
@@ -228,8 +231,8 @@
         card.appendChild(bar);
         card.appendChild(stageEl);
       }
-      if (!iframe || size === 'xl') {
-        return;
+      if (!iframe || size === 'xl' || size === 'media') {
+        return; // these keep their size (a page of their own, or a picker)
       }
       var observer = null;
       var fit = function() {
@@ -313,6 +316,77 @@
           }
         });
       }
+      return dialog;
+    };
+
+    /**
+     * Joomla 4+'s media manager in a frame: it reports the file clicked (onMediaFileSelected on this page); an Insert
+     * button in the frame's bar (and a double click) inserts it into a designer position, as jInsertFieldValue() does on
+     * Joomla 3. The file's URL comes from Joomla's media API (the storage may be outside the site).
+     */
+    Ottomo.mediaPicker = function(dialog, fieldId) {
+      var tools = dialog && dialog.querySelector('.supermodal__tools');
+      if (!tools) {
+        return;
+      }
+      var insert = document.createElement('button');
+      insert.type = 'button';
+      insert.className = 'supermodal__btn otm-media-insert';
+      insert.textContent = text('COM_OTTOMO_EDITOR_INSERT_IMAGE', 'Insert');
+      insert.disabled = true;
+      tools.insertBefore(insert, tools.firstChild);
+      var selected = null;
+      var last = { path: '', time: 0 };
+      var choose = function() {
+        if (!selected) {
+          return;
+        }
+        insert.disabled = true;
+        var token = window.Joomla && Joomla.getOptions ? Joomla.getOptions('csrf.token') : '';
+        var params = new URLSearchParams({ option: 'com_media', task: 'api.files', format: 'json', url: 'true', mediatypes: '0', path: selected.path });
+        if (token) {
+          params.append(token, '1');
+        }
+        request('index.php', { params: params }).then(function(response) {
+          var data = response && response.data;
+          var file = Array.isArray(data) ? data[0] : data;
+          var url = file && file.url ? String(file.url) : '';
+          if (!url) {
+            throw new Error('no URL');
+          }
+          var root = String(Ottomo.sitePath || '');
+          window.jInsertFieldValue(root && url.indexOf(root) === 0 ? url.slice(root.length) : url, fieldId);
+          if (window.SuperModal) {
+            SuperModal.close();
+          }
+        }).catch(function() {
+          insert.disabled = false;
+        });
+      };
+      var onSelect = function(event) {
+        if (!document.body.contains(dialog)) {
+          document.removeEventListener('onMediaFileSelected', onSelect);
+          return;
+        }
+        var detail = event.detail || {};
+        // a file has a path (Joomla 4.4 sends no type; folders come as "dir", or with no path at all)
+        selected = detail.path && detail.type !== 'dir' ? detail : null;
+        insert.disabled = !selected;
+        // a second click on the same file within half a second: insert it
+        var now = Date.now();
+        if (selected && last.path === selected.path && now - last.time < 500) {
+          choose();
+        }
+        last = { path: selected ? selected.path : '', time: now };
+      };
+      document.addEventListener('onMediaFileSelected', onSelect);
+      insert.addEventListener('click', function(event) {
+        event.preventDefault();
+        choose();
+      });
+      dialog.addEventListener('close', function() {
+        document.removeEventListener('onMediaFileSelected', onSelect);
+      });
     };
 
     // ------------------------------------------------------------------ frame side
@@ -925,7 +999,12 @@
       on(doc, 'click', '.otm-modal', function(event, link) {
         event.preventDefault();
         if (window.SuperModal) {
-          Ottomo.frame(link.getAttribute('href'), link.getAttribute('title') || link.textContent.trim(), { size: 'lg' });
+          var href = link.getAttribute('href');
+          var dialog = Ottomo.frame(href, link.getAttribute('title') || link.textContent.trim(), { size: /option=com_media/.test(href) ? 'media' : 'lg' });
+          // Joomla 4+'s media manager has no Insert button of its own
+          if (/option=com_media&view=media/.test(href)) {
+            Ottomo.mediaPicker(dialog, (href.match(/[?&]fieldid=([^&]+)/) || [])[1] || '');
+          }
         }
       });
 
@@ -3317,7 +3396,7 @@ function jInsertFieldValue(image, editor) {
   var position = doc.getElementById(editor);
   if (position) {
     var img = doc.createElement('img');
-    img.setAttribute('src', Ottomo.sitePath + image);
+    img.setAttribute('src', /^https?:\/\//i.test(image) ? image : Ottomo.sitePath + image); // Joomla 4+ storage outside the site: absolute
     img.setAttribute('alt', '');
     position.insertAdjacentHTML('beforeend', Ottomo.sortableItem(img.outerHTML));
     Ottomo.newsletterModified = true;
