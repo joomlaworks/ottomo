@@ -55,7 +55,8 @@ Design a campaign visually, pick who gets it by topic, send it through your own 
 ### Designer
 
 - **In-place editing**: bold, italic, underline, headings, lists, alignment (left, center, right), links (optionally in a new window), clear formatting and plain-text paste, with an email-safe font menu.
-- **Content blocks**: Joomla articles, K2 items, images from the Media Manager and custom HTML, added with a "+" menu in any position; each template decides how articles and K2 items look.
+- **Content blocks**: Joomla articles, K2 items, images from the Media Manager, buttons and custom HTML, added with a "+" menu in any position; each template decides how articles, K2 items and buttons look.
+- **Buttons**: type the text on the button; set its link, alignment, full width, background and text colours and corners (square, rounded, pill) in the button bar. Built as email buttons that work everywhere, classic Outlook included.
 - **Image settings**: click an image to set its width (the height follows), fit it to its column, align it, and give it alt text and a link. Images inserted from the Media Manager or with content fit their column on their own, with a `width` for classic Outlook and `max-width` for every other client, so a large photo never widens the email.
 - **Drag and drop** blocks within and between positions, or move them with the keyboard.
 - **HTML tab** with a code editor (Ace) for full control, kept in sync with the visual editor, and a **Plain text** tab.
@@ -191,6 +192,7 @@ A short overview of each release. Every change is described in detail in [CHANGE
 ## Version 1.1 - released November 24th, 2026
 Summary of changes:
 - **Text alignment** in the designer: left, center and right, as inline styles every email client understands
+- **Buttons** in the designer: a Button in the "+" menu, in the template's style, with a bar for its link, alignment, full width, colours and corners (square, rounded, pill)
 - **Image settings** in the designer: click an image for its width, Fit to the column, alignment, alt text and link. Images from the Media Manager (or in articles and K2 items) fit their column on their own, classic Outlook included, so a 1920px photo no longer widens the email
 - **Private topics**: hidden on the site but usable for campaigns, for lists you manage yourself such as test recipients; unpublished topics are retired. Updating from 1.0 turns unpublished topics into private ones, so nothing changes for them
 - **Save & New** for topics and subscribers, for adding several in a row

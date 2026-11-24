@@ -372,6 +372,27 @@ use Joomla\String\StringHelper;
                                 </label>
                                 <button type="button" data-image-target aria-pressed="false"><?php echo $t('LINK_NEW_WINDOW'); ?></button>
                             </div>
+                            <div class="otm-editor-button" role="group" aria-label="<?php echo $t('BUTTON'); ?>" data-editor-button hidden>
+                                <label class="otm-editor-link__field">
+                                    <?php echo OttomoHelperHTML::icon('cursor'); ?>
+                                    <span class="visually-hidden"><?php echo $t('BUTTON_LINK'); ?></span>
+                                    <input type="url" data-button-href placeholder="https://" autocomplete="off" spellcheck="false" />
+                                </label>
+                                <button type="button" data-button-target aria-pressed="false"><?php echo $t('LINK_NEW_WINDOW'); ?></button>
+                                <span class="otm-editor-image__align" role="group" aria-label="<?php echo $t('BUTTON_ALIGN'); ?>">
+                                    <button type="button" data-button-align="left" aria-pressed="false" title="<?php echo $t('ALIGN_LEFT'); ?>" aria-label="<?php echo $t('ALIGN_LEFT'); ?>"><?php echo OttomoHelperHTML::icon('text-left'); ?></button>
+                                    <button type="button" data-button-align="center" aria-pressed="false" title="<?php echo $t('ALIGN_CENTER'); ?>" aria-label="<?php echo $t('ALIGN_CENTER'); ?>"><?php echo OttomoHelperHTML::icon('text-center'); ?></button>
+                                    <button type="button" data-button-align="right" aria-pressed="false" title="<?php echo $t('ALIGN_RIGHT'); ?>" aria-label="<?php echo $t('ALIGN_RIGHT'); ?>"><?php echo OttomoHelperHTML::icon('text-right'); ?></button>
+                                </span>
+                                <button type="button" data-button-full aria-pressed="false"><?php echo OttomoHelperHTML::icon('arrows'); ?><span><?php echo $t('BUTTON_FULL_WIDTH'); ?></span></button>
+                                <label class="otm-editor-button__color"><span><?php echo $t('BUTTON_BACKGROUND'); ?></span><input type="color" data-button-background /></label>
+                                <label class="otm-editor-button__color"><span><?php echo $t('BUTTON_TEXT_COLOR'); ?></span><input type="color" data-button-color /></label>
+                                <span class="otm-editor-image__align" role="group" aria-label="<?php echo $t('BUTTON_CORNERS'); ?>">
+                                    <button type="button" data-button-corners="0px" aria-pressed="false"><?php echo $t('CORNERS_SQUARE'); ?></button>
+                                    <button type="button" data-button-corners="8px" aria-pressed="false"><?php echo $t('CORNERS_ROUNDED'); ?></button>
+                                    <button type="button" data-button-corners="999px" aria-pressed="false"><?php echo $t('CORNERS_PILL'); ?></button>
+                                </span>
+                            </div>
                         </div>
 
                         <iframe id="otm-designer-frame" name="otm-designer-frame" src="<?php echo Route::_('index.php?option=com_ottomo&view=designer&id='.$this->row->id.'&template='.$this->row->template.'&format=raw')?>"></iframe>

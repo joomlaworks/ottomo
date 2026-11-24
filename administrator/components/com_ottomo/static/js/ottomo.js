@@ -949,6 +949,30 @@
           editable.focus();
         }
       });
+
+      // Add a button in the template's style; its text is selected, ready to be typed over
+      on(doc, 'click', '.otm-button-content-button', function(event, button) {
+        event.preventDefault();
+        var params = new URLSearchParams({ option: 'com_ottomo', task: 'extension.button', format: 'raw', template: button.getAttribute('data-template') || '' });
+        request('index.php', { params: params, as: 'text' }).then(function(html) {
+          var item = appendBlock(button.getAttribute('data-target'), '<div contenteditable="true">' + html + '</div>');
+          var link = item && $('[contenteditable] a', item);
+          if (!link) {
+            return;
+          }
+          var editable = link.closest('[contenteditable]');
+          editable.focus();
+          var range = doc.createRange();
+          range.selectNodeContents(link);
+          var selection = doc.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          if (Ottomo.editor) {
+            Ottomo.editor.save();
+            Ottomo.editor.refresh();
+          }
+        });
+      });
     };
 
     // Extension frame: "Insert content" / "Insert link" hand the item over to the designer
@@ -1797,6 +1821,7 @@
       range: null,   // last selection inside an editable region of the iframe
       link: null,    // <a> being edited in the link bar
       image: null,   // <img> being edited in the image bar
+      button: null,  // <a> of the button being edited in the button bar
 
       /** The saved range, if it is still inside an editable region. */
       current: function() {
@@ -1941,7 +1966,10 @@
         if (anchor && this.image && anchor.contains(this.image)) {
           anchor = null; // the image bar edits the link of an image
         }
-        this.showLink(anchor && editableOf(anchor) ? anchor : null);
+        // A button's link is edited in the button bar
+        var button = this.buttonOf(anchor);
+        this.showButton(button);
+        this.showLink(anchor && !button && editableOf(anchor) ? anchor : null);
       },
 
       showLink: function(anchor, focus) {
@@ -2165,6 +2193,7 @@
           return;
         }
         this.showLink(null);
+        this.showButton(null);
         var width = bar.querySelector('[data-image-width]');
         if (document.activeElement !== width) {
           width.value = img.getAttribute('width') || (img.naturalWidth ? Math.min(img.naturalWidth, this.imageRoom(img)) : '');
@@ -2198,7 +2227,9 @@
           return;
         }
         var outline = doc.querySelector('.otm-image-outline');
-        if (!this.image || !doc.contains(this.image)) {
+        // the selected image, else the selected button (its cell)
+        var target = this.image || (this.button && this.button.parentElement);
+        if (!target || !doc.contains(target)) {
           if (outline) {
             outline.parentNode.removeChild(outline);
           }
@@ -2210,12 +2241,219 @@
           outline.setAttribute('aria-hidden', 'true');
           doc.body.appendChild(outline);
         }
-        var rect = this.image.getBoundingClientRect();
+        var rect = target.getBoundingClientRect();
         var view = doc.defaultView;
         outline.style.top = (rect.top + view.pageYOffset) + 'px';
         outline.style.left = (rect.left + view.pageXOffset) + 'px';
         outline.style.width = rect.width + 'px';
         outline.style.height = rect.height + 'px';
+      },
+
+      // ---------------------------------------------------------------- buttons
+
+      /**
+       * The link of a button (the "+" menu's Button, and the templates' own calls to action): a link alone in a table
+       * cell that has a background, inside the email's content. Else null.
+       */
+      buttonOf: function(node) {
+        var el = elementOf(node);
+        var link = el && el.closest ? el.closest('a') : null;
+        var cell = link && link.parentElement;
+        if (!cell || cell.tagName !== 'TD' || cell.children.length !== 1) {
+          return null;
+        }
+        if (!/background/i.test(cell.getAttribute('style') || '') && !cell.getAttribute('bgcolor')) {
+          return null;
+        }
+        return link.closest('.otm-position-content, .otm-sample-data, [contenteditable="true"]') ? link : null;
+      },
+
+      /**
+       * Set an inline style in the style attribute's own text (the browser's style API would write rgb() colours, and
+       * classic Outlook's bgcolor is taken from hex colours when sending). value '' removes the property.
+       */
+      inlineStyle: function(el, properties, value) {
+        var css = el.getAttribute('style') || '';
+        [].concat(properties).forEach(function(property) {
+          css = css.replace(new RegExp('(^|;)\\s*' + property + '\\s*:[^;]*', 'gi'), '$1');
+        });
+        css = css.replace(/;\s*;/g, ';').replace(/^\s*;\s*/, '').trim();
+        if (value !== '') {
+          css = (css && !/;$/.test(css) ? css + '; ' : (css ? css + ' ' : '')) + [].concat(properties)[0] + ': ' + value + ';';
+        }
+        if (css) {
+          el.setAttribute('style', css);
+        } else {
+          el.removeAttribute('style');
+        }
+      },
+
+      /** An inline style's value from the style attribute's text ('' when not set). */
+      styleValue: function(el, property) {
+        var match = (el.getAttribute('style') || '').match(new RegExp('(?:^|;)\\s*' + property + '\\s*:\\s*([^;]+)', 'i'));
+        return match ? match[1].trim() : '';
+      },
+
+      /** A colour as #rrggbb for the colour inputs (from #rgb, #rrggbb or rgb()). */
+      hexColour: function(value, fallback) {
+        value = String(value || '');
+        var hex = value.match(/#([0-9a-f]{6}|[0-9a-f]{3})\b/i);
+        if (hex) {
+          var h = hex[1].toLowerCase();
+          return '#' + (h.length === 3 ? h.replace(/(.)/g, '$1$1') : h);
+        }
+        var rgb = value.match(/rgba?\(\s*(\d+)\D+(\d+)\D+(\d+)/i);
+        if (rgb) {
+          return '#' + [rgb[1], rgb[2], rgb[3]].map(function(n) {
+            return ('0' + Math.min(255, parseInt(n, 10)).toString(16)).slice(-2);
+          }).join('');
+        }
+        return fallback;
+      },
+
+      /** The 100% wide cell around a button's table, whose align places it; created when asked (older buttons). */
+      buttonWrapper: function(link, create) {
+        var table = link.parentElement.closest('table');
+        var cell = table && table.parentElement;
+        if (cell && cell.tagName === 'TD' && cell.children.length === 1) {
+          var outer = cell.closest('table');
+          if (outer && outer.getAttribute('width') === '100%') {
+            return cell;
+          }
+        }
+        if (!create || !table) {
+          return null;
+        }
+        var doc = link.ownerDocument;
+        var wrapper = doc.createElement('table');
+        ['role', 'presentation', 'width', '100%', 'cellpadding', '0', 'cellspacing', '0', 'border', '0'].forEach(function(value, i, list) {
+          if (i % 2 === 0) {
+            wrapper.setAttribute(value, list[i + 1]);
+          }
+        });
+        var row = doc.createElement('tr');
+        cell = doc.createElement('td');
+        cell.setAttribute('align', 'left');
+        row.appendChild(cell);
+        wrapper.appendChild(row);
+        table.parentNode.insertBefore(wrapper, table);
+        cell.appendChild(table);
+        return cell;
+      },
+
+      /** The button bar for a button (or none). */
+      showButton: function(link) {
+        var bar = document.querySelector('[data-editor-button]');
+        if (this.button === link && (!bar || bar.hidden === !link)) {
+          if (link) {
+            this.outlineImage();
+          }
+          return;
+        }
+        this.button = link || null;
+        if (link && this.image) {
+          this.image = null;
+          var imageBar = document.querySelector('[data-editor-image]');
+          if (imageBar) {
+            imageBar.hidden = true;
+          }
+        }
+        this.outlineImage();
+        if (!bar) {
+          return;
+        }
+        bar.hidden = !link;
+        if (link) {
+          this.fillButtonBar();
+        }
+      },
+
+      /** The button bar's fields from the button. */
+      fillButtonBar: function() {
+        var bar = document.querySelector('[data-editor-button]');
+        var link = this.button;
+        if (!bar || !link) {
+          return;
+        }
+        var self = this;
+        var cell = link.parentElement;
+        var table = cell.closest('table');
+        var href = bar.querySelector('[data-button-href]');
+        if (document.activeElement !== href) {
+          href.value = link.getAttribute('href') || '';
+        }
+        bar.querySelector('[data-button-target]').setAttribute('aria-pressed', link.getAttribute('target') === '_blank' ? 'true' : 'false');
+        var wrapper = this.buttonWrapper(link, false);
+        var align = wrapper ? (wrapper.getAttribute('align') || this.styleValue(wrapper, 'text-align') || 'left').toLowerCase() : 'left';
+        $$('[data-button-align]', bar).forEach(function(button) {
+          button.setAttribute('aria-pressed', button.getAttribute('data-button-align') === align ? 'true' : 'false');
+        });
+        bar.querySelector('[data-button-full]').setAttribute('aria-pressed', table && table.getAttribute('width') === '100%' ? 'true' : 'false');
+        var background = bar.querySelector('[data-button-background]');
+        if (document.activeElement !== background) {
+          background.value = this.hexColour(this.styleValue(cell, 'background') || this.styleValue(cell, 'background-color') || cell.getAttribute('bgcolor'), '#18181b');
+        }
+        var colour = bar.querySelector('[data-button-color]');
+        if (document.activeElement !== colour) {
+          colour.value = this.hexColour(this.styleValue(link, 'color'), '#ffffff');
+        }
+        var radius = parseFloat(this.styleValue(cell, 'border-radius') || this.styleValue(link, 'border-radius')) || 0;
+        var corners = radius >= 100 ? '999px' : (radius > 0 ? '8px' : '0px');
+        $$('[data-button-corners]', bar).forEach(function(button) {
+          button.setAttribute('aria-pressed', button.getAttribute('data-button-corners') === corners ? 'true' : 'false');
+        });
+        self.outlineImage();
+      },
+
+      /** Change the selected button: one of href, target, align, full, background, color, corners. */
+      setButton: function(what, value) {
+        var link = this.button;
+        if (!link || !link.parentElement) {
+          return;
+        }
+        var cell = link.parentElement;
+        var table = cell.closest('table');
+        if (what === 'href') {
+          link.setAttribute('href', value);
+        } else if (what === 'target') {
+          if (link.getAttribute('target') === '_blank') {
+            link.removeAttribute('target');
+            link.removeAttribute('rel');
+          } else {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener');
+          }
+        } else if (what === 'align') {
+          // The wrapper cell's align places the button's table in classic Outlook; the table's margins place it everywhere
+          // else. No text-align on the cell: it would override what align does for tables, and only move text.
+          var wrapper = this.buttonWrapper(link, true);
+          wrapper.setAttribute('align', value);
+          this.inlineStyle(wrapper, 'text-align', '');
+          this.inlineStyle(table, 'margin', value === 'center' ? '0 auto' : (value === 'right' ? '0 0 0 auto' : ''));
+        } else if (what === 'full') {
+          var full = table.getAttribute('width') !== '100%';
+          if (full) {
+            table.setAttribute('width', '100%');
+            this.inlineStyle(table, 'width', '100%');
+            this.inlineStyle(link, 'display', 'block');
+            this.inlineStyle(link, 'text-align', 'center');
+          } else {
+            table.removeAttribute('width');
+            this.inlineStyle(table, 'width', '');
+            this.inlineStyle(link, 'display', 'inline-block');
+            this.inlineStyle(link, 'text-align', '');
+          }
+        } else if (what === 'background') {
+          this.inlineStyle(cell, ['background', 'background-color'], value);
+          cell.removeAttribute('bgcolor'); // set again from the style when sending (classic Outlook)
+        } else if (what === 'color') {
+          this.inlineStyle(link, 'color', value);
+        } else if (what === 'corners') {
+          this.inlineStyle(cell, 'border-radius', value);
+          this.inlineStyle(link, 'border-radius', value);
+        }
+        changed();
+        this.fillButtonBar();
       },
 
       /** Bind the toolbar and link bar of the admin page (once). */
@@ -2369,6 +2607,51 @@
             }
           });
         }
+
+        var buttonBar = document.querySelector('[data-editor-button]');
+        if (buttonBar) {
+          var buttonHref = buttonBar.querySelector('[data-button-href]');
+          buttonHref.addEventListener('input', function() {
+            self.setButton('href', buttonHref.value.trim());
+          });
+          buttonHref.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              self.restore();
+            }
+          });
+          buttonBar.querySelector('[data-button-target]').addEventListener('click', function(event) {
+            event.preventDefault();
+            self.setButton('target');
+          });
+          buttonBar.querySelector('[data-button-full]').addEventListener('click', function(event) {
+            event.preventDefault();
+            self.setButton('full');
+          });
+          $$('[data-button-align]', buttonBar).forEach(function(button) {
+            button.addEventListener('click', function(event) {
+              event.preventDefault();
+              self.setButton('align', button.getAttribute('data-button-align'));
+            });
+          });
+          $$('[data-button-corners]', buttonBar).forEach(function(button) {
+            button.addEventListener('click', function(event) {
+              event.preventDefault();
+              self.setButton('corners', button.getAttribute('data-button-corners'));
+            });
+          });
+          buttonBar.querySelector('[data-button-background]').addEventListener('input', function(event) {
+            self.setButton('background', event.target.value);
+          });
+          buttonBar.querySelector('[data-button-color]').addEventListener('input', function(event) {
+            self.setButton('color', event.target.value);
+          });
+          buttonBar.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+              self.showButton(null);
+            }
+          });
+        }
       },
 
       /** Bind the editable regions of the iframe document (once per document). */
@@ -2423,12 +2706,68 @@
         doc.addEventListener('cut', function(event) {
           copy(event, true);
         });
+        // Text in a button: browsers type outside a link when the caret is at its end, and drop the link when its whole
+        // text is typed over, leaving bare text in the button's cell. So text typed (or pasted) in a button is inserted
+        // by the editor, inside the link; an emptied button keeps a zero-width space for the caret; no line breaks.
+        var ZWSP = '​';
+        var buttonRange = function() {
+          var selection = doc.getSelection();
+          var range = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+          var link = range ? self.buttonOf(range.startContainer) : null;
+          return link && self.buttonOf(range.endContainer) === link ? { link: link, range: range, selection: selection } : null;
+        };
+        var caretAfter = function(at, node) {
+          var range = doc.createRange();
+          range.setStartAfter(node);
+          range.collapse(true);
+          at.selection.removeAllRanges();
+          at.selection.addRange(range);
+          self.save();
+          changed();
+        };
+        var typeInButton = function(at, text) {
+          if (at.link.textContent === ZWSP) {
+            at.link.textContent = '';
+            at.range.selectNodeContents(at.link);
+          }
+          at.range.deleteContents();
+          if (!at.link.contains(at.range.startContainer)) {
+            at.range.selectNodeContents(at.link);
+            at.range.collapse(false);
+          }
+          var node = doc.createTextNode(text);
+          at.range.insertNode(node);
+          caretAfter(at, node);
+        };
+        doc.addEventListener('beforeinput', function(event) {
+          var at = buttonRange();
+          if (!at) {
+            return;
+          }
+          if (/^insert(Text|ReplacementText)$/.test(event.inputType)) {
+            event.preventDefault();
+            typeInButton(at, event.data || (event.dataTransfer ? event.dataTransfer.getData('text/plain') : '') || '');
+          } else if (/^insert(LineBreak|Paragraph)$/.test(event.inputType)) {
+            event.preventDefault(); // a button is one line
+          } else if (/^delete/.test(event.inputType) && at.range.toString().replace(ZWSP, '') === at.link.textContent.replace(ZWSP, '') && at.link.textContent !== '') {
+            // the whole text removed: the button and its link stay, empty, ready to be typed into
+            event.preventDefault();
+            at.link.textContent = ZWSP;
+            caretAfter(at, at.link.firstChild);
+          }
+        });
+
         // Paste: the designer's own content as HTML; anything from outside as plain text (no foreign styles in the email)
         doc.addEventListener('paste', function(event) {
           if (!editableOf(event.target) || !event.clipboardData) {
             return;
           }
           event.preventDefault();
+          var inButton = buttonRange();
+          if (inButton) {
+            typeInButton(inButton, event.clipboardData.getData('text/plain').replace(/\s+/g, ' ').trim());
+            return;
+          }
           var html = event.clipboardData.getData('text/html') || '';
           var mark = html.indexOf(CLIP_MARK);
           var own = mark > -1 || Array.prototype.indexOf.call(event.clipboardData.types || [], CLIP) > -1;

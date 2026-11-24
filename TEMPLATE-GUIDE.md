@@ -29,6 +29,7 @@ templates/hammond/html/ottomo/joomlaworks/
 ├── thumbnail.webp
 ├── extensions/
 │   ├── articles.php
+│   ├── button.php
 │   └── k2.php
 └── images/
     └── logo.png
@@ -132,6 +133,22 @@ How a Joomla article or a K2 item looks when it is added to an html position (th
 Fields switched off in the plugin's settings are empty (`null`): test before you print them. Wrap the block in `<div contenteditable="true">…</div>` so it can be edited in the designer.
 
 Images inserted with the **Images** plugin and custom HTML need no renderer.
+
+### `extensions/button.php` (recommended)
+
+A button (call to action) added with the **+** menu's **Button**, in your template's style. `$row->text` and `$row->link` are already HTML-escaped. Keep this shape, which the designer's button bar edits (alignment, full width, background and text colours, corners) and which Ottomo makes clickable in classic Outlook when sending:
+
+```html
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="left">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+    <td style="border-radius: 8px; background: #18181b;">
+      <a href="<?php echo $row->link; ?>" style="display: inline-block; padding: 14px 28px; color: #ffffff; text-decoration: none; border-radius: 8px;"><?php echo $row->text; ?></a>
+    </td>
+  </tr></table>
+</td></tr></table>
+```
+
+The outer cell's `align` places the button; the inner cell carries the background (a hex colour) and the corners; the link carries the padding and the text colour. Without this file, Ottomo inserts a plain dark button. The designer wraps the button in an editable block itself, so don't add `contenteditable`. Buttons already in your sample content use the same bar when they have this inner shape (a link alone in a cell with a background).
 
 ### `images/`
 

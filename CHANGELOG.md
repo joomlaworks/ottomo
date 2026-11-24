@@ -7,6 +7,7 @@ All notable changes to **Ottomo for Joomla** (`com_ottomo`) are documented in th
 ### Added
 - Campaign designer: text alignment (left, center, right) in the toolbar, as an inline `text-align` that email clients support.
 - Campaign designer: an image bar when you click an image, with its width (the height follows), Fit to the column, alignment (left, center, right), alt text and a link (optionally in a new window).
+- Campaign designer: a **Button** in the "+" menu, in the template's style (each template has an `extensions/button.php`; custom templates without one get a plain button). Its text is typed on the button; a button bar sets its link (optionally in a new window), alignment, full width, background and text colours and corners (square, rounded, pill). The templates' own buttons use the same bar, and classic Outlook gets a clickable button.
 - Private topics: a checkbox in the topic form hides a topic on the site (signup forms, subscription preferences, and the archive for campaigns sent only to private topics), for lists you manage in the admin, such as test recipients. Campaigns can still be sent to them.
 - Save & New for topics and subscribers: saves and opens an empty form.
 - Send test: a hint under the address field (several addresses, comma separated), and every address is checked before anything is sent.

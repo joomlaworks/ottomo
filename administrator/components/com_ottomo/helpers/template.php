@@ -173,6 +173,9 @@ class OttomoHelperTemplate
                     // Add the custom content button
                     $replacement .= '<li><a class="otm-custom-content-button" data-target="'.$name.'" href="#"> <img src="'.Uri::root(true).'/administrator/components/com_ottomo/static/images/html.svg" width="32" height="32" alt="" /> <span class="link">HTML</span></a></li>';
 
+                    // A button (a call to action), in the template's style
+                    $replacement .= '<li><a class="otm-button-content-button" data-target="'.$name.'" data-template="'.htmlspecialchars((string)$newsletter->template, ENT_QUOTES, 'UTF-8').'" href="#"> <img src="'.Uri::root(true).'/administrator/components/com_ottomo/static/images/button.svg" width="32" height="32" alt="" /> <span class="link">'.htmlspecialchars(Text::_('COM_OTTOMO_EDITOR_BUTTON'), ENT_QUOTES, 'UTF-8').'</span></a></li>';
+
                     // Add the extension buttons to position
                     if (count($buttons)) {
                         foreach ($buttons as $button) {
@@ -475,6 +478,27 @@ class OttomoHelperTemplate
         }
 
         return $buffer;
+    }
+
+    /**
+     * A button (call to action) for the designer: the template's extensions/button.php, given $row->text and $row->link
+     * (both escaped), or a plain dark button for templates without one. Its alignment, width, colours and corners are
+     * then changed in the designer's button bar.
+     */
+    public static function button($template, $text, $link)
+    {
+        $row = (object)array(
+            'text' => htmlspecialchars((string)$text, ENT_QUOTES, 'UTF-8'),
+            'link' => htmlspecialchars((string)$link, ENT_QUOTES, 'UTF-8'),
+        );
+        $html = trim(self::renderExtension('button', $row, $template));
+        if ($html === '') {
+            $html = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 24px;"><tr><td align="left">'
+                .'<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-radius: 8px; background: #18181b;">'
+                .'<a href="'.$row->link.'" style="display: inline-block; padding: 14px 28px; font-family: Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 600; line-height: 20px; color: #ffffff; text-decoration: none; border-radius: 8px;">'.$row->text.'</a>'
+                .'</td></tr></table></td></tr></table>';
+        }
+        return $html;
     }
 
     /** The "why you get this email" line: Settings > Compliance > Why this email (escaped, line breaks kept), or the stock one */

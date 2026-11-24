@@ -9,7 +9,9 @@
 
 defined('_JEXEC') or die ;
 
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\Uri\Uri;
 
 require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/compat.php';
 
@@ -31,6 +33,14 @@ class OttomoControllerExtension extends OttomoController
                 echo OttomoHelperTemplate::renderExtension($extension, $results[0], $template);
             }
         }
+        return $this;
+    }
+
+    /** A new button for the designer, in the template's style (the "+" menu's Button item) */
+    public function button()
+    {
+        JLoader::register('OttomoHelperTemplate', JPATH_SITE.'/administrator/components/com_ottomo/helpers/template.php');
+        echo OttomoHelperTemplate::button($this->input->getCmd('template'), Text::_('COM_OTTOMO_EDITOR_BUTTON_DEFAULT_TEXT'), Uri::root());
         return $this;
     }
 

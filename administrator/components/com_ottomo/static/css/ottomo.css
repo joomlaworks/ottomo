@@ -891,19 +891,23 @@ body:has(.otm-frame) {min-height:0;margin:0;padding:0;background:var(--c-card, #
 #otm #otm-editor-buttons {position:sticky;top:var(--otm-navbar);z-index:5;display:flex;flex-direction:column;gap:0.5rem;margin:0 0 0.75rem;}
 #otm .otm-editor-toolbar,
 #otm .otm-editor-link,
-#otm .otm-editor-image {display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;padding:0.375rem;background:var(--otm-surface);border:1px solid var(--otm-border);border-radius:var(--otm-radius);box-shadow:var(--otm-shadow);}
+#otm .otm-editor-image,
+#otm .otm-editor-button {display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;padding:0.375rem;background:var(--otm-surface);border:1px solid var(--otm-border);border-radius:var(--otm-radius);box-shadow:var(--otm-shadow);}
 #otm .otm-editor-toolbar__group {display:flex;align-items:center;gap:0.125rem;padding-right:0.5rem;border-right:1px solid var(--otm-border);}
 #otm .otm-editor-toolbar__group:last-of-type {border-right:0;}
 #otm .otm-editor-toolbar button,
 #otm .otm-editor-link button,
 #otm .otm-editor-link a,
-#otm .otm-editor-image button {display:inline-flex;align-items:center;justify-content:center;gap:0.375rem;min-width:2rem;height:2rem;margin:0;padding:0 0.5rem;background:transparent;border:1px solid transparent;border-radius:var(--otm-radius-sm);color:var(--otm-text-soft);font:inherit;font-size:0.8125rem;line-height:1;cursor:pointer;}
+#otm .otm-editor-image button,
+#otm .otm-editor-button button {display:inline-flex;align-items:center;justify-content:center;gap:0.375rem;min-width:2rem;height:2rem;margin:0;padding:0 0.5rem;background:transparent;border:1px solid transparent;border-radius:var(--otm-radius-sm);color:var(--otm-text-soft);font:inherit;font-size:0.8125rem;line-height:1;cursor:pointer;}
 #otm .otm-editor-toolbar button:hover,
 #otm .otm-editor-link :is(button, a):hover,
-#otm .otm-editor-image button:hover {background:var(--otm-muted);color:var(--otm-text);}
+#otm .otm-editor-image button:hover,
+#otm .otm-editor-button button:hover {background:var(--otm-muted);color:var(--otm-text);}
 #otm .otm-editor-toolbar button[aria-pressed="true"],
 #otm .otm-editor-link button[aria-pressed="true"],
-#otm .otm-editor-image button[aria-pressed="true"] {background:color-mix(in srgb, var(--otm-accent) 14%, var(--otm-surface));border-color:color-mix(in srgb, var(--otm-accent) 35%, transparent);color:var(--otm-accent);}
+#otm .otm-editor-image button[aria-pressed="true"],
+#otm .otm-editor-button button[aria-pressed="true"] {background:color-mix(in srgb, var(--otm-accent) 14%, var(--otm-surface));border-color:color-mix(in srgb, var(--otm-accent) 35%, transparent);color:var(--otm-accent);}
 #otm .otm-editor-toolbar select {width:164px;height:2rem;padding:0 0.5rem;box-shadow:none;font-size:0.8125rem;}
 #otm .otm-editor-toolbar__hint {margin-left:auto;padding:0 0.5rem;color:var(--otm-text-muted);font-size:0.8125rem;}
 #otm .otm-editor-toolbar:not(.is-inactive) .otm-editor-toolbar__hint {display:none;}
@@ -911,12 +915,14 @@ body:has(.otm-frame) {min-height:0;margin:0;padding:0;background:var(--c-card, #
 #otm .otm-editor-link__field {display:flex;flex:1 1 16rem;align-items:center;gap:0.5rem;margin:0;padding-left:0.5rem;color:var(--otm-text-muted);}
 #otm .otm-editor-link__field input {flex:1;min-width:0;height:2rem;padding:0 0.5rem;box-shadow:none;font-size:0.875rem;}
 /* The link and image bars float under the toolbar, over the email: showing them never moves the text being selected */
-#otm :is(.otm-editor-link, .otm-editor-image) {position:absolute;top:calc(100% + 0.375rem);left:0;right:0;z-index:6;box-shadow:0 10px 28px rgba(9, 9, 11, 0.16);}
+#otm :is(.otm-editor-link, .otm-editor-image, .otm-editor-button) {position:absolute;top:calc(100% + 0.375rem);left:0;right:0;z-index:6;box-shadow:0 10px 28px rgba(9, 9, 11, 0.16);}
 #otm .otm-editor-image__width {display:flex;align-items:center;gap:0.5rem;margin:0;padding-left:0.5rem;color:var(--otm-text-muted);font-size:0.8125rem;}
 #otm .otm-editor-image__width input {width:5.5rem;height:2rem;padding:0 0.5rem;box-shadow:none;font-size:0.875rem;}
 #otm .otm-editor-image__align {display:flex;align-items:center;gap:0.125rem;padding:0 0.5rem;border-left:1px solid var(--otm-border);border-right:1px solid var(--otm-border);}
-#otm .otm-editor-image .otm-editor-link__field {flex:1 1 11rem;min-width:0;font-size:0.8125rem;}
-#otm .otm-editor-image .otm-editor-link__field input {width:100%;min-width:0;}
+#otm :is(.otm-editor-image, .otm-editor-button) .otm-editor-link__field {flex:1 1 11rem;min-width:0;font-size:0.8125rem;}
+#otm :is(.otm-editor-image, .otm-editor-button) .otm-editor-link__field input {width:100%;min-width:0;}
+#otm .otm-editor-button__color {display:flex;align-items:center;gap:0.375rem;margin:0;padding:0 0.25rem;color:var(--otm-text-muted);font-size:0.8125rem;}
+#otm .otm-editor-button__color input {width:2rem;height:2rem;margin:0;padding:0.125rem;background:var(--otm-surface);border:1px solid var(--otm-border);border-radius:var(--otm-radius-sm);box-shadow:none;cursor:pointer;}
 
 /* Step 4: results of a sent campaign */
 #otm .otm-report h3 {display:flex;flex-wrap:wrap;align-items:baseline;gap:0.5rem;margin:0 0 1rem;}
