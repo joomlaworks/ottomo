@@ -56,6 +56,7 @@ ul.otm-extension-menu ul li .link {display:block;padding:0;border:0;color:inheri
 .otm-nsl-btn {letter-spacing:0;}
 button.otm-nsl-btn {font-size:13px;line-height:1;cursor:pointer;-webkit-appearance:none;appearance:none;}
 .otm-sortable-item > .otm-nsl-btn {position:absolute;top:-11px;z-index:99;display:inline-grid;place-items:center;width:24px;height:24px;margin:0;padding:0;border:0;border-radius:6px;color:#fff;font-size:13px;box-shadow:0 1px 3px rgba(9, 9, 11, .3);opacity:0;transition:opacity .15s ease;}
+.otm-sortable-item > .otm-nsl-btn--html {right:62px;background:#7c3aed;}
 .otm-sortable-item > .otm-nsl-btn--move {right:34px;background:#18181b;cursor:grab;}
 .otm-sortable-item > .otm-nsl-btn--remove {right:6px;background:#dc2626;}
 .otm-sortable-item:hover > .otm-nsl-btn,

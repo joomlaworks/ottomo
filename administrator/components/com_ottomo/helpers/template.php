@@ -139,6 +139,7 @@ class OttomoHelperTemplate
             // Labels of the block controls
             $moveLabel = htmlspecialchars(Text::_('COM_OTTOMO_EDITOR_MOVE'), ENT_QUOTES, 'UTF-8');
             $removeLabel = htmlspecialchars(Text::_('COM_OTTOMO_EDITOR_REMOVE_BLOCK'), ENT_QUOTES, 'UTF-8');
+            $htmlLabel = htmlspecialchars(Text::_('COM_OTTOMO_EDITOR_EDIT_HTML'), ENT_QUOTES, 'UTF-8');
 
             // Match all the positions
             preg_match_all('#\{\{position:([a-z0-9_]+):(text|html)\}\}#i', $buffer, $matches);
@@ -193,6 +194,7 @@ class OttomoHelperTemplate
                             $replacement .= '<div class="text-right otm-sortable-item">
                             <div class="text-left otm-position-content">'.$row.'</div>
                         <button type="button" class="otm-nsl-btn otm-nsl-btn--move otm-sortable-handle" title="'.$moveLabel.'" aria-label="'.$moveLabel.'">'.OttomoHelperHTML::icon('arrows-move').'</button>
+                        <button type="button" class="otm-nsl-btn otm-nsl-btn--html otm-sortable-html-button" title="'.$htmlLabel.'" aria-label="'.$htmlLabel.'">'.OttomoHelperHTML::icon('code-slash').'</button>
                         <button type="button" class="otm-nsl-btn otm-nsl-btn--remove otm-sortable-remove-button" title="'.$removeLabel.'" aria-label="'.$removeLabel.'">'.OttomoHelperHTML::icon('dash-circle').'</button>
                         </div>';
                         }
@@ -219,18 +221,26 @@ class OttomoHelperTemplate
 
                 $xpath = new DomXPath($doc);
 
-                $extensionMenus = $xpath->query("//*[contains(@class, 'otm-extension-menu')]");
-                foreach ($extensionMenus as $extensionMenu) {
-                    $extensionMenu->parentNode->removeChild($extensionMenu);
+                // Editor controls (the "+" menus, block buttons, image outline) and scripts (browser extensions add
+                // theirs to the designer's page)
+                $remove = array();
+                foreach ($xpath->query("//script | //*[contains(@class, 'otm-extension-menu') or contains(@class, 'otm-nsl-btn') or contains(@class, 'otm-image-outline')]") as $element) {
+                    $remove[] = $element;
+                }
+                foreach ($remove as $element) {
+                    if ($element->parentNode) {
+                        $element->parentNode->removeChild($element);
+                    }
                 }
 
                 // Editable regions (designer, and legacy Aloha markup in older snapshots)
                 foreach ($xpath->query('//*[@contenteditable]') as $editable) {
                     $editable->removeAttribute('contenteditable');
                 }
+                $editorClasses = array('aloha-editable', 'aloha-active', 'otm-editing', 'otm-text-data', 'otm-sortable', 'otm-sortable-item', 'otm-extensions-data', 'otm-position-content');
                 foreach ($xpath->query('//*[@class]') as $element) {
                     $classes = preg_split('/\s+/', trim($element->getAttribute('class')));
-                    $classes = array_diff($classes, array('aloha-editable', 'aloha-active', 'otm-editing', 'otm-text-data'));
+                    $classes = array_diff($classes, $editorClasses);
                     if (count($classes)) {
                         $element->setAttribute('class', implode(' ', $classes));
                     } else {

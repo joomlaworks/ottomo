@@ -59,7 +59,7 @@ Design a campaign visually, pick who gets it by topic, send it through your own 
 - **Buttons**: type the text on the button; set its link, alignment, full width, background and text colours and corners (square, rounded, pill) in the button bar. Built as email buttons that work everywhere, classic Outlook included.
 - **Image settings**: click an image to set its width (the height follows), fit it to its column, align it, and give it alt text and a link. Images inserted from the Media Manager or with content fit their column on their own, with a `width` for classic Outlook and `max-width` for every other client, so a large photo never widens the email.
 - **Drag and drop** blocks within and between positions, or move them with the keyboard.
-- **HTML tab** with a code editor (Ace) for full control, kept in sync with the visual editor, and a **Plain text** tab.
+- **Edit HTML** on any block, in a code editor (Ace), for full control where you need it, and a **Plain text** tab.
 - **Desktop / mobile** preview widths while editing.
 
 ### Email templates
@@ -188,6 +188,13 @@ Install the package in **Extensions > Install**. It installs the component, the 
 ## Changelog
 
 A short overview of each release. Every change is described in detail in [CHANGELOG.md](CHANGELOG.md).
+
+## Version 1.2 - released November 24th, 2026
+Summary of changes:
+- **Edit HTML per block**: the code button on every block of the designer opens that block's HTML in a code editor; Apply puts it back, still editable in the designer
+- **The HTML tab is gone**: it froze the whole email as one document (and could pick up scripts added by browser extensions). Campaigns saved that way are still sent as saved, with a **Back to blocks** button to return to the designer
+
+[Release notes and download](https://github.com/joomlaworks/ottomo/releases/tag/v1.2)
 
 ## Version 1.1 - released November 24th, 2026
 Summary of changes:

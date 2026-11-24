@@ -251,7 +251,6 @@ use Joomla\String\StringHelper;
                 <div class="otm-editor-head">
                     <ul class="nav nav-tabs" id="otm-editor-tabs" role="tablist">
                       <li class="active"><a href="#visual" role="tab"><?php echo Text::_('COM_OTTOMO_VISUAL'); ?></a></li>
-                      <li><a href="#html" role="tab"><?php echo Text::_('COM_OTTOMO_HTML'); ?></a></li>
                       <li><a href="#text" role="tab"><?php echo Text::_('COM_OTTOMO_PLAIN_TEXT'); ?></a></li>
                     </ul>
 
@@ -395,15 +394,15 @@ use Joomla\String\StringHelper;
                             </div>
                         </div>
 
+                        <?php if (!empty($this->row->snapshot)): ?>
+                        <div class="otm-msg otm-msg--info otm-snapshot-notice" data-role="snapshot-notice">
+                            <p><?php echo Text::_('COM_OTTOMO_SNAPSHOT_NOTICE'); ?></p>
+                            <button type="button" class="otm-btn otm-btn--generic" data-role="snapshot-back" data-confirm="<?php echo htmlspecialchars(Text::_('COM_OTTOMO_SNAPSHOT_BACK_CONFIRM'), ENT_QUOTES, 'UTF-8'); ?>"><?php echo Text::_('COM_OTTOMO_SNAPSHOT_BACK'); ?></button>
+                        </div>
+                        <?php endif; ?>
                         <iframe id="otm-designer-frame" name="otm-designer-frame" src="<?php echo Route::_('index.php?option=com_ottomo&view=designer&id='.$this->row->id.'&template='.$this->row->template.'&format=raw')?>"></iframe>
 
                     </div>
-                    <div class="tab-pane" id="html">
-                    	<span class="otm-msg"><?php echo Text::_('COM_OTTOMO_SNAPSHOT_WARNING'); ?></span>
-
-                        <div id="otm-source-editor"><?php echo $this->row->snapshot; ?></div>
-                    </div>
-
                     <div class="tab-pane" id="text">
                         <div class="otm-fixedform">
                             <textarea name="plain" id="plain" rows="5" cols="20"><?php echo $this->row->plain; ?></textarea>

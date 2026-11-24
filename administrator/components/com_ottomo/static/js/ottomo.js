@@ -17,14 +17,13 @@
     sourceEditor: null,
     snapshot: '',
     adminPath: null,
-    sitePath: null,
-    editorStyles: [],
-    positions: {}
+    sitePath: null
   });
 
   // Bootstrap Icons, inlined individually as SVGs (mirrors OttomoHelperHTML::icon())
   Ottomo.icons = {
     arrowsMove: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrows-move otm-icon" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M7.646.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 1.707V5.5a.5.5 0 0 1-1 0V1.707L6.354 2.854a.5.5 0 1 1-.708-.708zM8 10a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 14.293V10.5A.5.5 0 0 1 8 10M.146 8.354a.5.5 0 0 1 0-.708l2-2a.5.5 0 1 1 .708.708L1.707 7.5H5.5a.5.5 0 0 1 0 1H1.707l1.147 1.146a.5.5 0 0 1-.708.708zM10 8a.5.5 0 0 1 .5-.5h3.793l-1.147-1.146a.5.5 0 0 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L14.293 8.5H10.5A.5.5 0 0 1 10 8"/></svg>',
+    codeSlash: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-code-slash otm-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.478 1.647a.5.5 0 1 0-.956-.294l-4 13a.5.5 0 0 0 .956.294zM4.854 4.146a.5.5 0 0 1 0 .708L1.707 8l3.147 3.146a.5.5 0 0 1-.708.708l-3.5-3.5a.5.5 0 0 1 0-.708l3.5-3.5a.5.5 0 0 1 .708 0m6.292 0a.5.5 0 0 0 0 .708L14.293 8l-3.147 3.146a.5.5 0 0 0 .708.708l3.5-3.5a.5.5 0 0 0 0-.708l-3.5-3.5a.5.5 0 0 0-.708 0"/></svg>',
     dashCircle: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-circle otm-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/></svg>',
     checkCircleFill: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill otm-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>',
     boxArrowUpRight: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right otm-icon" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/></svg>',
@@ -597,6 +596,62 @@
       });
     };
 
+    /**
+     * A designer block's HTML in a code editor. The block is its editable region when it has one (a text block:
+     * <div contenteditable>), else the block itself (an image, an article...). The frame (Ottomo.frames.blockhtml) reads
+     * it with get() and writes it back with set(); the campaign is then saved as usual.
+     */
+    Ottomo.blockHtml = {
+      target: null,
+      open: function(content, title) {
+        var first = content.firstElementChild;
+        var editable = content.children.length === 1 && first.getAttribute('contenteditable') === 'true' ? first : null;
+        this.target = editable || content;
+        Ottomo.frame('index.php?option=com_ottomo&view=blockhtml&tmpl=component', title, { size: 'media' });
+      },
+      get: function() {
+        if (!this.target) {
+          return '';
+        }
+        var clone = this.target.cloneNode(true);
+        $$('.otm-image-outline', clone).forEach(function(outline) {
+          outline.parentNode.removeChild(outline);
+        });
+        return clone.innerHTML;
+      },
+      set: function(html) {
+        var target = this.target;
+        if (!target || !target.ownerDocument.contains(target)) {
+          return;
+        }
+        target.innerHTML = html;
+        Ottomo.newsletterModified = true;
+        if (Ottomo.editor) {
+          Ottomo.editor.showImage(null);
+          Ottomo.editor.fitImages(target);
+        }
+      }
+    };
+
+    /** The code editor of a block's HTML (Ace): Apply writes it back into the designer's block. */
+    frames.blockhtml = function(root) {
+      var host = root.querySelector('[data-role="source"]');
+      var parentOttomo = window.parent && window.parent.Ottomo;
+      if (!host || !window.ace || !parentOttomo || !parentOttomo.blockHtml) {
+        return;
+      }
+      var source = window.ace.edit(host);
+      source.setTheme('ace/theme/monokai');
+      source.getSession().setMode('ace/mode/html');
+      source.setOptions({ fontSize: '15px', showPrintMargin: false, wrap: true });
+      source.setValue(parentOttomo.blockHtml.get(), -1);
+      source.focus();
+      root.querySelector('[data-role="apply"]').addEventListener('click', function() {
+        parentOttomo.blockHtml.set(source.getValue());
+        closeFrame();
+      });
+    };
+
     /** Batch "Set topics": post, then reload the list behind the frame. */
     frames.batch = function(root) {
       var form = root.querySelector('form');
@@ -764,6 +819,7 @@
       };
       return '<div class="text-right otm-sortable-item"><div class="text-left otm-position-content">' + data + '</div>' +
         '<button type="button" class="otm-nsl-btn otm-nsl-btn--move otm-sortable-handle" title="' + t('COM_OTTOMO_EDITOR_MOVE', 'Move') + '" aria-label="' + t('COM_OTTOMO_EDITOR_MOVE', 'Move') + '">' + Ottomo.icons.arrowsMove + '</button>' +
+        '<button type="button" class="otm-nsl-btn otm-nsl-btn--html otm-sortable-html-button" title="' + t('COM_OTTOMO_EDITOR_EDIT_HTML', 'Edit HTML') + '" aria-label="' + t('COM_OTTOMO_EDITOR_EDIT_HTML', 'Edit HTML') + '">' + Ottomo.icons.codeSlash + '</button>' +
         '<button type="button" class="otm-nsl-btn otm-nsl-btn--remove otm-sortable-remove-button" title="' + t('COM_OTTOMO_EDITOR_REMOVE_BLOCK', 'Remove') + '" aria-label="' + t('COM_OTTOMO_EDITOR_REMOVE_BLOCK', 'Remove') + '">' + Ottomo.icons.dashCircle + '</button></div>';
     };
 
@@ -776,71 +832,11 @@
       }
       position.insertAdjacentHTML('beforeend', Ottomo.sortableItem(html));
       Ottomo.newsletterModified = true;
-      Ottomo.updateSourceEditor();
       if (Ottomo.editor) {
         Ottomo.editor.fitImages(position.lastElementChild);
       }
       return position.lastElementChild;
     }
-
-    // Designer document -> HTML tab: positions become <div data-position> with their items, editor UI removed
-    Ottomo.updateSourceEditor = function() {
-      var doc = frameDocument();
-      if (!doc || !Ottomo.sourceEditor) {
-        return;
-      }
-      var clone = doc.documentElement.cloneNode(true);
-      $$('.otm-image-outline', clone).forEach(function(outline) {
-        outline.parentNode.removeChild(outline);
-      });
-      Ottomo.editorStyles = $$('link[rel="stylesheet"]', clone).map(function(link) {
-        var html = link.outerHTML;
-        link.parentNode.removeChild(link);
-        return html;
-      });
-      $$('.otm-position', clone).forEach(function(position) {
-        var data = $('.otm-extensions-data', position);
-        var name = data ? data.id : '';
-        Ottomo.positions[name] = position;
-        var wrapper = clone.ownerDocument.createElement('div');
-        wrapper.setAttribute('data-position', name);
-        wrapper.innerHTML = $$('.otm-position-content', position).map(function(item) {
-          return '<div data-role="position-item">' + item.innerHTML + '</div>';
-        }).join('');
-        position.parentNode.insertBefore(wrapper, position);
-        position.parentNode.removeChild(position);
-      });
-      Ottomo.sourceEditor.setValue(clone.outerHTML, -1);
-      if (Ottomo.snapshot) {
-        Ottomo.snapshot = Ottomo.sourceEditor.getValue();
-      }
-    };
-
-    // HTML tab -> designer document: positions are rebuilt with their editor UI
-    Ottomo.updateIframeSource = function() {
-      var doc = frameDocument();
-      var value = Ottomo.sourceEditor.getValue().replace('</head>', (Ottomo.editorStyles || []).join('') + '</head>');
-      doc.documentElement.innerHTML = value;
-      $$('[data-position]', doc).forEach(function(position) {
-        var editorPosition = Ottomo.positions[position.getAttribute('data-position')];
-        if (editorPosition) {
-          var contents = $$('.otm-position-content', editorPosition);
-          $$('[data-role="position-item"]', position).forEach(function(item, index) {
-            if (contents[index]) {
-              contents[index].innerHTML = item.innerHTML;
-            }
-          });
-          var rebuilt = doc.createElement('div');
-          rebuilt.className = 'otm-position';
-          rebuilt.innerHTML = editorPosition.innerHTML;
-          position.parentNode.insertBefore(rebuilt, position);
-          position.parentNode.removeChild(position);
-        }
-        // A position the designer doesn't know (a campaign already edited here: the designer shows its snapshot, so
-        // nothing was recorded) stays as it is: removing it lost the whole content on a second HTML tab edit
-      });
-      Ottomo.designerAttach();
-    };
 
     // Recipients counter and summary of the selected topics
     Ottomo.updateRecipients = function() {
@@ -886,28 +882,28 @@
         input.addEventListener('change', Ottomo.updateRecipients);
       });
 
-      // HTML tab (Ace): edits rebuild the designer and turn the newsletter into a snapshot
-      if (window.ace && document.getElementById('otm-source-editor')) {
-        Ottomo.sourceEditor = ace.edit('otm-source-editor');
-        Ottomo.sourceEditor.setTheme('ace/theme/monokai');
-        Ottomo.sourceEditor.getSession().setMode('ace/mode/html');
-        Ottomo.sourceEditor.setOptions({ fontSize: '15px', showPrintMargin: false, wrap: true }); // wrap long lines: no horizontal scrolling
-        var timeout;
-        Ottomo.sourceEditor.on('change', function() {
-          window.clearTimeout(timeout);
-          if (Ottomo.sourceEditor.isFocused()) {
-            timeout = window.setTimeout(function() {
-              Ottomo.updateIframeSource();
-              Ottomo.snapshot = Ottomo.sourceEditor.getValue();
-            }, 1000);
+      // A campaign edited as one HTML document (the HTML tab of Ottomo 1.1 and earlier) is shown as saved; going back to
+      // its blocks drops that document (the positions' content was saved alongside)
+      var snapshotBack = document.querySelector('[data-role="snapshot-back"]');
+      if (snapshotBack && frame) {
+        snapshotBack.addEventListener('click', function() {
+          if (!window.confirm(snapshotBack.getAttribute('data-confirm'))) {
+            return;
           }
+          form.elements.snapshot.value = '';
+          Ottomo.snapshot = '';
+          Ottomo.newsletterModified = true;
+          var notice = snapshotBack.closest('[data-role="snapshot-notice"]');
+          if (notice) {
+            notice.hidden = true;
+          }
+          frame.contentWindow.location.reload();
         });
       }
 
       // Designer iframe: set up on every (re)load (template change); also if it loaded before this ran
       var onFrameLoad = function() {
         Ottomo.designer();
-        Ottomo.updateSourceEditor();
       };
       if (frame) {
         frame.addEventListener('load', onFrameLoad);
@@ -1010,6 +1006,16 @@
         }
       });
 
+      // Edit a block's HTML in a code editor (a frame): Ottomo.blockHtml
+      on(doc, 'click', '.otm-sortable-html-button', function(event, button) {
+        event.preventDefault();
+        var content = button.closest('.otm-sortable-item');
+        content = content && content.querySelector('.otm-position-content');
+        if (content) {
+          Ottomo.blockHtml.open(content, button.getAttribute('title') || '');
+        }
+      });
+
       // Remove a block
       on(doc, 'click', '.otm-sortable-remove-button', function(event, button) {
         event.preventDefault();
@@ -1018,7 +1024,6 @@
           item.parentNode.removeChild(item);
         }
         Ottomo.newsletterModified = true;
-        Ottomo.updateSourceEditor();
       });
 
       // Add a custom HTML block, ready to type into
@@ -1880,17 +1885,9 @@
       return editable;
     }
 
-    var refreshTimer;
-
-    /** Mark the newsletter as modified and refresh the HTML tab (debounced). */
+    /** Mark the newsletter as modified. */
     function changed() {
       Ottomo.newsletterModified = true;
-      window.clearTimeout(refreshTimer);
-      refreshTimer = window.setTimeout(function() {
-        if (Ottomo.updateSourceEditor && Ottomo.sourceEditor) {
-          Ottomo.updateSourceEditor();
-        }
-      }, 400);
     }
 
     // ------------------------------------------------------------------ editor
@@ -3432,7 +3429,6 @@ function jInsertFieldValue(image, editor) {
     img.setAttribute('alt', '');
     position.insertAdjacentHTML('beforeend', Ottomo.sortableItem(img.outerHTML));
     Ottomo.newsletterModified = true;
-    Ottomo.updateSourceEditor();
     Ottomo.editor.fitImages(position.lastElementChild); // a 1920px photo must not widen the email
   }
 }

@@ -2,6 +2,16 @@
 
 All notable changes to **Ottomo for Joomla** (`com_ottomo`) are documented in this file.
 
+## [1.2] - 2026-11-24
+
+### Added
+- Campaign designer: **Edit HTML** on every block (the code button next to move and remove) opens that block's HTML in a code editor (Ace). Apply puts it back in the designer, where the block stays editable like any other.
+
+### Changed
+- The HTML tab is gone. It edited the whole email as one document, which then no longer followed the designer, the template or later fixes, and it picked up anything the browser had added to the designer's page (such as scripts from browser extensions). Edit HTML on a block replaces it.
+- Campaigns saved from the HTML tab of earlier versions are still shown and sent exactly as saved; a notice above the designer offers **Back to blocks**, which drops the saved document and returns to the campaign's blocks (their content was saved alongside).
+- Sending a campaign saved as one HTML document removes scripts and every designer control from it, not only the editable regions.
+
 ## [1.1] - 2026-11-24
 
 ### Added

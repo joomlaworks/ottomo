@@ -81,12 +81,12 @@ class OttomoViewNewsletters extends OttomoView
     {
         // Load scripts
         $document = OttomoCompat::document();
-        $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/ace/1.45.2/ace.js');
         foreach (array('PREFLIGHT_BLOCKED', 'PREFLIGHT_WARNINGS', 'PREFLIGHT_READY', 'PREHEADER_COUNT', 'STEP_COMPLETE') as $key) {
             Text::script('COM_OTTOMO_'.$key);
         }
         Text::script('COM_OTTOMO_EDITOR_MOVE');
         Text::script('COM_OTTOMO_EDITOR_REMOVE_BLOCK');
+        Text::script('COM_OTTOMO_EDITOR_EDIT_HTML');
         $document->addScriptDeclaration('Ottomo.adminPath = "'.Uri::base().'"; Ottomo.sitePath = "'.Uri::root().'";');
 
         // Get row
