@@ -235,6 +235,11 @@ class OttomoHelperTemplate
                     }
                 }
 
+                // Images of the content (positions) never overflow their column
+                foreach ($xpath->query('//*[@data-position]//img') as $image) {
+                    $image->setAttribute('style', self::fluidStyle($image->getAttribute('style')));
+                }
+
                 $alohaElements = $xpath->query("//*[contains(@class, 'aloha-caret')]");
                 foreach ($alohaElements as $alohaElement) {
                     $alohaElement->parentNode->removeChild($alohaElement);
@@ -249,7 +254,7 @@ class OttomoHelperTemplate
 
                 // Perform the routing for the extensions content
                 foreach ($newsletter->data as $entry) {
-                    $entry->content = self::stripEditorMarkup($entry->content);
+                    $entry->content = self::fluidImages(self::stripEditorMarkup($entry->content));
                     $entry->content = preg_replace_callback('#href="index.php\?([^"]*)#m', array('ottomoHelperTemplate', 'routeCallback'), $entry->content);
                     $contents[$entry->position] = $entry->content;
                 }
@@ -670,6 +675,39 @@ class OttomoHelperTemplate
         return preg_replace_callback('/<[a-z][^>]*>/i', function ($tag) {
             return preg_replace('/\s+contenteditable(?:\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+))?(?=[\s\/>])/i', '', $tag[0]);
         }, (string)$html);
+    }
+
+    /**
+     * Images in the content (positions) never overflow their column: max-width:100% and height:auto, unless the image
+     * sets them itself. The width attribute (classic Outlook ignores max-width) is set by the designer.
+     */
+    public static function fluidImages($html)
+    {
+        return preg_replace_callback('/<img\b[^>]*>/i', function ($tag) {
+            $tag = $tag[0];
+            if (preg_match('/\sstyle\s*=\s*("|\')(.*?)\1/is', $tag, $style)) {
+                $css = self::fluidStyle($style[2]);
+                return str_replace($style[0], ' style='.$style[1].$css.$style[1], $tag);
+            }
+            return preg_replace('/\s*(\/?)>$/', ' style="'.self::fluidStyle('').'"$1>', $tag, 1);
+        }, (string)$html);
+    }
+
+    /** An image's inline style with max-width:100% and height:auto added (when it doesn't set them). */
+    public static function fluidStyle($css)
+    {
+        $css = trim((string)$css);
+        $add = array();
+        if (!preg_match('/(^|;)\s*max-width\s*:/i', $css)) {
+            $add[] = 'max-width:100%';
+        }
+        if (!preg_match('/(^|;)\s*height\s*:/i', $css)) {
+            $add[] = 'height:auto';
+        }
+        if (!count($add)) {
+            return $css;
+        }
+        return ($css !== '' ? rtrim($css, '; ').';' : '').implode(';', $add).';';
     }
 
     /** Hidden preview text right after <body>, padded so that clients don't pull body text into the preview. */

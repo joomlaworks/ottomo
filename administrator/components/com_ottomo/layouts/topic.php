@@ -42,14 +42,20 @@ use Joomla\CMS\Router\Route;
                         <input class="visually-hidden" type="radio" name="published" id="published1" value="1" <?php if ($this->row->published) {
                             echo 'checked="checked"';
                         } ?>>
-                        <label for="published1"><?php echo Text::_('JYES'); ?></label>
+                        <label for="published1"><?php echo Text::_('COM_OTTOMO_YES'); ?></label>
                         
                         <input class="visually-hidden" type="radio" name="published" id="published0" value="0" <?php if (!$this->row->published) {
                             echo 'checked="checked"';
                         } ?>>
-                        <label for="published0"><?php echo Text::_('JNO'); ?></label>
+                        <label for="published0"><?php echo Text::_('COM_OTTOMO_NO'); ?></label>
                     </div>
-
+                    <p class="otm-field__hint"><?php echo Text::_('COM_OTTOMO_TOPIC_PUBLISHED_DESC'); ?></p>
+                </div>
+                <div class="otm-setting-single">
+                    <label><?php echo Text::_('COM_OTTOMO_PRIVATE'); ?></label>
+                    <input type="hidden" name="private" value="0" />
+                    <label class="otm-check" for="otm-topic-private"><input type="checkbox" name="private" id="otm-topic-private" value="1"<?php echo !empty($this->row->private) ? ' checked' : ''; ?> /> <span><?php echo Text::_('COM_OTTOMO_TOPIC_PRIVATE_LABEL'); ?></span></label>
+                    <p class="otm-field__hint"><?php echo Text::_('COM_OTTOMO_TOPIC_PRIVATE_DESC'); ?></p>
                 </div>
                 <input type="hidden" name="id" value="<?php echo $this->row->id; ?>" />
                 <input type="hidden" name="option" value="<?php echo $this->option; ?>" />

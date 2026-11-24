@@ -114,6 +114,7 @@ class modOttomoHelper
         require_once JPATH_ADMINISTRATOR.'/components/com_ottomo/models/model.php';
         $model = OttomoModel::getInstance('Topics');
         $model->setState('published', 1);
+        $model->setState('public', true); // never private topics, even if the module was set up with one
         if (is_array($topicIds) && count($topicIds)) {
             $model->setState('id', $topicIds);
         }

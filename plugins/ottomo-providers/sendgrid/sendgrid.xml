@@ -2,11 +2,11 @@
 <extension version="3.4" type="plugin" group="ottomo-providers" method="upgrade">
     <name>Ottomo Provider - SendGrid</name>
     <author>JoomlaWorks</author>
-    <creationDate>November 23rd, 2026</creationDate>
+    <creationDate>November 24th, 2026</creationDate>
     <copyright>Copyright (c) 2006 - 2026 JoomlaWorks Ltd. All rights reserved.</copyright>
     <authorEmail>please-use-the-contact-form@joomlaworks.net</authorEmail>
     <authorUrl>https://www.joomlaworks.net</authorUrl>
-    <version>1.0</version>
+    <version>1.1</version>
     <license>GNU/GPL license: https://www.gnu.org/copyleft/gpl.html</license>
     <description></description>
     <files>

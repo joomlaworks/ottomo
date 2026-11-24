@@ -106,6 +106,12 @@ class OttomoController extends BaseController
         $this->save();
     }
 
+    /** Save & New: save, then an empty form (topics and subscribers) */
+    public function save2new()
+    {
+        $this->save();
+    }
+
     public function save()
     {
         Session::checkToken() or jexit(Text::_('JINVALID_TOKEN'));
@@ -120,6 +126,8 @@ class OttomoController extends BaseController
         }
         if ($this->task == 'save') {
             $url = 'index.php?option=com_ottomo&view='.$this->view;
+        } elseif ($this->task == 'save2new' && $type === 'message') {
+            $url = 'index.php?option=com_ottomo&view='.$this->view.'&task=edit';
         } else {
             $url = 'index.php?option=com_ottomo&view='.$this->view.'&task=edit&&id='.$model->getState('id');
         }

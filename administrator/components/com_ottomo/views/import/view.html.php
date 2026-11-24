@@ -15,7 +15,7 @@ class OttomoViewImport extends OttomoView
     {
         // Topics: every imported subscriber needs one (campaigns are sent to topics); a sole topic comes ticked
         $model = OttomoModel::getInstance('Topics');
-        $model->setState('published', '-1');
+        $model->setState('published', '1'); // unpublished topics are retired
         $list = $model->getList();
         $this->hasTopics = count($list) > 0;
         $active = count($list) === 1 ? array((int)$list[0]->id) : array();

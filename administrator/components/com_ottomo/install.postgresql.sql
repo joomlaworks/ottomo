@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS "#__ottomo_templates" (
 CREATE TABLE IF NOT EXISTS "#__ottomo_topics" (
   "id" SERIAL PRIMARY KEY,
   "name" varchar(255) NOT NULL DEFAULT '',
-  "published" smallint NOT NULL DEFAULT 0
+  "published" smallint NOT NULL DEFAULT 0,
+  "private" smallint NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS "#__ottomo_topics_idx_published_name" ON "#__ottomo_topics" ("published", "name");

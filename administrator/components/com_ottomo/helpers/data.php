@@ -100,6 +100,9 @@ class OttomoHelperData
                     break;
                 case 'topics':
                     $row->link = HTMLHelper::link(Route::_('index.php?option=com_ottomo&view=topics&task=edit&id='.$row->id), $row->name);
+                    if (!empty($row->private)) {
+                        $row->link .= ' '.OttomoHelperHTML::pill(Text::_('COM_OTTOMO_PRIVATE'), 'info', 'title="'.htmlspecialchars(Text::_('COM_OTTOMO_TOPIC_PRIVATE_DESC'), ENT_QUOTES, 'UTF-8').'"');
+                    }
                     if (isset($row->subscribers)) {
                         // The active subscribers of this topic: the Subscribers list, filtered
                         $row->subscribersLink = '<a class="otm-count-link" data-role="topic-subscribers" href="'.Route::_('index.php?option=com_ottomo&view=subscribers&topic='.(int)$row->id.'&status=1&search=&limitstart=0').'" title="'.htmlspecialchars(Text::_('COM_OTTOMO_VIEW_ACTIVE_SUBSCRIBERS'), ENT_QUOTES, 'UTF-8').'">'

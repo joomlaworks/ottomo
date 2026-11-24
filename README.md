@@ -12,7 +12,7 @@ Design a campaign visually, pick who gets it by topic, send it through your own 
 
 ---
 
-<p align="center"><img src="docs/screenshots/v1.0/02 - Ottomo Dashboard.png" alt="Ottomo Dashboard" width="100%" height="auto" /></p>
+<p align="center"><img src="docs/screenshots/v1.1/02 - Ottomo Dashboard.png" alt="Ottomo Dashboard" width="100%" height="auto" /></p>
 
 ## Highlights
 
@@ -31,7 +31,7 @@ Design a campaign visually, pick who gets it by topic, send it through your own 
 
 ---
 
-<p align="center"><img src="docs/screenshots/v1.0/03 - Ottomo Email Campaigns.png" alt="Ottomo Dashboard" width="100%" height="auto" /></p>
+<p align="center"><img src="docs/screenshots/v1.1/03 - Ottomo Email Campaigns.png" alt="Ottomo Email Campaigns" width="100%" height="auto" /></p>
 
 ## Features
 
@@ -44,7 +44,7 @@ Design a campaign visually, pick who gets it by topic, send it through your own 
 - **Personalisation**: `{{firstname|there}}`, name, last name, email, company, city, country and other profile fields, in the subject, the content and the plain-text version, with a fallback for missing values. One click adds the first name to the subject; a menu in the designer adds any field.
 - **Plain-text version** alongside the HTML email.
 - **Preview** on desktop and mobile widths, in light and dark mode, and in a new tab exactly as readers see it in their browser.
-- **Test send** to one or more addresses before the real thing.
+- **Test send** to one or more addresses before the real thing (comma separated; every address is checked first).
 - **Pre-flight checklist**: subject, sender, recipients, saved changes and an unsubscribe link must pass before sending (also checked on the server); preview text, a test email, a size Gmail won't clip and an authenticated sender domain are recommended.
 - **Sending in batches** from the browser, with a progress bar. Each batch goes to the subscribers who haven't received the campaign yet, so subscribers joining or leaving meanwhile are never skipped nor sent to twice, and people who sign up later don't receive an old campaign.
 - **Resume sending**: if the connection drops or the tab is closed, the campaign shows how many subscribers are still waiting and resumes with them only. A single address a mail service rejects is counted as failed and the send goes on; a batch the mail server or service refuses entirely stops the send with its error message.
@@ -54,8 +54,9 @@ Design a campaign visually, pick who gets it by topic, send it through your own 
 
 ### Designer
 
-- **In-place editing**: bold, italic, underline, headings, lists, links (optionally in a new window), clear formatting and plain-text paste, with an email-safe font menu.
+- **In-place editing**: bold, italic, underline, headings, lists, alignment (left, center, right), links (optionally in a new window), clear formatting and plain-text paste, with an email-safe font menu.
 - **Content blocks**: Joomla articles, K2 items, images from the Media Manager and custom HTML, added with a "+" menu in any position; each template decides how articles and K2 items look.
+- **Image settings**: click an image to set its width (the height follows), fit it to its column, align it, and give it alt text and a link. Images inserted from the Media Manager or with content fit their column on their own, with a `width` for classic Outlook and `max-width` for every other client, so a large photo never widens the email.
 - **Drag and drop** blocks within and between positions, or move them with the keyboard.
 - **HTML tab** with a code editor (Ace) for full control, kept in sync with the visual editor, and a **Plain text** tab.
 - **Desktop / mobile** preview widths while editing.
@@ -78,11 +79,12 @@ Design a campaign visually, pick who gets it by topic, send it through your own 
 ### Subscribers and topics
 
 - **Topics** are your mailing lists: a subscriber can be in several; each topic shows its active, pending and unsubscribed subscribers and its campaigns.
+- **Private topics** stay off the site (signup forms, subscription preferences, and the archive for campaigns sent only to them) but work everywhere in the administrator: lists you manage yourself, such as test recipients. Unpublished topics are retired: kept for their subscribers, no longer offered for new campaigns or imports.
 - **Subscriber profiles**: name, email, and optional company, position, address, city, state, ZIP, country, phones, fax, VAT and tax numbers and date of birth.
 - **Statuses**: Subscribed, Pending (awaiting confirmation) and Unsubscribed, shown as pills that toggle with a click.
 - **Suppression**: an unsubscribed address is kept, never re-added by an import or an administrator, and only its owner can sign up again (with double opt-in).
 - **Delete All Unsubscribed**, in one click after a confirmation (it can't be undone: those addresses are no longer suppressed), also from the command line.
-- **Lists** with search, filters (status, topic, template…), sorting, *Reset all*, and batch topic assignment.
+- **Lists** with search, filters (status, topic, template…), sorting, *Reset all*, and batch topic assignment; **Save & New** on the topic and subscriber forms for adding several in a row.
 - **Import**: paste addresses, upload a CSV (a header row and a name column are recognised; a sample file is provided), or import from your site (see [Importers](#importers)). Imports run in batches with a progress bar and report how many addresses were added, already present, or kept as unsubscribed.
 - **Export** what you see: the ticked subscribers, else the filtered list, else everyone, as a CSV with a header and all profile columns. Files are created under unguessable names and downloaded through an authenticated task that deletes them.
 
@@ -182,9 +184,24 @@ Install the package in **Extensions > Install**. It installs the component, the 
 
 ---
 
-## Release
+## Changelog
 
-- **v1.0** (November 23rd, 2026): first release. [Release notes and download](https://github.com/joomlaworks/ottomo/releases/tag/v1.0); see also [CHANGELOG.md](CHANGELOG.md).
+A short overview of each release. Every change is described in detail in [CHANGELOG.md](CHANGELOG.md).
+
+## Version 1.1 - released November 24th, 2026
+Summary of changes:
+- **Text alignment** in the designer: left, center and right, as inline styles every email client understands
+- **Image settings** in the designer: click an image for its width, Fit to the column, alignment, alt text and link. Images from the Media Manager (or in articles and K2 items) fit their column on their own, classic Outlook included, so a 1920px photo no longer widens the email
+- **Private topics**: hidden on the site but usable for campaigns, for lists you manage yourself such as test recipients; unpublished topics are retired. Updating from 1.0 turns unpublished topics into private ones, so nothing changes for them
+- **Save & New** for topics and subscribers, for adding several in a row
+- **Test emails** to several addresses at once, comma separated, with a hint under the field; a typo stops the send before anything goes out
+- **Version and copyright** at the foot of Ottomo's menu
+- **Fixes:** one click on Send test sent the email twice (every dialog also loaded its page more than once); saving subscription preferences removed the subscriber from topics the page doesn't show; signup forms accepted hidden topics when posted directly; selecting a link's text in the designer made it jump; copying icons or images inside the email pasted only their text
+
+[Release notes and download](https://github.com/joomlaworks/ottomo/releases/tag/v1.1)
+
+## Version 1.0 - released November 23rd, 2026
+First release, for Joomla 3.x UTD, 4, 5 and 6 from one package. [Release notes and download](https://github.com/joomlaworks/ottomo/releases/tag/v1.0)
 
 ## License
 Ottomo is a Joomla extension developed by JoomlaWorks, released under the GNU General Public License. See [LICENSE.txt](LICENSE.txt).

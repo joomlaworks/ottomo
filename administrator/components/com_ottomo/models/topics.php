@@ -51,6 +51,11 @@ class OttomoModelTopics extends OttomoModel
         if ($this->getState('published') != -1) {
             $query->where($db->quoteName('published').' = '.(int)$this->getState('published'));
         }
+        // The site: published topics that are not private (private topics are lists managed in the admin)
+        if ($this->getState('public')) {
+            $query->where($db->quoteName('published').' = 1');
+            $query->where($db->quoteName('private').' = 0');
+        }
         if ($this->getState('id')) {
             $query->where($db->quoteName('id').' IN ('.implode(',', array_map('intval', (array)$this->getState('id'))).')');
         }

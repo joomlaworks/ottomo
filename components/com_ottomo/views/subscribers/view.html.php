@@ -36,6 +36,7 @@ class OttomoViewSubscribers extends OttomoView
         // Get all topics for creating the fields
         $model = OttomoModel::getInstance('Topics');
         $model->setState('published', '1');
+        $model->setState('public', true); // private topics stay out of the visitor's preferences (and are kept on save)
         $model->setState('ordering', 'name');
         $model->setState('orderingDir', 'ASC');
         $this->topics = $model->getList();

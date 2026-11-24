@@ -313,6 +313,11 @@ use Joomla\String\StringHelper;
                                     </select>
                                 </div>
                                 <div class="otm-editor-toolbar__group">
+                                    <button type="button" data-command="justifyLeft" aria-pressed="false" title="<?php echo $t('ALIGN_LEFT'); ?>" aria-label="<?php echo $t('ALIGN_LEFT'); ?>"><?php echo OttomoHelperHTML::icon('text-left'); ?></button>
+                                    <button type="button" data-command="justifyCenter" aria-pressed="false" title="<?php echo $t('ALIGN_CENTER'); ?>" aria-label="<?php echo $t('ALIGN_CENTER'); ?>"><?php echo OttomoHelperHTML::icon('text-center'); ?></button>
+                                    <button type="button" data-command="justifyRight" aria-pressed="false" title="<?php echo $t('ALIGN_RIGHT'); ?>" aria-label="<?php echo $t('ALIGN_RIGHT'); ?>"><?php echo OttomoHelperHTML::icon('text-right'); ?></button>
+                                </div>
+                                <div class="otm-editor-toolbar__group">
                                     <button type="button" data-command="insertUnorderedList" aria-pressed="false" title="<?php echo $t('BULLET_LIST'); ?>" aria-label="<?php echo $t('BULLET_LIST'); ?>"><?php echo OttomoHelperHTML::icon('list-ul'); ?></button>
                                     <button type="button" data-command="insertOrderedList" aria-pressed="false" title="<?php echo $t('NUMBERED_LIST'); ?>" aria-label="<?php echo $t('NUMBERED_LIST'); ?>"><?php echo OttomoHelperHTML::icon('list-ol'); ?></button>
                                 </div>
@@ -342,6 +347,30 @@ use Joomla\String\StringHelper;
                                 <button type="button" data-link-target aria-pressed="false"><?php echo $t('LINK_NEW_WINDOW'); ?></button>
                                 <a data-link-follow href="#" target="_blank" rel="noopener noreferrer" title="<?php echo $t('LINK_OPEN'); ?>" aria-label="<?php echo $t('LINK_OPEN'); ?>"><?php echo OttomoHelperHTML::icon('box-arrow-up-right'); ?></a>
                                 <button type="button" data-link-remove title="<?php echo $t('LINK_REMOVE'); ?>" aria-label="<?php echo $t('LINK_REMOVE'); ?>"><?php echo OttomoHelperHTML::icon('x-lg'); ?></button>
+                            </div>
+                            <div class="otm-editor-image" role="group" aria-label="<?php echo $t('IMAGE'); ?>" data-editor-image hidden>
+                                <label class="otm-editor-image__width">
+                                    <?php echo OttomoHelperHTML::icon('image'); ?>
+                                    <span><?php echo $t('IMAGE_WIDTH'); ?></span>
+                                    <input type="number" data-image-width min="16" max="2000" step="1" inputmode="numeric" />
+                                    <span aria-hidden="true">px</span>
+                                </label>
+                                <button type="button" data-image-fit title="<?php echo $t('IMAGE_FIT_TITLE'); ?>"><?php echo OttomoHelperHTML::icon('arrows-angle-contract'); ?><span><?php echo $t('IMAGE_FIT'); ?></span></button>
+                                <span class="otm-editor-image__align" role="group" aria-label="<?php echo $t('IMAGE_ALIGN'); ?>">
+                                    <button type="button" data-image-align="left" aria-pressed="false" title="<?php echo $t('ALIGN_LEFT'); ?>" aria-label="<?php echo $t('ALIGN_LEFT'); ?>"><?php echo OttomoHelperHTML::icon('text-left'); ?></button>
+                                    <button type="button" data-image-align="center" aria-pressed="false" title="<?php echo $t('ALIGN_CENTER'); ?>" aria-label="<?php echo $t('ALIGN_CENTER'); ?>"><?php echo OttomoHelperHTML::icon('text-center'); ?></button>
+                                    <button type="button" data-image-align="right" aria-pressed="false" title="<?php echo $t('ALIGN_RIGHT'); ?>" aria-label="<?php echo $t('ALIGN_RIGHT'); ?>"><?php echo OttomoHelperHTML::icon('text-right'); ?></button>
+                                </span>
+                                <label class="otm-editor-link__field">
+                                    <span><?php echo $t('IMAGE_ALT'); ?></span>
+                                    <input type="text" data-image-alt placeholder="<?php echo $t('IMAGE_ALT_PLACEHOLDER'); ?>" autocomplete="off" />
+                                </label>
+                                <label class="otm-editor-link__field">
+                                    <?php echo OttomoHelperHTML::icon('link-45deg'); ?>
+                                    <span class="visually-hidden"><?php echo $t('IMAGE_LINK'); ?></span>
+                                    <input type="url" data-image-href placeholder="https://" autocomplete="off" spellcheck="false" />
+                                </label>
+                                <button type="button" data-image-target aria-pressed="false"><?php echo $t('LINK_NEW_WINDOW'); ?></button>
                             </div>
                         </div>
 
@@ -480,9 +509,8 @@ use Joomla\String\StringHelper;
                     <div class="otm-fixedform otm-sendtest">
 
                         <h3><?php echo Text::_('COM_OTTOMO_SEND_TEST_TITLE'); ?></h3>
-                        <p><strong><?php echo Text::_('COM_OTTOMO_SEND_TEST_TEXT'); ?></strong></p>
                         <div class="otm-sendtest__row">
-                            <input type="text" name="emails" aria-label="<?php echo htmlspecialchars(Text::_('COM_OTTOMO_SEND_TEST'), ENT_QUOTES, 'UTF-8'); ?>" />
+                            <input type="text" name="emails" inputmode="email" autocomplete="off" spellcheck="false" aria-label="<?php echo htmlspecialchars(Text::_('COM_OTTOMO_SEND_TEST'), ENT_QUOTES, 'UTF-8'); ?>" aria-describedby="otm-sendtest-hint" />
                             <?php if ($this->row->id): ?>
                             <button class="otm-btn otm-btn--dark" onclick="Joomla.submitbutton('newsletters.sample'); return false;">
                                 <span><?php echo Text::_('COM_OTTOMO_SEND_TEST'); ?></span>
@@ -493,6 +521,7 @@ use Joomla\String\StringHelper;
                             </button>
                             <?php endif; ?>
                         </div>
+                        <p class="otm-sendtest__hint" id="otm-sendtest-hint"><?php echo OttomoHelperHTML::icon('info-circle'); ?><span><?php echo Text::_('COM_OTTOMO_SEND_TEST_TEXT'); ?></span></p>
                         <label class="otm-check otm-sendtest__option">
                             <input type="checkbox" name="testUsePhpMail" value="1" />
                             <span><?php echo Text::_('COM_OTTOMO_SEND_TEST_USE_PHP_MAIL'); ?></span>

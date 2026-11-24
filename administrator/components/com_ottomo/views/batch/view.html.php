@@ -23,7 +23,7 @@ class OttomoViewBatch extends OttomoView
         $this->ids = array_values(array_filter(array_map('intval', (array)$input->get('cid', array(), 'array'))));
         // A sole topic comes ticked
         $model = OttomoModel::getInstance('Topics');
-        $model->setState('published', '-1');
+        $model->setState('published', '1'); // unpublished topics are retired
         $list = $model->getList();
         $this->topics = OttomoHelperHTML::topics('checkboxes', count($list) === 1 ? array((int)$list[0]->id) : array(), 'topics[]', '', false);
         $this->setLayout('batch');

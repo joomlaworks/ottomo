@@ -24,6 +24,7 @@ class JFormFieldTopics extends JFormFieldList
         JLoader::register('OttomoModel', JPATH_ADMINISTRATOR.'/components/com_ottomo/models/model.php');
         $model = OttomoModel::getInstance('Topics');
         $model->setState('published', '1');
+        $model->setState('public', true); // the signup module offers public topics only
         $model->setState('ordering', 'name');
         $model->setState('orderingDir', 'asc');
         $topics = $model->getList();

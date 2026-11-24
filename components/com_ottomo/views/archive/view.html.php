@@ -34,6 +34,7 @@ class OttomoViewArchive extends OttomoView
         $model->setState('ordering', 'sent');
         $model->setState('orderingDir', 'DESC');
         $model->setState('published', 1);
+        $model->setState('public', true); // not campaigns sent only to private lists
         $this->rows = $model->getList();
 
         // Get total

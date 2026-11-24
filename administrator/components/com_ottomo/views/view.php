@@ -232,13 +232,17 @@ class OttomoView extends HtmlView
         $batchToolbar = new OttomoToolbar();
 
         if ($this->task == 'edit') {
-            $headerToolbar->appendButton('OttomoStandard', 'save', 'JTOOLBAR_SAVE', $this->view.'.save', false);
-            $headerToolbar->appendButton('OttomoStandard', 'apply', 'JTOOLBAR_APPLY', $this->view.'.apply', false);
-            $headerToolbar->appendButton('OttomoStandard', 'cancel', 'JTOOLBAR_CLOSE', $this->view.'.cancel', false);
+            $headerToolbar->appendButton('OttomoStandard', 'save', 'COM_OTTOMO_TOOLBAR_SAVE_AND_CLOSE', $this->view.'.save', false);
+            $headerToolbar->appendButton('OttomoStandard', 'apply', 'COM_OTTOMO_TOOLBAR_SAVE', $this->view.'.apply', false);
+            // Topics and subscribers are often added one after the other: save, then a new empty form
+            if (in_array($this->view, array('topics', 'subscribers'), true)) {
+                $headerToolbar->appendButton('OttomoStandard', 'save-new', 'COM_OTTOMO_TOOLBAR_SAVE_AND_NEW', $this->view.'.save2new', false);
+            }
+            $headerToolbar->appendButton('OttomoStandard', 'cancel', 'COM_OTTOMO_CLOSE', $this->view.'.cancel', false);
         } else {
             if ($this->view == 'topics') {
-                $batchToolbar->appendButton('OttomoBatch', 'check-circle-o', 'JTOOLBAR_PUBLISH', $this->view.'.publish', true);
-                $batchToolbar->appendButton('OttomoBatch', 'circle-o', 'JTOOLBAR_UNPUBLISH', $this->view.'.unpublish', true);
+                $batchToolbar->appendButton('OttomoBatch', 'check-circle-o', 'COM_OTTOMO_TOOLBAR_PUBLISH', $this->view.'.publish', true);
+                $batchToolbar->appendButton('OttomoBatch', 'circle-o', 'COM_OTTOMO_TOOLBAR_UNPUBLISH', $this->view.'.unpublish', true);
             }
 
             if ($this->view == 'newsletters') {
@@ -251,11 +255,11 @@ class OttomoView extends HtmlView
             }
 
             if ($this->view == 'newsletters' || $this->view == 'topics' || $this->view == 'subscribers') {
-                $subheaderToolbar->appendButton('OttomoStandard', 'plus', 'JTOOLBAR_NEW', $this->view.'.add', false);
+                $subheaderToolbar->appendButton('OttomoStandard', 'plus', 'COM_OTTOMO_TOOLBAR_NEW', $this->view.'.add', false);
             }
 
             if ($this->view == 'newsletters' || $this->view == 'topics' || $this->view == 'subscribers') {
-                $batchToolbar->appendButton('OttomoBatch', 'trash-o', 'JTOOLBAR_DELETE', $this->view.'.remove', true);
+                $batchToolbar->appendButton('OttomoBatch', 'trash-o', 'COM_OTTOMO_DELETE', $this->view.'.remove', true);
             }
 
             if ($this->view == 'newsletters' || $this->view == 'subscribers') {

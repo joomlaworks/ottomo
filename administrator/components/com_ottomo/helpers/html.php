@@ -31,6 +31,22 @@ class OttomoHelperHTML
         return $version;
     }
 
+    /** The release date (the installed manifest's creationDate, e.g. "November 24th, 2026") as a timestamp, or 0. */
+    public static function releaseDate()
+    {
+        static $date = null;
+        if ($date === null) {
+            $date = 0;
+            $manifest = JPATH_ADMINISTRATOR.'/components/com_ottomo/ottomo.xml';
+            $xml = is_file($manifest) ? @simplexml_load_file($manifest) : false;
+            if ($xml) {
+                $text = preg_replace('/(\d)(st|nd|rd|th)\b/i', '$1', trim((string)$xml->creationDate));
+                $date = $text !== '' ? (int)strtotime($text.' UTC') : 0;
+            }
+        }
+        return $date;
+    }
+
     /** Installing, editing, downloading, duplicating and deleting email templates: the "Manage email templates" permission
      * (Settings > Permissions; by default Super Users only). Everyone else picks templates in the campaign wizard. */
     public static function canManageTemplates()
@@ -87,13 +103,18 @@ class OttomoHelperHTML
             $html[] = '<ul>';
             $id = 'otm-topic-';
             foreach ($topics as $topic) {
+                // Unpublished topics are retired: left out, unless already chosen
+                if (!(int)$topic->published && !in_array($topic->id, $active)) {
+                    continue;
+                }
                 $checked = in_array($topic->id, $active) ? ' checked' : '';
                 $counter = $countSubscribers ? ' data-subscribers="'.$topic->subscribers.'"' : '';
                 $topicName = htmlspecialchars((string)$topic->name, ENT_QUOTES, 'UTF-8');
                 $label = $countSubscribers ? Text::sprintf('COM_OTTOMO_RECIPIENTS_WITH_COUNTER', $topicName, (int)$topic->subscribers) : $topicName;
                 $html[] = '<li>';
                 $html[] = '<input type="checkbox" id="'.$id.(int)$topic->id.'" name="'.$name.'" value="'.(int)($topic->id).'" data-name="'.$topicName.'" '.$checked.$counter.'/>';
-                $html[] = '<label for="'.$id.(int)$topic->id.'">'.$label.'</label>';
+                $private = !empty($topic->private) ? ' '.self::pill(Text::_('COM_OTTOMO_PRIVATE'), 'info') : '';
+                $html[] = '<label for="'.$id.(int)$topic->id.'">'.$label.$private.'</label>';
                 $html[] = '</li>';
             }
             $html[] = '</ul>';
@@ -211,6 +232,11 @@ class OttomoHelperHTML
             'type-italic' => '<path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.129.595-.24.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>',
             'type-underline' => '<path d="M5.313 3.136h-1.23V9.54c0 2.105 1.47 3.623 3.917 3.623s3.917-1.518 3.917-3.623V3.136h-1.23v6.323c0 1.49-.978 2.57-2.687 2.57s-2.687-1.08-2.687-2.57zM12.5 15h-9v-1h9z"/>',
             'list-ol' => '<path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5"/><path d="M1.713 11.865v-.474H2c.217 0 .363-.137.363-.317 0-.185-.158-.31-.361-.31-.223 0-.367.152-.373.31h-.59c.016-.467.373-.787.986-.787.588-.002.954.291.957.703a.595.595 0 0 1-.492.594v.033a.615.615 0 0 1 .569.631c.003.533-.502.8-1.051.8-.656 0-1-.37-1.008-.794h.582c.008.178.186.306.422.309.254 0 .424-.145.422-.35-.002-.195-.155-.348-.414-.348h-.3zm-.004-4.699h-.604v-.035c0-.408.295-.844.958-.844.583 0 .96.326.96.756 0 .389-.257.617-.476.845l-.59.629v.032h1.113v.487H1.105v-.375l.916-.95c.265-.28.4-.445.4-.656 0-.211-.17-.358-.395-.358-.232 0-.385.158-.385.394v.036zm.287-4.53v3.077h-.629V3.268h-.031l-.665.457V3.13l.716-.494z"/>',
+            'text-left' => '<path fill-rule="evenodd" d="M2 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5m0-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5"/>',
+            'text-center' => '<path fill-rule="evenodd" d="M4 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5m2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5"/>',
+            'text-right' => '<path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-4-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5m4-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-4-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5"/>',
+            'image' => '<path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/>',
+            'arrows-angle-contract' => '<path fill-rule="evenodd" d="M.172 15.828a.5.5 0 0 0 .707 0l4.096-4.096V14.5a.5.5 0 1 0 1 0v-3.975a.5.5 0 0 0-.5-.5H1.5a.5.5 0 0 0 0 1h2.768L.172 15.121a.5.5 0 0 0 0 .707M15.828.172a.5.5 0 0 0-.707 0l-4.096 4.096V1.5a.5.5 0 1 0-1 0v3.975a.5.5 0 0 0 .5.5H14.5a.5.5 0 0 0 0-1h-2.768L15.828.879a.5.5 0 0 0 0-.707"/>',
             'list-ul' => '<path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>',
             'link-45deg' => '<path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"/><path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"/>',
             'eraser' => '<path d="M8.086 2.207a2 2 0 0 1 2.828 0l3.879 3.879a2 2 0 0 1 0 2.828l-5.5 5.5A2 2 0 0 1 7.879 15H5.12a2 2 0 0 1-1.414-.586l-2.5-2.5a2 2 0 0 1 0-2.828zm2.121.707a1 1 0 0 0-1.414 0L4.16 7.547l5.293 5.293 4.633-4.633a1 1 0 0 0 0-1.414zM8.746 13.547 3.453 8.254 1.914 9.793a1 1 0 0 0 0 1.414l2.5 2.5a1 1 0 0 0 .707.293H7.88a1 1 0 0 0 .707-.293z"/>',

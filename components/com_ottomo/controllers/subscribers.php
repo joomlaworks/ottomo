@@ -102,7 +102,17 @@ class OttomoControllerSubscribers extends OttomoController
             return $this->setRedirect(Route::_('index.php?option=com_ottomo&view=subscribers&id='.$id.'&hash='.$hash.'&newsletter='.$newsletterId, false), Text::_('COM_OTTOMO_INVALID_EMAIL'), 'error');
         }
         $data = get_object_vars($row);
-        $data['topics'] = $this->input->get('topics', array(), 'array');
+        // The form shows the public topics only: it changes those, and the subscriber stays in the hidden ones
+        // (private lists, and unpublished topics) whatever is posted
+        $topics = OttomoModel::getInstance('Topics');
+        $topics->setState('published', '1');
+        $topics->setState('public', true);
+        $public = array_map('intval', array_map(function ($topic) {
+            return $topic->id;
+        }, $topics->getList()));
+        $chosen = array_intersect(array_map('intval', (array)$this->input->get('topics', array(), 'array')), $public);
+        $kept = array_diff(array_map('intval', (array)$model->getSubscriberTopics()), $public);
+        $data['topics'] = array_values(array_unique(array_merge($chosen, $kept)));
         $model->setState('data', $data);
         if ($model->save()) {
             $message = Text::_('COM_OTTOMO_YOUR_PREFERENCES_HAVE_BEEN_UPDATED');

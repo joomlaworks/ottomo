@@ -125,10 +125,21 @@ class OttomoModelSubscribers extends OttomoModel
         }
         $data['topics'] = (array)$data['topics'];
         ArrayHelper::toInteger($data['topics']);
+        // Visitors sign up to public topics only (never a private list or an unpublished topic, whatever is posted)
+        if (!empty($data['topics'])) {
+            $topics = OttomoModel::getInstance('Topics');
+            $topics->setState('published', '1');
+            $topics->setState('public', true);
+            $topics->setState('id', $data['topics']);
+            $data['topics'] = array_values(array_map(function ($topic) {
+                return (int)$topic->id;
+            }, $topics->getList()));
+        }
         if (empty($data['topics'])) {
             $this->setError(Text::_('COM_OTTOMO_NO_TOPIC_SELECTED'));
             return false;
         }
+        $this->setState('data', $data); // save() uses the checked topics
 
         //Check for valid email
         if (!MailHelper::isEmailAddress($data['email'])) {

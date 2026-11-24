@@ -68,6 +68,13 @@ class OttomoModelNewsletters extends OttomoModel
         if ($this->getState('topic')) {
             $query->where($db->quoteName('xref.topicID').' = '.(int)$this->getState('topic'));
         }
+        // The public archive: campaigns sent to at least one public topic (not only to private lists)
+        if ($this->getState('public')) {
+            $query->where('EXISTS (SELECT 1 FROM '.$db->quoteName('#__ottomo_email_campaigns_xref', 'px')
+                .' INNER JOIN '.$db->quoteName('#__ottomo_topics', 'pt').' ON '.$db->quoteName('pt.id').' = '.$db->quoteName('px.topicID')
+                .' WHERE '.$db->quoteName('px.campaignID').' = '.$db->quoteName('newsletter.id')
+                .' AND '.$db->quoteName('pt.published').' = 1 AND '.$db->quoteName('pt.private').' = 0)');
+        }
         if ((int)$this->getState('filterTemplate') > 0) {
             $query->where($db->quoteName('newsletter.template').' = '.(int)$this->getState('filterTemplate'));
         }

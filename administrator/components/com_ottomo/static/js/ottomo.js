@@ -703,6 +703,9 @@
       position.insertAdjacentHTML('beforeend', Ottomo.sortableItem(html));
       Ottomo.newsletterModified = true;
       Ottomo.updateSourceEditor();
+      if (Ottomo.editor) {
+        Ottomo.editor.fitImages(position.lastElementChild);
+      }
       return position.lastElementChild;
     }
 
@@ -713,6 +716,9 @@
         return;
       }
       var clone = doc.documentElement.cloneNode(true);
+      $$('.otm-image-outline', clone).forEach(function(outline) {
+        outline.parentNode.removeChild(outline);
+      });
       Ottomo.editorStyles = $$('link[rel="stylesheet"]', clone).map(function(link) {
         var html = link.outerHTML;
         link.parentNode.removeChild(link);
@@ -1784,12 +1790,13 @@
 
     // ------------------------------------------------------------------ editor
 
-    var STATE_COMMANDS = ['bold', 'italic', 'underline', 'insertOrderedList', 'insertUnorderedList'];
+    var STATE_COMMANDS = ['bold', 'italic', 'underline', 'insertOrderedList', 'insertUnorderedList', 'justifyLeft', 'justifyCenter', 'justifyRight'];
     var BLOCKS = ['p', 'h1', 'h2', 'h3', 'h4', 'pre'];
 
     var editor = Ottomo.editor = {
       range: null,   // last selection inside an editable region of the iframe
       link: null,    // <a> being edited in the link bar
+      image: null,   // <img> being edited in the image bar
 
       /** The saved range, if it is still inside an editable region. */
       current: function() {
@@ -1931,6 +1938,9 @@
           fontSelect.disabled = !active;
         }
         var anchor = active ? elementOf(range.startContainer).closest('a') : null;
+        if (anchor && this.image && anchor.contains(this.image)) {
+          anchor = null; // the image bar edits the link of an image
+        }
         this.showLink(anchor && editableOf(anchor) ? anchor : null);
       },
 
@@ -1992,6 +2002,220 @@
         anchor.parentNode.removeChild(anchor);
         this.showLink(null);
         changed();
+      },
+
+      // ---------------------------------------------------------------- images
+
+      /**
+       * The width an image may take: its column in the email, the table cell around it (the designer's own block
+       * frames are narrower), else its position.
+       */
+      imageRoom: function(img) {
+        var box = img.closest('td') || img.closest('.otm-position, .otm-position-content, .otm-sample-data, [contenteditable="true"]') || img.parentElement;
+        var style = box.ownerDocument.defaultView.getComputedStyle(box);
+        return Math.max(16, Math.floor(box.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0)));
+      },
+
+      /**
+       * Width in pixels: the width attribute (what classic Outlook uses) and max-width:100% with height:auto, so the
+       * image keeps its proportions and never overflows a narrower column (phones).
+       */
+      setImageWidth: function(img, width) {
+        width = Math.round(width);
+        if (!width || width < 1) {
+          return;
+        }
+        img.setAttribute('width', String(width));
+        img.removeAttribute('height');
+        img.style.removeProperty('width');
+        img.style.removeProperty('height');
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+      },
+
+      /**
+       * Fit images to their column: those without a width, or wider than their column. force: every image (the Fit
+       * button). quiet: don't mark the campaign as changed (a designer that just opened).
+       */
+      fitImages: function(root, force, quiet) {
+        var self = this;
+        if (!root) {
+          return;
+        }
+        var images = root.tagName === 'IMG' ? [root] : Array.prototype.slice.call(root.querySelectorAll('img'));
+        images.forEach(function(img) {
+          if (img.closest('.otm-extension-menu') || !img.closest('.otm-position-content, .otm-sample-data, [contenteditable="true"]')) {
+            return;
+          }
+          var fit = function() {
+            var natural = img.naturalWidth;
+            if (!natural) {
+              return;
+            }
+            var room = self.imageRoom(img);
+            var current = parseInt(img.getAttribute('width'), 10) || 0;
+            if (!force && current && current <= room) {
+              return;
+            }
+            var width = Math.min(natural, room);
+            if (width === current && img.style.maxWidth === '100%') {
+              return;
+            }
+            self.setImageWidth(img, width);
+            if (!quiet) {
+              changed();
+            }
+            if (img === self.image) {
+              self.showImage(img);
+            }
+          };
+          if (img.complete && img.naturalWidth) {
+            fit();
+          } else {
+            img.addEventListener('load', fit, { once: true });
+          }
+        });
+      },
+
+      /** The element that is aligned with an image: the link around it, or the image. */
+      imageTarget: function(img) {
+        var parent = img.parentElement;
+        if (parent && parent.tagName === 'A' && parent.children.length === 1 && !parent.textContent.trim()) {
+          return parent;
+        }
+        return img;
+      },
+
+      /** The block that aligns the image: its own wrapper, or the block it is alone in (not an editor wrapper). */
+      imageBlock: function(img, create) {
+        var target = this.imageTarget(img);
+        var parent = target.parentElement;
+        var alone = parent && /^(P|DIV|H[1-6]|TD|LI|SPAN)$/.test(parent.tagName) && parent.children.length === 1 && !parent.textContent.trim();
+        var editorWrapper = parent && (parent.classList.contains('otm-position-content') || parent.classList.contains('otm-sample-data'));
+        if (alone && !editorWrapper) {
+          return parent;
+        }
+        if (!create || !parent) {
+          return null;
+        }
+        // Inside text (a paragraph or a heading) only an inline element may wrap it
+        var inline = /^(P|H[1-6]|LI|A|SPAN|B|I|U|STRONG|EM)$/.test(parent.tagName);
+        var wrapper = img.ownerDocument.createElement(inline ? 'span' : 'div');
+        if (inline) {
+          wrapper.style.display = 'block';
+        }
+        parent.insertBefore(wrapper, target);
+        wrapper.appendChild(target);
+        return wrapper;
+      },
+
+      imageAlign: function(img) {
+        var block = this.imageBlock(img, false);
+        var value = block ? (block.style.textAlign || block.getAttribute('align') || '') : '';
+        return /^(left|center|right)$/.test(value) ? value : '';
+      },
+
+      setImageAlign: function(img, value) {
+        var block = this.imageBlock(img, true);
+        if (!block) {
+          return;
+        }
+        // text-align for every client, align for classic Outlook; the image stays inline so that it follows them
+        block.style.textAlign = value;
+        block.setAttribute('align', value);
+        if (img.style.display === 'block') {
+          img.style.removeProperty('display');
+        }
+        changed();
+        this.showImage(img);
+      },
+
+      /** The link around an image (only when it wraps the image alone). */
+      imageLink: function(img) {
+        var target = this.imageTarget(img);
+        return target.tagName === 'A' ? target : null;
+      },
+
+      setImageLink: function(img, href) {
+        var anchor = this.imageLink(img);
+        if (href) {
+          if (!anchor) {
+            anchor = img.ownerDocument.createElement('a');
+            img.parentNode.insertBefore(anchor, img);
+            anchor.appendChild(img);
+          }
+          anchor.setAttribute('href', href);
+        } else if (anchor) {
+          anchor.parentNode.insertBefore(img, anchor);
+          anchor.parentNode.removeChild(anchor);
+        }
+        changed();
+      },
+
+      /** Select an image (or none): the image bar and the outline around it in the designer. */
+      showImage: function(img, focus) {
+        var bar = document.querySelector('[data-editor-image]');
+        this.image = img || null;
+        this.outlineImage();
+        if (!bar) {
+          return;
+        }
+        bar.hidden = !img;
+        if (!img) {
+          return;
+        }
+        this.showLink(null);
+        var width = bar.querySelector('[data-image-width]');
+        if (document.activeElement !== width) {
+          width.value = img.getAttribute('width') || (img.naturalWidth ? Math.min(img.naturalWidth, this.imageRoom(img)) : '');
+        }
+        var align = this.imageAlign(img);
+        $$('[data-image-align]', bar).forEach(function(button) {
+          button.setAttribute('aria-pressed', button.getAttribute('data-image-align') === align ? 'true' : 'false');
+        });
+        var alt = bar.querySelector('[data-image-alt]');
+        if (document.activeElement !== alt) {
+          alt.value = img.getAttribute('alt') || '';
+        }
+        var anchor = this.imageLink(img);
+        var href = bar.querySelector('[data-image-href]');
+        if (document.activeElement !== href) {
+          href.value = anchor ? (anchor.getAttribute('href') || '') : '';
+        }
+        var target = bar.querySelector('[data-image-target]');
+        target.disabled = !anchor;
+        target.setAttribute('aria-pressed', anchor && anchor.getAttribute('target') === '_blank' ? 'true' : 'false');
+        if (focus) {
+          width.focus();
+          width.select();
+        }
+      },
+
+      /** Outline of the selected image, drawn over the designer (not part of the email). */
+      outlineImage: function() {
+        var doc = frameDocument();
+        if (!doc || !doc.body) {
+          return;
+        }
+        var outline = doc.querySelector('.otm-image-outline');
+        if (!this.image || !doc.contains(this.image)) {
+          if (outline) {
+            outline.parentNode.removeChild(outline);
+          }
+          return;
+        }
+        if (!outline) {
+          outline = doc.createElement('div');
+          outline.className = 'otm-image-outline';
+          outline.setAttribute('aria-hidden', 'true');
+          doc.body.appendChild(outline);
+        }
+        var rect = this.image.getBoundingClientRect();
+        var view = doc.defaultView;
+        outline.style.top = (rect.top + view.pageYOffset) + 'px';
+        outline.style.left = (rect.left + view.pageXOffset) + 'px';
+        outline.style.width = rect.width + 'px';
+        outline.style.height = rect.height + 'px';
       },
 
       /** Bind the toolbar and link bar of the admin page (once). */
@@ -2078,6 +2302,73 @@
             self.removeLink();
           });
         }
+
+        var imageBar = document.querySelector('[data-editor-image]');
+        if (imageBar) {
+          var width = imageBar.querySelector('[data-image-width]');
+          width.addEventListener('input', function() {
+            var value = parseInt(width.value, 10);
+            if (self.image && value >= 16) {
+              self.setImageWidth(self.image, value);
+              self.outlineImage();
+              changed();
+            }
+          });
+          width.addEventListener('change', function() {
+            if (self.image) {
+              self.showImage(self.image);
+            }
+          });
+          imageBar.querySelector('[data-image-fit]').addEventListener('click', function(event) {
+            event.preventDefault();
+            if (self.image) {
+              self.fitImages(self.image, true);
+            }
+          });
+          $$('[data-image-align]', imageBar).forEach(function(button) {
+            button.addEventListener('click', function(event) {
+              event.preventDefault();
+              if (self.image) {
+                self.setImageAlign(self.image, button.getAttribute('data-image-align'));
+              }
+            });
+          });
+          var alt = imageBar.querySelector('[data-image-alt]');
+          alt.addEventListener('input', function() {
+            if (self.image) {
+              self.image.setAttribute('alt', alt.value);
+              changed();
+            }
+          });
+          var href = imageBar.querySelector('[data-image-href]');
+          href.addEventListener('input', function() {
+            if (self.image) {
+              self.setImageLink(self.image, href.value.trim());
+              self.showImage(self.image);
+            }
+          });
+          imageBar.querySelector('[data-image-target]').addEventListener('click', function(event) {
+            event.preventDefault();
+            var anchor = self.image && self.imageLink(self.image);
+            if (!anchor) {
+              return;
+            }
+            if (anchor.getAttribute('target') === '_blank') {
+              anchor.removeAttribute('target');
+              anchor.removeAttribute('rel');
+            } else {
+              anchor.setAttribute('target', '_blank');
+              anchor.setAttribute('rel', 'noopener');
+            }
+            self.showImage(self.image);
+            changed();
+          });
+          imageBar.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+              self.showImage(null);
+            }
+          });
+        }
       },
 
       /** Bind the editable regions of the iframe document (once per document). */
@@ -2101,13 +2392,64 @@
             changed();
           }
         });
-        // Paste plain text only: no foreign styles in the email
+        // Copy and cut inside the email keep its HTML (images, links, formatting), marked as the designer's own
+        var CLIP = 'application/x-ottomo-html';
+        var CLIP_MARK = '<!--ottomo-clip-->';
+        var detach = function(node) {
+          node.parentNode.removeChild(node);
+        };
+        var copy = function(event, cut) {
+          var selection = doc.getSelection();
+          if (!event.clipboardData || !selection || !selection.rangeCount || selection.isCollapsed || !editableOf(selection.anchorNode)) {
+            return;
+          }
+          var holder = doc.createElement('div');
+          holder.appendChild(selection.getRangeAt(0).cloneContents());
+          $$('.otm-image-outline', holder).forEach(detach);
+          event.clipboardData.setData('text/html', CLIP_MARK + holder.innerHTML);
+          event.clipboardData.setData('text/plain', selection.toString());
+          try {
+            event.clipboardData.setData(CLIP, '1');
+          } catch (e) { /* the comment marks it too */ }
+          event.preventDefault();
+          if (cut) {
+            doc.execCommand('delete');
+            changed();
+          }
+        };
+        doc.addEventListener('copy', function(event) {
+          copy(event, false);
+        });
+        doc.addEventListener('cut', function(event) {
+          copy(event, true);
+        });
+        // Paste: the designer's own content as HTML; anything from outside as plain text (no foreign styles in the email)
         doc.addEventListener('paste', function(event) {
           if (!editableOf(event.target) || !event.clipboardData) {
             return;
           }
           event.preventDefault();
-          doc.execCommand('insertText', false, event.clipboardData.getData('text/plain'));
+          var html = event.clipboardData.getData('text/html') || '';
+          var mark = html.indexOf(CLIP_MARK);
+          var own = mark > -1 || Array.prototype.indexOf.call(event.clipboardData.types || [], CLIP) > -1;
+          if (own && html) {
+            var holder = doc.createElement('div');
+            holder.innerHTML = html.slice(mark > -1 ? mark + CLIP_MARK.length : 0).replace(/<!--(Start|End)Fragment-->/g, '');
+            // no editor markup and nothing that runs
+            $$('script, style, link, meta, iframe, object, .otm-image-outline, .otm-extension-menu, .otm-nsl-btn', holder).forEach(detach);
+            $$('*', holder).forEach(function(node) {
+              node.removeAttribute('contenteditable');
+              Array.prototype.slice.call(node.attributes).forEach(function(attribute) {
+                if (/^on/i.test(attribute.name) || (/^(href|src)$/i.test(attribute.name) && /^\s*javascript:/i.test(attribute.value))) {
+                  node.removeAttribute(attribute.name);
+                }
+              });
+            });
+            doc.execCommand('insertHTML', false, holder.innerHTML);
+          } else {
+            doc.execCommand('insertText', false, event.clipboardData.getData('text/plain'));
+          }
+          changed();
         });
         // Highlight the block being edited (hides its move/remove buttons, see designer.css)
         doc.addEventListener('focusin', function(event) {
@@ -2128,10 +2470,27 @@
         // Links inside editable regions must not navigate the designer
         doc.addEventListener('click', function(event) {
           var anchor = event.target.closest && event.target.closest('a[href]');
-          if (anchor && editableOf(anchor)) {
+          if (anchor && (editableOf(anchor) || anchor.closest('.otm-position-content'))) {
             event.preventDefault();
           }
         });
+        // A click on an image of the email's content selects it (image bar); a click elsewhere drops it
+        doc.addEventListener('click', function(event) {
+          var img = event.target.closest && event.target.closest('img');
+          if (img && !img.closest('.otm-extension-menu') && img.closest('.otm-position-content, .otm-sample-data, [contenteditable="true"]')) {
+            self.showImage(img);
+          } else if (self.image) {
+            self.showImage(null);
+          }
+        });
+        doc.defaultView.addEventListener('resize', function() {
+          self.outlineImage();
+        });
+        doc.addEventListener('input', function() {
+          self.outlineImage();
+        });
+        // Images wider than their column (inserted before Ottomo fitted them) are fitted when the designer opens
+        self.fitImages(doc.body, false, true);
       }
     };
 
@@ -2620,9 +2979,11 @@ function jInsertFieldValue(image, editor) {
   if (position) {
     var img = doc.createElement('img');
     img.setAttribute('src', Ottomo.sitePath + image);
+    img.setAttribute('alt', '');
     position.insertAdjacentHTML('beforeend', Ottomo.sortableItem(img.outerHTML));
     Ottomo.newsletterModified = true;
     Ottomo.updateSourceEditor();
+    Ottomo.editor.fitImages(position.lastElementChild); // a 1920px photo must not widen the email
   }
 }
 

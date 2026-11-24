@@ -11,6 +11,7 @@ defined('_JEXEC') or die ;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Mail\MailHelper;
 use Joomla\CMS\Session\Session;
 
 class OttomoControllerNewsletters extends OttomoController
@@ -101,6 +102,15 @@ class OttomoControllerNewsletters extends OttomoController
             $this->setRedirect($redirect, Text::_('COM_OTTOMO_SEND_TEST_NO_EMAILS'), 'error');
             return;
         }
+        // Several addresses, comma separated: all of them must be valid, or nothing is sent
+        $invalid = array_filter($emails, function ($email) {
+            return !MailHelper::isEmailAddress($email);
+        });
+        if (count($invalid)) {
+            $this->setRedirect($redirect, Text::sprintf('COM_OTTOMO_SEND_TEST_INVALID', implode(', ', $invalid)), 'error');
+            return;
+        }
+        $emails = array_values(array_unique($emails));
         $model->setState('emails', $emails);
         $model->setState('forcePhpMail', $this->input->getBool('testUsePhpMail', false));
         if ($model->send() === false) {

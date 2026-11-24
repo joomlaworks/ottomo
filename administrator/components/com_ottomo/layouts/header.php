@@ -9,6 +9,7 @@
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Date\Date;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Uri\Uri;
 ?>
@@ -86,4 +87,13 @@ use Joomla\CMS\Uri\Uri;
 			</ul>
 		</div>
 	</nav>
+	<?php
+	// Version, release date (the installed manifest) and copyright
+	$released = OttomoHelperHTML::releaseDate();
+	$date = $released ? new Date($released) : null;
+	?>
+	<p class="otm-credits">
+		<span><a href="https://ottomo.joomlaworks.net" target="_blank" rel="noopener noreferrer">Ottomo</a> v<?php echo htmlspecialchars(OttomoHelperHTML::version(), ENT_QUOTES, 'UTF-8'); ?><?php echo $date ? ' ('.htmlspecialchars($date->format('d-M-Y'), ENT_QUOTES, 'UTF-8').')' : ''; ?></span>
+		<span>&copy; 2006 - <?php echo $date ? $date->format('Y') : date('Y'); ?> <a href="https://www.joomlaworks.net" target="_blank" rel="noopener noreferrer">JoomlaWorks Ltd.</a></span>
+	</p>
 </div>

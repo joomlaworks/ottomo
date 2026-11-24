@@ -144,6 +144,11 @@ class Com_OttomoInstallerScript
             $model->install(true);
         }
 
+        // Updates: schema changes since 1.0 (each step checks first)
+        if ($type == 'update') {
+            $this->upgrade($db);
+        }
+
         // Tasks for fresh installations
         if ($type == 'install') {
             // Add default statistics types
@@ -236,6 +241,29 @@ class Com_OttomoInstallerScript
     {
         $version = new Version();
         return $version->isCompatible('4.0');
+    }
+
+    /**
+     * Schema changes since 1.0, through Joomla's driver (MySQL, PostgreSQL and, on Joomla 3.x UTD, SQLite).
+     * 1.1: private topics (hidden on the site, for lists managed in the admin). 1.0 already kept unpublished topics
+     * off the site while campaigns still went to them: they become published private topics, so nothing changes.
+     */
+    private function upgrade($db)
+    {
+        $columns = array_change_key_case($db->getTableColumns('#__ottomo_topics', false), CASE_LOWER);
+        if (!isset($columns['private'])) {
+            $server = strtolower(method_exists($db, 'getServerType') ? (string)$db->getServerType() : (string)$db->name);
+            $type = strpos($server, 'postgres') !== false ? 'smallint' : 'tinyint(1)';
+            $db->setQuery('ALTER TABLE '.$db->quoteName('#__ottomo_topics').' ADD COLUMN '.$db->quoteName('private').' '.$type.' NOT NULL DEFAULT 0');
+            $db->execute();
+            $query = $db->getQuery(true);
+            $query->update($db->quoteName('#__ottomo_topics'))
+                ->set($db->quoteName('private').' = 1')
+                ->set($db->quoteName('published').' = 1')
+                ->where($db->quoteName('published').' = 0');
+            $db->setQuery($query);
+            $db->execute();
+        }
     }
 
     private function db()
