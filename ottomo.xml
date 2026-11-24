@@ -81,6 +81,6 @@
 		<plugin plugin="ottomo" group="console" />
 	</plugins>
 	<updateservers>
-		<server type="collection" priority="1" name="Ottomo">https://joomlaworks.github.io/ottomo/collection.xml</server>
+		<server type="extension" priority="1" name="Ottomo">https://joomlaworks.github.io/ottomo/update.xml</server>
 	</updateservers>
 </extension>

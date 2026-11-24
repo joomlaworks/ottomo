@@ -18,6 +18,7 @@ All notable changes to **Ottomo for Joomla** (`com_ottomo`) are documented in th
 - Sent emails keep every image of the content within its column (`max-width:100%`, `height:auto`), including campaigns edited in the HTML tab.
 - Unpublished topics are retired: hidden on the site as before, and no longer offered for new campaigns, imports or batch changes. Updating from 1.0 turns unpublished topics into published private topics, so they work as before.
 - The administrator toolbars use Ottomo's own language strings.
+- Updates are announced by `update.xml` only (the manifest's update server); updating converts the old `collection.xml` update server of 1.0 sites.
 
 ### Fixed
 - Send test: one click sent the test email more than once. Every dialog (preview, import, send) also loaded its page several times.

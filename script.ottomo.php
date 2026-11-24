@@ -264,6 +264,54 @@ class Com_OttomoInstallerScript
             $db->setQuery($query);
             $db->execute();
         }
+
+        $this->updateServer($db);
+    }
+
+    /**
+     * Since 1.1 the manifest's update server is update.xml (type "extension"). Sites installed with 1.0 have the old
+     * collection.xml server (type "collection"): Joomla 3 would add update.xml next to it, and Joomla 4+ would only change
+     * its location (keeping the type, so update.xml would be read as a collection and no update ever found). So the old
+     * row becomes the update.xml server here, type included; Joomla then finds it by its location and leaves it as it is.
+     */
+    private function updateServer($db)
+    {
+        $collection = 'https://joomlaworks.github.io/ottomo/collection.xml';
+        $feed = 'https://joomlaworks.github.io/ottomo/update.xml';
+        $query = $db->getQuery(true)
+            ->select($db->quoteName(array('update_site_id', 'location')))
+            ->from($db->quoteName('#__update_sites'))
+            ->where($db->quoteName('location').' IN ('.$db->quote($collection).', '.$db->quote($feed).')');
+        $db->setQuery($query);
+        $sites = $db->loadObjectList();
+        $old = $new = null;
+        foreach ($sites as $site) {
+            if ($site->location === $collection) {
+                $old = (int)$site->update_site_id;
+            } else {
+                $new = (int)$site->update_site_id;
+            }
+        }
+        if (!$old) {
+            return;
+        }
+        if ($new) {
+            // update.xml is there already: the collection row goes, with its links and the updates it found
+            foreach (array('#__update_sites_extensions', '#__updates', '#__update_sites') as $table) {
+                $db->setQuery($db->getQuery(true)->delete($db->quoteName($table))->where($db->quoteName('update_site_id').' = '.$old));
+                $db->execute();
+            }
+            return;
+        }
+        $db->setQuery($db->getQuery(true)
+            ->update($db->quoteName('#__update_sites'))
+            ->set($db->quoteName('type').' = '.$db->quote('extension'))
+            ->set($db->quoteName('location').' = '.$db->quote($feed))
+            ->where($db->quoteName('update_site_id').' = '.$old));
+        $db->execute();
+        // updates found through the collection are found again through update.xml
+        $db->setQuery($db->getQuery(true)->delete($db->quoteName('#__updates'))->where($db->quoteName('update_site_id').' = '.$old));
+        $db->execute();
     }
 
     private function db()
