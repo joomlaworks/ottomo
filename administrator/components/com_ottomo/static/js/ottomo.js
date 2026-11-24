@@ -269,6 +269,35 @@
       });
     };
 
+    /**
+     * Open a SuperModal frame, decorated. decorateFrame() moves the iframe into its card, and moving an iframe that is
+     * in the page loads it again (a test send went out twice), so the dialog is decorated while SuperModal adds it to
+     * the page (document.body.appendChild), before the iframe starts loading.
+     */
+    Ottomo.openFrame = function(url, title, size) {
+      var body = document.body;
+      var dialog = null;
+      body.appendChild = function(node) {
+        if (!dialog && node && node.matches && node.matches('dialog.supermodal--frame')) {
+          dialog = node;
+          Ottomo.decorateFrame(node, size);
+        }
+        return Node.prototype.appendChild.call(this, node);
+      };
+      try {
+        SuperModal.frame(url, { title: title || '' });
+      } finally {
+        delete body.appendChild;
+      }
+      if (!dialog) {
+        // SuperModal added it some other way: decorate it now
+        var dialogs = document.querySelectorAll('dialog.supermodal--frame');
+        dialog = dialogs[dialogs.length - 1] || null;
+        Ottomo.decorateFrame(dialog, size);
+      }
+      return dialog;
+    };
+
     Ottomo.frame = function(url, title, options) {
       options = options || {};
       if (!window.SuperModal || !SuperModal.frame) {
@@ -276,10 +305,7 @@
         return;
       }
       changed = false;
-      SuperModal.frame(url, { title: title || '' });
-      var dialogs = document.querySelectorAll('dialog.supermodal--frame');
-      var dialog = dialogs[dialogs.length - 1];
-      Ottomo.decorateFrame(dialog, options.size || frameSize(url));
+      var dialog = Ottomo.openFrame(url, title, options.size || frameSize(url));
       if (dialog && options.reload) {
         dialog.addEventListener('close', function() {
           if (changed) {
@@ -568,12 +594,7 @@
       if (!window.SuperModal) {
         return;
       }
-      SuperModal.frame(url, { title: title || '' });
-      var dialogs = document.querySelectorAll('dialog.supermodal--frame');
-      var dialog = dialogs[dialogs.length - 1];
-      if (Ottomo.decorateFrame) {
-        Ottomo.decorateFrame(dialog, 'xl');
-      }
+      var dialog = Ottomo.openFrame(url, title, 'xl');
       var tools = dialog && dialog.querySelector('.supermodal__tools');
       if (!tools) {
         return;
