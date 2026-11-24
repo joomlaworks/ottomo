@@ -257,7 +257,7 @@ class OttomoHelperTemplate
 
                 // Perform the routing for the extensions content
                 foreach ($newsletter->data as $entry) {
-                    $entry->content = self::fluidImages(self::stripEditorMarkup($entry->content));
+                    $entry->content = self::fluidImages(self::restoreShrunkImages(self::stripEditorMarkup($entry->content)));
                     $entry->content = preg_replace_callback('#href="index.php\?([^"]*)#m', array('ottomoHelperTemplate', 'routeCallback'), $entry->content);
                     $contents[$entry->position] = $entry->content;
                 }
@@ -450,6 +450,9 @@ class OttomoHelperTemplate
                 $value = $entry->content;
             }
         }
+        if (!is_null($value)) {
+            $value = self::restoreShrunkImages($value);
+        }
         if (is_null($value)) {
             if (is_array(self::$sampleData) && isset(self::$sampleData[$name])) {
                 $value = '<div contenteditable="true">'.self::$sampleData[$name].'</div>';
@@ -460,6 +463,38 @@ class OttomoHelperTemplate
         }
 
         return $value;
+    }
+
+    /**
+     * 1.1's first release shrank content images to width="16" when a campaign opened on a step other than the
+     * designer, and saving kept it. The template's own images (logo, icons, photos of the sample content) get their
+     * width back from the template's sample data; other images are fitted again by the designer.
+     */
+    public static function restoreShrunkImages($html)
+    {
+        $html = (string)$html;
+        if (stripos($html, 'width="16"') === false || !is_array(self::$sampleData)) {
+            return $html;
+        }
+        static $widths = array();
+        $key = self::$folder;
+        if (!isset($widths[$key])) {
+            $widths[$key] = array();
+            preg_match_all('/<img\b[^>]*>/i', implode('', self::$sampleData), $tags);
+            foreach ($tags[0] as $tag) {
+                if (preg_match('/\ssrc\s*=\s*(["\'])(.*?)\1/i', $tag, $src) && preg_match('/\swidth\s*=\s*(["\'])(\d+)\1/i', $tag, $width)) {
+                    $widths[$key][basename(parse_url($src[2], PHP_URL_PATH))] = $width[2];
+                }
+            }
+        }
+        $map = $widths[$key];
+        return preg_replace_callback('/<img\b[^>]*\swidth="16"[^>]*>/i', function ($tag) use ($map) {
+            if (!preg_match('/\ssrc\s*=\s*(["\'])(.*?)\1/i', $tag[0], $src)) {
+                return $tag[0];
+            }
+            $file = basename((string)parse_url(html_entity_decode($src[2]), PHP_URL_PATH));
+            return isset($map[$file]) && $map[$file] !== '16' ? str_replace('width="16"', 'width="'.$map[$file].'"', $tag[0]) : $tag[0];
+        }, $html);
     }
 
     public static function renderExtension($extension, $row, $template)

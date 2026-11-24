@@ -2120,7 +2120,8 @@
       imageRoom: function(img) {
         var box = img.closest('td') || img.closest('.otm-position, .otm-position-content, .otm-sample-data, [contenteditable="true"]') || img.parentElement;
         var style = box.ownerDocument.defaultView.getComputedStyle(box);
-        return Math.max(16, Math.floor(box.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0)));
+        // 0 when the column can't be measured: the designer is hidden (another step of the wizard), so nothing is laid out
+        return Math.max(0, Math.floor(box.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0)));
       },
 
       /**
@@ -2160,8 +2161,16 @@
               return;
             }
             var room = self.imageRoom(img);
+            if (room < 32) {
+              // not laid out (a hidden designer measures 0): fit when the designer is shown
+              self.fitLater(img.ownerDocument, img, force, quiet);
+              return;
+            }
             var current = parseInt(img.getAttribute('width'), 10) || 0;
-            if (!force && current && current <= room) {
+            // 1.1's first release shrank images to 16px when a campaign opened on another step: give them their room back
+            var shrunk = current === 16 && natural > 16;
+            // a few pixels of margin: the designer frames each block, so a column measures a little less than in the email
+            if (!force && !shrunk && current && current <= room + 8) {
               return;
             }
             var width = Math.min(natural, room);
@@ -2182,6 +2191,25 @@
             img.addEventListener('load', fit, { once: true });
           }
         });
+      },
+
+      /**
+       * Fit an image once its designer is laid out: the designer's window gets its size when the wizard shows its step
+       * (a resize of the iframe's window).
+       */
+      fitLater: function(doc, img, force, quiet) {
+        var self = this;
+        var view = doc && doc.defaultView;
+        if (!view) {
+          return;
+        }
+        var retry = function() {
+          if (self.imageRoom(img) >= 32) {
+            view.removeEventListener('resize', retry);
+            self.fitImages(img, force, quiet);
+          }
+        };
+        view.addEventListener('resize', retry);
       },
 
       /** The element that is aligned with an image: the link around it, or the image. */
