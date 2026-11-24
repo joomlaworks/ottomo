@@ -834,8 +834,10 @@
           rebuilt.className = 'otm-position';
           rebuilt.innerHTML = editorPosition.innerHTML;
           position.parentNode.insertBefore(rebuilt, position);
+          position.parentNode.removeChild(position);
         }
-        position.parentNode.removeChild(position);
+        // A position the designer doesn't know (a campaign already edited here: the designer shows its snapshot, so
+        // nothing was recorded) stays as it is: removing it lost the whole content on a second HTML tab edit
       });
       Ottomo.designerAttach();
     };
@@ -2167,8 +2169,10 @@
               return;
             }
             var current = parseInt(img.getAttribute('width'), 10) || 0;
-            // 1.1's first release shrank images to 16px when a campaign opened on another step: give them their room back
-            var shrunk = current === 16 && natural > 16;
+            // 1.1's first release shrank images to 16px when a campaign opened on another step: give them their room back.
+            // Only pictures (100px or more): an icon may well be shown at 16px on purpose. The template's own images get
+            // their width from its sample data on the server (OttomoHelperTemplate::restoreShrunkImages()).
+            var shrunk = current === 16 && natural >= 100;
             // a few pixels of margin: the designer frames each block, so a column measures a little less than in the email
             if (!force && !shrunk && current && current <= room + 8) {
               return;

@@ -249,7 +249,7 @@ class OttomoHelperTemplate
                 }
 
                 //$doc->formatOutput = true;
-                $buffer = $doc->saveHTML();
+                $buffer = self::restoreShrunkImages($doc->saveHTML());
                 $buffer = preg_replace_callback('#href="index.php\?([^"]*)#m', array('ottomoHelperTemplate', 'routeCallback'), $buffer);
             } else {
                 // Place content in positions
@@ -495,6 +495,18 @@ class OttomoHelperTemplate
             $file = basename((string)parse_url(html_entity_decode($src[2]), PHP_URL_PATH));
             return isset($map[$file]) && $map[$file] !== '16' ? str_replace('width="16"', 'width="'.$map[$file].'"', $tag[0]) : $tag[0];
         }, $html);
+    }
+
+    /** restoreShrunkImages() for a campaign's snapshot (the designer's HTML tab), outside render(): loads the template's sample data. */
+    public static function restoreShrunkSnapshot($html, $templateId)
+    {
+        try {
+            self::setPaths($templateId);
+            self::loadSampleData();
+        } catch (Exception $e) {
+            return $html;
+        }
+        return self::restoreShrunkImages($html);
     }
 
     public static function renderExtension($extension, $row, $template)

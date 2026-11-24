@@ -99,6 +99,12 @@ class OttomoViewNewsletters extends OttomoView
             $this->row->template = $template;
         }
 
+        // A snapshot saved with images shrunk to 16px (1.1's first release): the template's images get their width back
+        if (!empty($this->row->snapshot) && strpos((string)$this->row->snapshot, 'width="16"') !== false && $this->row->template) {
+            JLoader::register('OttomoHelperTemplate', JPATH_ADMINISTRATOR.'/components/com_ottomo/helpers/template.php');
+            $this->row->snapshot = OttomoHelperTemplate::restoreShrunkSnapshot($this->row->snapshot, $this->row->template);
+        }
+
         // Get newsletter data
         $this->row->data = $model->getNewsletterData();
         foreach ($this->row->data as $data) {
